@@ -18,6 +18,8 @@ let  app = Elm.Main.init(
 
 let mouseCoords = {x : 0, y: 0}
 let shape = []
+let ctx = undefined;
+let canvas = undefined;
 
 app.ports.draw.subscribe(function(data) {
   shape = data.reverse();
@@ -30,23 +32,24 @@ app.ports.draw2.subscribe(function(data) {
 });
 
 function render(delta) {
+  if (!canvas || !ctx) {
+    canvas = document.querySelector("canvas")
+    ctx = canvas.getContext("2d");
+  }
   if (shape.lenth == 0) {
     return;
   }
   console.log("render", mouseCoords,  shape);
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  let clientX = window.clientX
-  let clientY = window.clientY
 
-  canvas = document.querySelector("canvas")
-  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "red"
+  //ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
 
   // Draw lines
   for (let i = 0; i < shape.length; i++) {
-    ctx.save();
     ctx.strokeStyle = "black";
     let segment = shape[i];
     if(segment.type == "move") {
@@ -54,16 +57,18 @@ function render(delta) {
     } else {
       ctx.lineTo(segment.coords.x, segment.coords.y)
     }
-    
     ctx.stroke();    
   }
 
-
-  ctx.strokeStyle = "pink";
+  // Draw line to mouse
   let lastShape = shape[shape.length-1]
   ctx.moveTo(lastShape.coords.x, lastShape.coords.y)
   ctx.lineTo(mouseCoords.x, mouseCoords.y)
+  ctx.strokeStyle = "blue";
   ctx.stroke()
+
+  // Draw controls
+
   ctx.restore();
 }
 

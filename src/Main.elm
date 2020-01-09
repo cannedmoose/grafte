@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Lazy exposing (lazy)
 import Json.Decode as JD
 import Json.Encode as JE
 import Math.Vector2 as Vec2
@@ -151,7 +152,7 @@ update msg model =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "", body = [ canvas [ Html.Attributes.id "canvas" ] [] ] }
+    { title = "", body = [ lazy (\_ -> canvas [ Html.Attributes.id "canvas" ] []) Nothing ] }
 
 
 encodeVec2 : Vec2.Vec2 -> JE.Value

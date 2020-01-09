@@ -1,8 +1,8 @@
-build/elm.js : src/Main.elm build/elm.js
+.PHONY: build/elm.js
+build/elm.js :
 	elm make src/Main.elm --output=build/elm.js --optimize
 
-build : elm.js
-	mkdir ./build
+build : build/elm.js
 	cp ./static/* ./build/
 
 .PHONY: clean

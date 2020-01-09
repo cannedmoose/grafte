@@ -2,7 +2,7 @@
 build/elm.js :
 	elm make src/Main.elm --output=build/elm.js --optimize
 
-build : build/elm.js
+build : build/elm.js 
 	cp ./static/* ./build/
 
 .PHONY: clean
@@ -11,6 +11,7 @@ clean:
 
 .PHONY: live
 live:
+	elm make src/Main.elm --output=build/elm.js --debug
 	elm-live -h 0.0.0.0 src/Main.elm -- --output=build/elm.js --debug
 
 .PHONY: serve

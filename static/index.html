@@ -13,12 +13,59 @@
 </body>
 
 <script type="text/javascript">
-var app = Elm.Main.init(
+let  app = Elm.Main.init(
   { flags:{}});
 
-app.ports.store.subscribe(function(data) {
-  localStorage.setItem('store', JSON.stringify(data));
+let mouseCoords = {x : 0, y: 0}
+let shape = []
+
+app.ports.draw.subscribe(function(data) {
+  shape = data.reverse();
+  window.requestAnimationFrame(render);
 });
+
+app.ports.draw2.subscribe(function(data) {
+  mouseCoords = data
+  window.requestAnimationFrame(render);
+});
+
+function render(delta) {
+  if (shape.lenth == 0) {
+    return;
+  }
+  console.log("render", mouseCoords,  shape);
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  let clientX = window.clientX
+  let clientY = window.clientY
+
+  canvas = document.querySelector("canvas")
+  const ctx = canvas.getContext("2d");
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw lines
+  for (let i = 0; i < shape.length; i++) {
+    ctx.save();
+    ctx.strokeStyle = "black";
+    let segment = shape[i];
+    if(segment.type == "move") {
+      ctx.moveTo(segment.coords.x, segment.coords.y) 
+    } else {
+      ctx.lineTo(segment.coords.x, segment.coords.y)
+    }
+    
+    ctx.stroke();    
+  }
+
+
+  ctx.strokeStyle = "pink";
+  let lastShape = shape[shape.length-1]
+  ctx.moveTo(lastShape.coords.x, lastShape.coords.y)
+  ctx.lineTo(mouseCoords.x, mouseCoords.y)
+  ctx.stroke()
+  ctx.restore();
+}
 
 </script>
 

@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
 import Browser.Dom as Dom
@@ -23,7 +23,7 @@ main =
 
 
 type alias Flags =
-    { x : Float, y : Float }
+    {}
 
 
 type Mouse
@@ -64,18 +64,28 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
         NoShape _ ->
-            Sub.batch [ Events.onMouseDown (JD.map MouseMove decodeMouse) ]
+            Sub.batch [ Events.onMouseDown (JD.map MouseDown decodeMouse) ]
 
         AShape _ _ ->
             Sub.batch
-                [ Events.onMouseDown (JD.map MouseMove decodeMouse)
-                , Events.onMouseUp (JD.map MouseMove decodeMouse)
+                [ Events.onMouseDown (JD.map MouseDown decodeMouse)
+                , Events.onMouseUp (JD.map MouseUp decodeMouse)
                 , Events.onMouseMove (JD.map MouseMove decodeMouse)
                 ]
 
 
+port draw : JE.Value -> Cmd msg
 
---port store : JE.Value -> Cmd msg
+
+port draw2 : JE.Value -> Cmd msg
+
+
+drawShape : Shape -> Cmd Msg
+drawShape shape =
+    draw (encodeShape shape)
+
+
+
 -- UPDATE
 
 
@@ -86,7 +96,11 @@ update msg model =
             case mouse of
                 -- Create a move segment at mouse coords when clicked
                 OnScreen down coords ->
-                    ( AShape mouse (Segments [ Move coords ]), Cmd.none )
+                    let
+                        newShape =
+                            Segments [ Move coords ]
+                    in
+                    ( AShape mouse newShape, drawShape newShape )
 
                 OffScreen ->
                     ( model, Cmd.none )
@@ -99,22 +113,36 @@ update msg model =
 
         ( AShape mouse (Segments segments), MouseDown newMouse ) ->
             case mouse of
-                OnScreen down coords ->
-                    ( AShape newMouse (Segments segments), Cmd.none )
+                OnScreen False coords ->
+                    let
+                        newShape =
+                            Segments segments
+                    in
+                    ( AShape newMouse newShape, Cmd.none )
+
+                OnScreen _ _ ->
+                    ( model, Cmd.none )
 
                 OffScreen ->
                     ( model, Cmd.none )
 
         ( AShape mouse (Segments segments), MouseUp newMouse ) ->
-            case mouse of
+            case newMouse of
                 OnScreen down coords ->
-                    ( AShape newMouse (Segments (Line coords :: segments)), Cmd.none )
+                    let
+                        newShape =
+                            Segments (Line coords :: segments)
+                    in
+                    ( AShape newMouse newShape, drawShape newShape )
 
                 OffScreen ->
                     ( model, Cmd.none )
 
-        ( AShape mouse shape, MouseMove newMouse ) ->
-            ( model, Cmd.none )
+        ( AShape mouse shape, MouseMove (OnScreen down coords) ) ->
+            ( AShape mouse shape, draw2 (encodeVec2 coords) )
+
+        ( AShape mouse shape, MouseMove OffScreen ) ->
+            ( AShape mouse shape, Cmd.none )
 
 
 
@@ -128,7 +156,7 @@ view model =
 
 encodeVec2 : Vec2.Vec2 -> JE.Value
 encodeVec2 vec2 =
-    JE.object [ ( "x", JE.float (Vec2.getX vec2) ), ( "y", JE.float (Vec2.getX vec2) ) ]
+    JE.object [ ( "x", JE.float (Vec2.getX vec2) ), ( "y", JE.float (Vec2.getY vec2) ) ]
 
 
 encodeSegment : Segment -> JE.Value
@@ -138,7 +166,7 @@ encodeSegment segment =
             JE.object [ ( "type", JE.string "move" ), ( "coords", encodeVec2 coords ) ]
 
         Line coords ->
-            JE.object [ ( "type", JE.string "move" ), ( "coords", encodeVec2 coords ) ]
+            JE.object [ ( "type", JE.string "line" ), ( "coords", encodeVec2 coords ) ]
 
 
 encodeShape : Shape -> JE.Value

@@ -35,9 +35,9 @@ release:
 init:
 	git init
 	elm init
-	mkdir build
 	mkdir static
 	touch static/index.html
 	touch static/style.css
+	touch src/Main.elm
 	git add .
 	git commit -a -m "Initial commit"

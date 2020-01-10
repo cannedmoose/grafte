@@ -15,7 +15,7 @@ import Math.Vector2 as Vec2
 
 main : Program Flags Model Msg
 main =
-    Browser.document
+    Browser.element
         { init = init
         , view = view
         , update = update
@@ -150,9 +150,9 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Browser.Document Msg
+view : Model -> Html Msg
 view model =
-    { title = "", body = [ lazy (\_ -> canvas [ Html.Attributes.id "canvas" ] []) Nothing ] }
+    div [] []
 
 
 encodeVec2 : Vec2.Vec2 -> JE.Value

@@ -10,11 +10,15 @@
 </head>
 
 <body>
+  <canvas id = "canvas"></canvas>
+  <div id = "elm"></div>
 </body>
 
 <script type="text/javascript">
 let  app = Elm.Main.init(
-  { flags:{}});
+  { flags:{},
+  node : document.querySelector("#elm")}
+  );
 
 let mouseCoords = {x : 0, y: 0}
 let shape = []
@@ -33,24 +37,24 @@ app.ports.draw2.subscribe(function(data) {
 
 function render(delta) {
   if (!canvas || !ctx) {
-    canvas = document.querySelector("canvas")
+    canvas = document.querySelector("#canvas")
     ctx = canvas.getContext("2d");
+    console.log("newctx")
   }
   if (shape.lenth == 0) {
     return;
   }
-  console.log("render", mouseCoords,  shape);
+  //console.log("render", mouseCoords,  shape);
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  ctx.fillStyle = "red"
-  //ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.save();
-
+  ctx.beginPath()
+  ctx.strokeStyle = "black";
   // Draw lines
   for (let i = 0; i < shape.length; i++) {
-    ctx.strokeStyle = "black";
     let segment = shape[i];
     if(segment.type == "move") {
       ctx.moveTo(segment.coords.x, segment.coords.y) 
@@ -61,13 +65,35 @@ function render(delta) {
   }
 
   // Draw line to mouse
+  ctx.beginPath()
   let lastShape = shape[shape.length-1]
   ctx.moveTo(lastShape.coords.x, lastShape.coords.y)
   ctx.lineTo(mouseCoords.x, mouseCoords.y)
   ctx.strokeStyle = "blue";
-  ctx.stroke()
+  ctx.stroke();
+  
+  ctx.closePath();
 
   // Draw controls
+  for (let i = 0; i < shape.length; i++) {
+    let segment = shape[i];
+    ctx.beginPath();
+    ctx.rect(segment.coords.x- 5, segment.coords.y - 5, 10, 10);
+
+    if (ctx.isPointInPath(mouseCoords.x, mouseCoords.y)) {
+      ctx.strokeStyle = "blue";
+      ctx.lineWidth = 3;
+      ctx.fillStyle = "white";
+    } else {
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "white";
+    }
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.closePath();
+  }
 
   ctx.restore();
 }

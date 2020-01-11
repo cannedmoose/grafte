@@ -31,19 +31,37 @@ window.onload = function() {
   canvas.addEventListener("mouseup", onUp);
 };
 
-function onDown(event: MouseEvent) {}
+function onDown(event: MouseEvent) {
+  model.mouse = { x: event.clientX, y: event.clientY };
+  window.requestAnimationFrame(drawCanvas);
+}
 
 function onMove(event: MouseEvent) {
   model.mouse = { x: event.clientX, y: event.clientY };
   window.requestAnimationFrame(drawCanvas);
 }
 
-function onUp(event: MouseEvent) {}
+function onUp(event: MouseEvent) {
+  model.mouse = { x: event.clientX, y: event.clientY };
+
+  switch (model.kind) {
+    case "shape":
+      if (model.shape.segments.length == 0) {
+        model.shape.segments.push({ kind: "move", coords: model.mouse });
+      } else {
+        model.shape.segments.push({ kind: "line", coords: model.mouse });
+      }
+      break;
+  }
+
+  window.requestAnimationFrame(drawCanvas);
+}
 
 function drawCanvas(delta: number) {
   switch (model.kind) {
     case "shape":
       grafte.drawShape(ctx, model.shape);
+      grafte.drawControls(ctx, model.shape, model.mouse);
       break;
   }
 }

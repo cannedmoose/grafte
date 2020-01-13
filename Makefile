@@ -1,7 +1,6 @@
 .PHONY: build
 build : 
-	tsc
-	cp ./static/* ./build/
+	webpack
 
 .PHONY: clean
 clean:
@@ -9,9 +8,7 @@ clean:
 
 .PHONY: live
 live:
-	make build
-	tsc -w &
-	cd build && python3 -m http.server
+	webpack-dev-server --open
 
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
@@ -20,6 +17,6 @@ release:
 	git checkout master
 	git merge $(BRANCH)
 	make clean
-	make elm.js
+	make build
 	git commit -a -m "release"
 	git push

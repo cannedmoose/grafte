@@ -1,0 +1,31 @@
+const path = require("path");
+const CopyPlugin = require("copy-webpack-plugin");
+const WriteFilePlugin = require("write-file-webpack-plugin");
+
+module.exports = {
+  mode: "development",
+  entry: "./src/main.ts",
+  devServer: {
+    contentBase: "./build"
+  },
+  plugins: [
+    new CopyPlugin([{ from: "static", to: "." }]),
+    new WriteFilePlugin()
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/
+      }
+    ]
+  },
+  resolve: {
+    extensions: [".ts", ".js"]
+  },
+  output: {
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "build")
+  }
+};

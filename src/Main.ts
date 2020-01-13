@@ -1,67 +1,24 @@
-import * as grafte from "./Grafte";
+import * as paper from "paper";
 
-interface NoShape {
-  kind: "noshape";
-  mouse: grafte.Vector2;
+function stoPoint(size: paper.Size) {
+  return new paper.Point(
+    paper.view.bounds.size.width,
+    paper.view.bounds.size.height
+  );
 }
 
-interface AShape {
-  kind: "shape";
-  shape: grafte.Shape;
-  mouse: grafte.Vector2;
+function rtoPoint(rect: paper.Rectangle) {
+  return stoPoint(rect.size);
 }
-
-type Model = NoShape | AShape;
-
-let canvas: HTMLCanvasElement;
-let ctx: CanvasRenderingContext2D;
-let model: Model;
 
 window.onload = function() {
-  canvas = document.querySelector("#canvas");
-  ctx = canvas.getContext("2d");
+  let canvas: HTMLCanvasElement = document.querySelector("#canvas");
+  let project = new paper.Project(canvas);
+  project.activate();
+  let path = new paper.Path();
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  model = { kind: "noshape", mouse: { x: 0, y: 0 } };
-
-  canvas.addEventListener("mousedown", onDown);
-  canvas.addEventListener("mousemove", onMove);
-  canvas.addEventListener("mouseup", onUp);
+  path.add([0, 0]);
+  path.add(rtoPoint(paper.view.bounds));
+  path.strokeColor = new paper.Color("black");
+  path.strokeWidth = 10;
 };
-
-function onDown(event: MouseEvent) {
-  model.mouse = { x: event.clientX, y: event.clientY };
-  window.requestAnimationFrame(drawCanvas);
-}
-
-function onMove(event: MouseEvent) {
-  model.mouse = { x: event.clientX, y: event.clientY };
-  window.requestAnimationFrame(drawCanvas);
-}
-
-function onUp(event: MouseEvent) {
-  model.mouse = { x: event.clientX, y: event.clientY };
-
-  switch (model.kind) {
-    case "shape":
-      if (model.shape.segments.length == 0) {
-        model.shape.segments.push({ kind: "move", coords: model.mouse });
-      } else {
-        model.shape.segments.push({ kind: "line", coords: model.mouse });
-      }
-      break;
-  }
-
-  window.requestAnimationFrame(drawCanvas);
-}
-
-function drawCanvas(delta: number) {
-  switch (model.kind) {
-    case "shape":
-      grafte.drawShape(ctx, model.shape);
-      grafte.drawControls(ctx, model.shape, model.mouse);
-      break;
-  }
-}

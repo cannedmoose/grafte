@@ -2,11 +2,86 @@ html,
 body {
   margin: 0;
   height: 100%;
-  overflow: hidden;
 }
 
 /* Scale canvas with resize attribute to full size */
 canvas {
   width: 100%;
   height: 100%;
+  flex: 1;
+
+  border: solid black 2px;
+}
+
+.expand {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+
+div .contract {
+  flex: 0;
+  width: fit-content;
+  height: 0%;
+}
+
+.horizontal {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
+.vertical {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.selected {
+  font-weight: bolder;
+}
+
+/**
+* Menu Styles
+*/
+
+#menus {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.menu {
+  position: absolute;
+  border: 2px solid black;
+  background-color: white;
+  pointer-events: all;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.menucontent {
+  overflow: scroll;
+}
+
+.titlebar {
+  background-color: grey;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.resizehandle {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
 }

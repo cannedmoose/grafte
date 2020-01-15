@@ -1,16 +1,35 @@
 <!DOCTYPE HTML>
 <html>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>
-  <link rel="stylesheet" href="./style.css">
-  <script type="text/javascript" src="bundle.js"></script>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link rel="stylesheet" href="./style.css">
+    <script type="text/javascript" src="bundle.js"></script>
+  </head>
 
-<body>
-  <canvas id = "canvas" resize="true" ></canvas>
-</body>
+  <body>
+    <div id="menus"></div>
+    <div class="horizontal">
+      <div class="vertical">
+        <div id="controls" class="contract">
+          <input type="color" id="fill" value="#ffffff">
+          <input type="range" id="opacity" value="1" min="0" max="1" step=".05">
+          <input type="color" id="stroke" value="#000000">
+          <input type="range" id="width" value="1" min="0" max="50">
+        </div>
+        <div class="expand">
+          <canvas id="canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="vertical contract">
+        <ul id="layers">
+          <li><button>Add</button></li>
+        </ul>
+      </div>
+    </div>
+  </body>
 
 </html>

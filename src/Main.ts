@@ -1,4 +1,7 @@
 import * as paper from "paper";
+import { createTools, showLayers } from "./tools";
+import { querySelectorOrThrow, createButton } from "./utils";
+import { createMenu } from "./menu";
 
 function stoPoint(size: paper.Size) {
   return new paper.Point(
@@ -12,35 +15,28 @@ function rtoPoint(rect: paper.Rectangle) {
 }
 
 window.onload = function() {
-  let canvas: HTMLCanvasElement = document.querySelector("#canvas");
+  let canvas: HTMLCanvasElement = querySelectorOrThrow(
+    "#canvas"
+  ) as HTMLCanvasElement;
   paper.setup(canvas);
-  let path = new paper.Path();
 
-  path.moveTo(new paper.Point(0, 0));
-  path.lineTo(rtoPoint(paper.view.bounds));
-  path.strokeColor = new paper.Color("black");
-  path.strokeWidth = 10;
+  let { circleTool, penTool, rectTool } = createTools();
 
-  paper.view.onResize = event => {
-    path.lastSegment.point = rtoPoint(paper.view.bounds);
-  };
+  querySelectorOrThrow("#menus").appendChild(
+    createMenu(
+      "tool-menu",
+      [
+        createButton("", "circle", () => circleTool.activate()),
+        createButton("", "rect", () => rectTool.activate()),
+        createButton("", "pen", () => penTool.activate())
+      ],
+      {
+        title: "Tools",
+        minimized: false,
+        bounds: new paper.Rectangle(10, 10, 70, 70)
+      }
+    )
+  );
 
-  let circleTool = new paper.Tool();
-  let circlePath = new paper.Path();
-
-  circleTool.onMouseDrag = function(event) {
-    circlePath.removeSegments();
-    circlePath = new paper.Path.Circle({
-      center: event.downPoint,
-      radius: event.downPoint.getDistance(event.point)
-    });
-    circlePath.strokeColor = new paper.Color("blue");
-    circlePath.fillColor = new paper.Color(0, 0, 0, 0);
-  };
-
-  circleTool.onMouseUp = function(event) {
-    circlePath.strokeColor = new paper.Color("black");
-    circlePath.fillColor = new paper.Color("white");
-    circlePath = new paper.Path();
-  };
+  showLayers();
 };

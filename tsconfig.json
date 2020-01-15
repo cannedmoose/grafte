@@ -4,6 +4,7 @@
     "target": "es5",
     "sourceMap": true,
     "outDir": "build",
-    "rootDir": "src"
+    "rootDir": "src",
+    "strictNullChecks": true
   }
 }

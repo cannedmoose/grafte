@@ -20,23 +20,77 @@ export function createMenu(
     existingDom.parentElement.removeChild(existingDom);
   }
 
+  // Copy menu, keep as closure
+  menu = { ...menu };
+
+  let title = createDiv("", "titlebar", [
+    createDiv("", "title", [document.createTextNode(menu.title)]),
+    createDiv("", "minimize", [
+      createCheckBox("", "", !menu.minimized, event => {
+        menu.minimized = !event.target.checked;
+        draw();
+      })
+    ])
+  ]);
   let content = createDiv("", "menucontent", children);
-  let handle = createDiv("", "resizehandle", [document.createTextNode("/")]);
+  let handle = createDiv("", "resizehandle", [document.createTextNode("░")]);
+
+  let initalDragPoint;
+  let initalRectPoint;
+  window.addEventListener("mousemove", event => {
+    if (initalDragPoint && initalRectPoint) {
+      let currentDragPoint = new paper.Point(event.screenX, event.screenY);
+      menu.bounds.point = initalRectPoint.add(
+        currentDragPoint.subtract(initalDragPoint)
+      );
+      console.log(
+        event.pageX,
+        event.pageY,
+        initalDragPoint,
+        initalRectPoint,
+        currentDragPoint
+      );
+      draw();
+    }
+  });
+
+  title.addEventListener("mousedown", event => {
+    console.log("dragstart");
+    initalDragPoint = new paper.Point(event.screenX, event.screenY);
+    initalRectPoint = menu.bounds.point;
+  });
+
+  title.addEventListener("mouseup", event => {
+    console.log("dragend");
+    initalDragPoint = undefined;
+    initalRectPoint = undefined;
+  });
+
+  let resizeInitalDragPoint;
+  let resizeInitalRectsSize;
+  window.addEventListener("mousemove", event => {
+    if (resizeInitalDragPoint && resizeInitalRectsSize) {
+      let currentDragPoint = new paper.Point(event.screenX, event.screenY);
+      menu.bounds.size = resizeInitalRectsSize.add(
+        currentDragPoint.subtract(resizeInitalDragPoint)
+      );
+      draw();
+    }
+  });
+
+  handle.addEventListener("mousedown", event => {
+    resizeInitalDragPoint = new paper.Point(event.screenX, event.screenY);
+    resizeInitalRectsSize = menu.bounds.size;
+  });
+
+  handle.addEventListener("mouseup", event => {
+    resizeInitalRectsSize = undefined;
+    resizeInitalDragPoint = undefined;
+  });
 
   let dom = createDiv(id, "menu", [
     // Title bar
-    createDiv("", "titlebar", [
-      createDiv("", "title", [document.createTextNode(menu.title)]),
-      createDiv("", "minimize", [
-        createCheckBox("", "", !menu.minimized, event => {
-          if (event.target.checked) {
-            maximize(id, { ...menu, minimized: false });
-          } else {
-            minimize(id, { ...menu, minimized: false });
-          }
-        })
-      ])
-    ]),
+    title,
 
     // Content
     content,
@@ -45,54 +99,31 @@ export function createMenu(
     handle
   ]);
 
-  if (menu.minimized) {
-    content.setAttribute("style", "display:none");
-    handle.setAttribute("style", "display:none");
+  function draw() {
+    if (menu.minimized) {
+      content.setAttribute("style", "display:none");
+      handle.setAttribute("style", "display:none");
 
-    dom.setAttribute(
-      "style",
-      `top:${menu.bounds.topLeft.y}px;
+      dom.setAttribute(
+        "style",
+        `top:${menu.bounds.topLeft.y}px;
   left:${menu.bounds.topLeft.x}px;`
-    );
-  } else {
-    dom.setAttribute(
-      "style",
-      `top:${menu.bounds.topLeft.y}px;
+      );
+    } else {
+      content.setAttribute("style", "");
+      handle.setAttribute("style", "");
+
+      dom.setAttribute(
+        "style",
+        `top:${menu.bounds.topLeft.y}px;
   left:${menu.bounds.topLeft.x}px;
   width:${menu.bounds.width}px;
   height:${menu.bounds.height}px;`
-    );
+      );
+    }
   }
 
+  draw();
+
   return dom;
-}
-
-function minimize(id: String, menu: Menu) {
-  let dom = querySelectorOrThrow("#" + id);
-  let content = querySelectorOrThrow("#" + id + " > .menucontent");
-  let handle = querySelectorOrThrow("#" + id + " > .resizehandle");
-  content.setAttribute("style", "display:none");
-  handle.setAttribute("style", "display:none");
-
-  dom.setAttribute(
-    "style",
-    `top:${menu.bounds.topLeft.y}px;
-  left:${menu.bounds.topLeft.x}px;`
-  );
-}
-
-function maximize(id: String, menu: Menu) {
-  let dom = querySelectorOrThrow("#" + id);
-  let content = querySelectorOrThrow("#" + id + " > .menucontent");
-  let handle = querySelectorOrThrow("#" + id + " > .resizehandle");
-  content.setAttribute("style", "");
-  handle.setAttribute("style", "");
-
-  dom.setAttribute(
-    "style",
-    `top:${menu.bounds.topLeft.y}px;
-  left:${menu.bounds.topLeft.x}px;
-  width:${menu.bounds.width}px;
-  height:${menu.bounds.height}px;`
-  );
 }

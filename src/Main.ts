@@ -1,6 +1,6 @@
 import * as paper from "paper";
 import { createTools, showLayers } from "./tools";
-import { querySelectorOrThrow, createButton } from "./utils";
+import { querySelectorOrThrow, createButton, createDiv } from "./utils";
 import { createMenu } from "./menu";
 
 function stoPoint(size: paper.Size) {
@@ -26,9 +26,11 @@ window.onload = function() {
     createMenu(
       "tool-menu",
       [
-        createButton("", "circle", () => circleTool.activate()),
-        createButton("", "rect", () => rectTool.activate()),
-        createButton("", "pen", () => penTool.activate())
+        createDiv("", "vertical", [
+          createButton("", "circle", () => circleTool.activate()),
+          createButton("", "rect", () => rectTool.activate()),
+          createButton("", "pen", () => penTool.activate())
+        ])
       ],
       {
         title: "Tools",

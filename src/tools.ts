@@ -1,81 +1,11 @@
 import * as paper from "paper";
 import {
   querySelectorOrThrow,
+  createSlider,
   createDiv,
-  createButton,
-  createCheckBox
+  createColor
 } from "./utils";
-
-/**
- * Display layers
- */
-
-function showSlider(
-  classes: string,
-  value: number,
-  min: number,
-  max: number,
-  onChange: (event) => void
-): HTMLElement {
-  let ele = document.createElement("input");
-  ele.setAttribute("type", "range");
-  ele.setAttribute("class", classes);
-  ele.setAttribute("min", min.toString());
-  ele.setAttribute("max", max.toString());
-  ele.setAttribute("step", "0.01x");
-  ele.setAttribute("value", value.toString());
-  ele.addEventListener("change", onChange);
-  return ele;
-}
-
-function showLayer(layer: paper.Layer): HTMLElement {
-  let layerDiv = createDiv("", "horizontal", [
-    createCheckBox("", "V", layer.visible, event => {
-      layer.visible = !layer.visible;
-      showLayers();
-    }),
-    createButton(
-      layer == paper.project.activeLayer ? "selected" : "",
-      layer.name,
-      () => {
-        layer.activate();
-        showLayers();
-      }
-    ),
-    showSlider("", layer.opacity, 0, 1, event => {
-      layer.opacity = event.target.value;
-    })
-  ]);
-
-  return layerDiv;
-}
-
-export function showLayers() {
-  let layersDiv = querySelectorOrThrow("#layers");
-  while (layersDiv.firstChild) {
-    layersDiv.removeChild(layersDiv.firstChild);
-  }
-  for (let i = 0; i < paper.project.layers.length; i++) {
-    let layer = paper.project.layers[i];
-    if (!layer.name) {
-      layer.name = "layer " + i;
-    }
-    let itemDiv = document.createElement("li");
-    itemDiv.appendChild(showLayer(layer));
-    layersDiv.appendChild(itemDiv);
-  }
-
-  let addDiv = document.createElement("li");
-  addDiv.appendChild(
-    createButton("", "Add", () => {
-      let l = new paper.Layer();
-      paper.project.addLayer(l);
-      l.activate();
-      showLayers();
-    })
-  );
-  layersDiv.appendChild(addDiv);
-}
+import { showLayers } from "./layers";
 
 /**
  * Display tools
@@ -108,7 +38,7 @@ function getOpacity() {
   return Number(selector.value);
 }
 
-export function createTools() {
+export function createTools(layersId: string) {
   // Circle
   let circleTool = new paper.Tool();
   let circlePath = new paper.Path();
@@ -141,7 +71,7 @@ export function createTools() {
     circlePath.opacity = getOpacity();
     toolPath.remove();
     circlePath = new paper.Path();
-    showLayers();
+    showLayers(layersId);
   };
 
   // Rect
@@ -174,7 +104,7 @@ export function createTools() {
     rectPath.opacity = getOpacity();
     rectPath = new paper.Path();
     toolPath.remove();
-    showLayers();
+    showLayers(layersId);
   };
 
   // Pen
@@ -197,8 +127,19 @@ export function createTools() {
     penPath.strokeWidth = getWidth();
     penPath.opacity = getOpacity();
     penPath.smooth();
-    showLayers();
+    showLayers(layersId);
   };
 
   return { circleTool, penTool, rectTool };
+}
+
+export function createToolOptions() {
+  return createDiv("", "vertical", [
+    createSlider("opacity", "", 1, 0, 1, event => {}),
+    createSlider("width", "", 1, 0, 50, event => {}),
+    createDiv("", "horizontal", [
+      createColor("stroke", "", "#000000", event => {}),
+      createColor("fill", "", "#FFFFFF", event => {})
+    ])
+  ]);
 }

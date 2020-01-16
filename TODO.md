@@ -1,19 +1,7 @@
-# Tools
+Drag and drop api (want to extract away some of the mouse details shiz)
 
-- Line
-- Circle
-- Rectangle
-- Selector???
-- Custom (code editor with option to save shortcut as new tool)
+- want single listener for mouse move event
+- want single thing being dragged at a time
+- want "preview layer" that does this throug transforms/some other way to see where it's being dragged
 
-# Project view
-
-- View project layers/objects
-- add groups/layers
-- Allow for selection
-
-# Style picker (dependent on current selection)
-
-- Pick stroke/fill color
-- Pick stroke width
-- Define dashe array
+Looks like we're sticking with stateful shiz maybe reconsider

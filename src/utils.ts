@@ -51,3 +51,42 @@ export function createCheckBox(
   ele.addEventListener("change", onChange);
   return ele;
 }
+
+export function createSlider(
+  id: string,
+  classes: string,
+  value: number,
+  min: number,
+  max: number,
+  onChange: (event) => void
+): HTMLElement {
+  let ele = document.createElement("input");
+  if (id) {
+    ele.setAttribute("id", id);
+  }
+  ele.setAttribute("type", "range");
+  ele.setAttribute("class", classes);
+  ele.setAttribute("min", min.toString());
+  ele.setAttribute("max", max.toString());
+  ele.setAttribute("step", "0.01");
+  ele.setAttribute("value", value.toString());
+  ele.addEventListener("change", onChange);
+  return ele;
+}
+
+export function createColor(
+  id: string,
+  classes: string,
+  value: string,
+  onChange: (event) => void
+): HTMLElement {
+  let ele = document.createElement("input");
+  ele.setAttribute("type", "color");
+  if (id) {
+    ele.setAttribute("id", id);
+  }
+  ele.setAttribute("class", classes);
+  ele.setAttribute("value", value);
+  ele.addEventListener("change", onChange);
+  return ele;
+}

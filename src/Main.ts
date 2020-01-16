@@ -1,5 +1,6 @@
 import * as paper from "paper";
-import { createTools, showLayers } from "./tools";
+import { createTools, createToolOptions } from "./tools";
+import { showLayers } from "./layers";
 import { querySelectorOrThrow, createButton, createDiv } from "./utils";
 import { createMenu } from "./menu";
 
@@ -20,9 +21,20 @@ window.onload = function() {
   ) as HTMLCanvasElement;
   paper.setup(canvas);
 
-  let { circleTool, penTool, rectTool } = createTools();
+  let { circleTool, penTool, rectTool } = createTools("#layers");
+  let menuDiv = querySelectorOrThrow("#menus");
 
-  querySelectorOrThrow("#menus").appendChild(
+  menuDiv.appendChild(
+    createMenu("layers-menu", [createDiv("layers", "vertical", [])], {
+      title: "Layers",
+      minimized: false,
+      bounds: new paper.Rectangle(70, 0, 70, 140)
+    })
+  );
+
+  window.requestAnimationFrame(() => showLayers("#layers"));
+
+  menuDiv.appendChild(
     createMenu(
       "tool-menu",
       [
@@ -35,10 +47,16 @@ window.onload = function() {
       {
         title: "Tools",
         minimized: false,
-        bounds: new paper.Rectangle(10, 10, 70, 70)
+        bounds: new paper.Rectangle(0, 0, 70, 140)
       }
     )
   );
 
-  showLayers();
+  menuDiv.appendChild(
+    createMenu("tooloptions-menu", [createToolOptions()], {
+      title: "Options",
+      minimized: false,
+      bounds: new paper.Rectangle(0, 140, 70, 140)
+    })
+  );
 };

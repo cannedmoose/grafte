@@ -7,18 +7,18 @@ import {
   querySelectorOrThrow
 } from "./utils";
 
-function createLayer(id: string, layer: paper.Layer): HTMLElement {
+function createLayer(updatFn: () => void, layer: paper.Layer): HTMLElement {
   let layerDiv = createDiv("", "horizontal", [
     createCheckBox("", "V", layer.visible, event => {
       layer.visible = !layer.visible;
-      showLayers(id);
+      updatFn();
     }),
     createButton(
       layer == paper.project.activeLayer ? "selected" : "",
       layer.name,
       () => {
         layer.activate();
-        showLayers(id);
+        updatFn();
       }
     ),
     createSlider("", "", layer.opacity, 0, 1, event => {
@@ -38,28 +38,28 @@ function createLayer(id: string, layer: paper.Layer): HTMLElement {
   return layerDiv;
 }
 
-export function showLayers(id: string) {
+export function showLayers(canvas: paper.Project, id: string) {
+  let updatFn = () => showLayers(canvas, id);
   let layersDiv = querySelectorOrThrow(id);
   while (layersDiv.firstChild) {
     layersDiv.removeChild(layersDiv.firstChild);
   }
-  for (let i = 0; i < paper.project.layers.length; i++) {
-    let layer = paper.project.layers[i];
+  for (let i = 0; i < canvas.layers.length; i++) {
+    let layer = canvas.layers[i];
     if (!layer.name) {
       layer.name = "layer " + i;
     }
     let itemDiv = document.createElement("li");
-    itemDiv.appendChild(createLayer(id, layer));
+    itemDiv.appendChild(createLayer(updatFn, layer));
     layersDiv.appendChild(itemDiv);
   }
 
   let addDiv = document.createElement("li");
   addDiv.appendChild(
     createButton("", "Add", () => {
+      canvas.activate();
       let l = new paper.Layer();
-      paper.project.insertLayer(paper.project.layers.length - 1, l);
-      l.activate();
-      showLayers(id);
+      updatFn();
     })
   );
   layersDiv.appendChild(addDiv);

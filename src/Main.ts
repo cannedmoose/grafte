@@ -16,14 +16,22 @@ function rtoPoint(rect: paper.Rectangle) {
 }
 
 window.onload = function() {
-  let canvas: HTMLCanvasElement = querySelectorOrThrow(
+  let canvasDom: HTMLCanvasElement = querySelectorOrThrow(
     "#canvas"
   ) as HTMLCanvasElement;
-  paper.setup(canvas);
+  let uiDom: HTMLCanvasElement = querySelectorOrThrow(
+    "#ui"
+  ) as HTMLCanvasElement;
 
-  let { circleTool, penTool, rectTool } = createTools("#layers");
+  paper.setup(canvasDom);
+  let canvas = paper.project;
+  let ui = new paper.Project(uiDom);
+
+  let { circleTool, penTool, rectTool } = createTools({ canvas, ui }, () =>
+    showLayers(canvas, "#layers")
+  );
+
   let menuDiv = querySelectorOrThrow("#menus");
-
   menuDiv.appendChild(
     createMenu("layers-menu", [createDiv("layers", "vertical", [])], {
       title: "Layers",
@@ -32,7 +40,7 @@ window.onload = function() {
     })
   );
 
-  window.requestAnimationFrame(() => showLayers("#layers"));
+  window.requestAnimationFrame(() => showLayers(canvas, "#layers"));
 
   menuDiv.appendChild(
     createMenu(

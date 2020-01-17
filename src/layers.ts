@@ -23,7 +23,16 @@ function createLayer(id: string, layer: paper.Layer): HTMLElement {
     ),
     createSlider("", "", layer.opacity, 0, 1, event => {
       layer.opacity = event.target.value;
-    })
+    }),
+    createDiv(
+      "",
+      "vertical",
+      layer.children.map(child =>
+        createButton("", child.className, () => {
+          child.selected = !child.selected;
+        })
+      )
+    )
   ]);
 
   return layerDiv;
@@ -48,7 +57,7 @@ export function showLayers(id: string) {
   addDiv.appendChild(
     createButton("", "Add", () => {
       let l = new paper.Layer();
-      paper.project.addLayer(l);
+      paper.project.insertLayer(paper.project.layers.length - 1, l);
       l.activate();
       showLayers(id);
     })

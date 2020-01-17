@@ -41,22 +41,15 @@ function getOpacity() {
 export function createTools(layersId: string) {
   // Circle
   let circleTool = new paper.Tool();
-  let circlePath = new paper.Path();
-  let toolPath = new paper.Path();
+  let circlePath: paper.Path;
 
   circleTool.onMouseDrag = function(event) {
-    circlePath.remove();
+    if (circlePath) circlePath.remove();
     circlePath = new paper.Path.Circle({
       center: event.downPoint,
       radius: event.downPoint.getDistance(event.point)
     });
-    toolPath.remove();
-    toolPath = new paper.Path.Circle({
-      center: event.downPoint,
-      radius: event.downPoint.getDistance(event.point)
-    });
-    toolPath.strokeColor = new paper.Color("DeepSkyBlue");
-    toolPath.strokeWidth = Math.min(getWidth() * 0.1, 1);
+    circlePath.selected = true;
 
     circlePath.strokeColor = getStroke();
     circlePath.fillColor = getFill();
@@ -69,32 +62,28 @@ export function createTools(layersId: string) {
     circlePath.fillColor = getFill();
     circlePath.strokeWidth = getWidth();
     circlePath.opacity = getOpacity();
-    toolPath.remove();
+    circlePath.selected = false;
     circlePath = new paper.Path();
     showLayers(layersId);
   };
 
   // Rect
   let rectTool = new paper.Tool();
-  let rectPath = new paper.Path();
+  let rectPath: paper.Path;
 
   rectTool.onMouseDrag = function(event) {
-    rectPath.remove();
+    if (rectPath) rectPath.remove();
     rectPath = new paper.Path.Rectangle({
       point: event.downPoint,
       size: event.point.subtract(event.downPoint)
     });
 
-    toolPath.remove();
-    toolPath = new paper.Path.Rectangle({
-      point: event.downPoint,
-      size: event.point.subtract(event.downPoint)
-    });
-    toolPath.strokeColor = new paper.Color("DeepSkyBlue");
-    toolPath.strokeWidth = Math.min(getWidth() * 0.1, 1);
+    rectPath.selected = true;
 
-    rectPath.strokeColor = new paper.Color("DeepSkyBlue");
-    rectPath.fillColor = new paper.Color(0, 0, 0, 0);
+    rectPath.strokeColor = getStroke();
+    rectPath.fillColor = getFill();
+    rectPath.strokeWidth = getWidth();
+    rectPath.opacity = getOpacity() * 0.1;
   };
 
   rectTool.onMouseUp = function(event) {
@@ -103,30 +92,35 @@ export function createTools(layersId: string) {
     rectPath.strokeWidth = getWidth();
     rectPath.opacity = getOpacity();
     rectPath = new paper.Path();
-    toolPath.remove();
     showLayers(layersId);
   };
 
   // Pen
   let penTool = new paper.Tool();
-  let penPath = new paper.Path();
+  let penPath: paper.Path;
 
   penTool.minDistance = 5;
 
   penTool.onMouseDown = function(event) {
     penPath = new paper.Path();
-    penPath.strokeColor = new paper.Color("DeepSkyBlue");
+    penPath.strokeCap = "round";
   };
 
   penTool.onMouseDrag = function(event) {
     penPath.add(event.point);
+    penPath.closed = false;
+    penPath.selected = true;
+
+    penPath.strokeColor = getStroke();
+    penPath.strokeWidth = getWidth();
+    penPath.opacity = getOpacity() * 0.1;
   };
 
   penTool.onMouseUp = function(event) {
     penPath.strokeColor = getStroke();
     penPath.strokeWidth = getWidth();
     penPath.opacity = getOpacity();
-    penPath.smooth();
+    penPath.simplify();
     showLayers(layersId);
   };
 

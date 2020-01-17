@@ -28,7 +28,7 @@ window.onload = function() {
     createMenu("layers-menu", [createDiv("layers", "vertical", [])], {
       title: "Layers",
       minimized: false,
-      bounds: new paper.Rectangle(70, 0, 70, 140)
+      bounds: new paper.Rectangle(70, 0, 240, 140)
     })
   );
 

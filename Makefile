@@ -8,7 +8,7 @@ clean:
 
 .PHONY: live
 live:
-	webpack-dev-server --open
+	webpack-dev-server --open --host ::
 
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 

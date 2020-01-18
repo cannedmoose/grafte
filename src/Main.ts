@@ -27,8 +27,9 @@ window.onload = function() {
   let canvas = paper.project;
   let ui = new paper.Project(uiDom);
 
-  let { circleTool, penTool, rectTool } = createTools({ canvas, ui }, () =>
-    showLayers(canvas, "#layers")
+  let { circleTool, penTool, rectTool, selectTool } = createTools(
+    { canvas, ui },
+    () => showLayers(canvas, "#layers")
   );
 
   let menuDiv = querySelectorOrThrow("#menus");
@@ -47,6 +48,7 @@ window.onload = function() {
       "tool-menu",
       [
         createDiv("", "vertical", [
+          createButton("", "select", () => selectTool.activate()),
           createButton("", "circle", () => circleTool.activate()),
           createButton("", "rect", () => rectTool.activate()),
           createButton("", "pen", () => penTool.activate())

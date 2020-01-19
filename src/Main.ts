@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { createTools, createToolOptions } from "./tools";
+import { createTools, createToolOptions } from "./tools/tools";
 import { showLayers } from "./layers";
 import { querySelectorOrThrow, createButton, createDiv } from "./utils";
 import { createMenu } from "./menu";
@@ -48,10 +48,22 @@ window.onload = function() {
       "tool-menu",
       [
         createDiv("", "vertical", [
-          createButton("", "select", () => selectTool.activate()),
-          createButton("", "circle", () => circleTool.activate()),
-          createButton("", "rect", () => rectTool.activate()),
-          createButton("", "pen", () => penTool.activate())
+          createButton("", "select", () => {
+            canvas.deselectAll();
+            selectTool.activate();
+          }),
+          createButton("", "circle", () => {
+            canvas.deselectAll();
+            circleTool.activate();
+          }),
+          createButton("", "rect", () => {
+            canvas.deselectAll();
+            rectTool.activate();
+          }),
+          createButton("", "pen", () => {
+            canvas.deselectAll();
+            penTool.activate();
+          })
         ])
       ],
       {

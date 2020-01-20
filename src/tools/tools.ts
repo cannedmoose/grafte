@@ -6,43 +6,10 @@ import {
   createDiv,
   createColor
 } from "../utils";
-import { gridSnap, sineySnap, snapMap, identity } from "../snaps/snaps";
-import { GrafeScope } from "../grafe";
 import { elipseTool } from "./elipse";
 import { rectangleTool } from "./rectangle";
 import { ToolContext } from "./tool";
 import { selectTool } from "./select";
-
-/**
- * Display tools
- */
-function getStroke() {
-  let selector: HTMLInputElement = querySelectorOrThrow(
-    "#stroke"
-  ) as HTMLInputElement;
-  return new paper.Color(selector.value);
-}
-
-function getFill() {
-  let selector: HTMLInputElement = querySelectorOrThrow(
-    "#fill"
-  ) as HTMLInputElement;
-  return new paper.Color(selector.value);
-}
-
-function getWidth() {
-  let selector: HTMLInputElement = querySelectorOrThrow(
-    "#width"
-  ) as HTMLInputElement;
-  return Number(selector.value);
-}
-
-function getOpacity() {
-  let selector: HTMLInputElement = querySelectorOrThrow(
-    "#opacity"
-  ) as HTMLInputElement;
-  return Number(selector.value);
-}
 
 export function createTools(ctx: ToolContext) {
   let penTool = new paper.Tool();
@@ -53,7 +20,7 @@ export function createTools(ctx: ToolContext) {
   return { circleTool, penTool, rectTool, selectTool: s };
 }
 
-export function createToolOptions() {
+export function createToolOptions(ctx: ToolContext) {
   return createDiv("", "vertical", [
     createSlider("opacity", "", 1, 0, 1, event => {}),
     createSlider("width", "", 1, 0, 50, event => {}),

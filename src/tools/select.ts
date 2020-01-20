@@ -39,9 +39,33 @@ interface DraggingSegment {
 
 interface DraggingControl {
   type: "draggingcontrol";
+  handle: "handle-in" | "handle-out";
+  start: paper.Point;
+  last: paper.Point;
 }
 
 type DragState = NotDragging | DraggingItem | DraggingSegment | DraggingControl;
+
+/**
+ * Returns selected segments of selected shapes in project
+ * @param project
+ */
+function selectedSegments(project: paper.Project): paper.Segment[] {
+  let selected: paper.Segment[] = [];
+  const paths = project.selectedItems
+    .filter(item => item.className == "Path")
+    .map(item => item as paper.Path);
+  for (let i = 0; i < paths.length; i++) {
+    let path = paths[i];
+    for (let k = 0; k < path.segments.length; k++) {
+      let segment = path.segments[k];
+      if (segment.selected) {
+        selected.push(segment);
+      }
+    }
+  }
+  return selected;
+}
 
 export function selectTool(ctx: ToolContext): GrafeTool {
   const { canvas, foreground, tool, snap, style } = ctx;
@@ -55,13 +79,80 @@ export function selectTool(ctx: ToolContext): GrafeTool {
     };
   };
 
+  selectTool.onDeactivate = function() {
+    for (let i = 0; i < tool.children.length; i++) {
+      let child = tool.children[i];
+      if (child.data.original) {
+        child.data.original.visible = true;
+      }
+    }
+  };
+
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
-    // hittest
+    // Check to see if we hit handles/segments
+    const handleHit = tool.hitTest(event.point, {
+      segments: true,
+      handles: true,
+      fill: false,
+      stroke: false,
+      match: result => result.type == "segment" || result.segment.selected,
+      tolerance: 10
+    });
+
+    if (handleHit) {
+      if (handleHit.type == "segment") {
+        if (!event.modifiers.shift && !handleHit.segment.selected) {
+          selectedSegments(foreground).forEach(segment => {
+            segment.selected = false;
+          });
+        }
+        handleHit.segment.selected = true;
+        dragState = { type: "draggingsegment" };
+      } else {
+        if (handleHit.type == "handle-in") {
+          dragState = {
+            type: "draggingcontrol",
+            handle: "handle-in",
+            start: handleHit.segment.handleIn.clone(),
+            last: handleHit.segment.handleIn.clone()
+          };
+        } else {
+          dragState = {
+            type: "draggingcontrol",
+            handle: "handle-out",
+            start: handleHit.segment.handleOut.clone(),
+            last: handleHit.segment.handleOut.clone()
+          };
+        }
+      }
+      return;
+    }
+
+    // Check to see if we hit already selected shapes
     const toolHit = tool.hitTest(event.point);
     if (toolHit) {
+      selectedSegments(foreground).forEach(segment => {
+        segment.selected = false;
+      });
+      if (event.modifiers.shift) {
+        for (let i = 0; i < tool.children.length; i++) {
+          let child = tool.children[i];
+          if (child.id == toolHit.item.id) continue;
+          if (child.data.original) {
+            let original: paper.Item = child.data.original;
+            original.copyContent(child);
+            original.visible = true;
+            original.selected = false;
+          }
+          child.remove();
+        }
+      }
       dragState = { type: "draggingitem" };
       return;
     }
+
+    // Check to see if we hit any canvas shapes
+    const canvasHit = canvas.hitTest(event.point);
 
     if (!event.modifiers.shift) {
       for (let i = 0; i < tool.children.length; i++) {
@@ -70,12 +161,11 @@ export function selectTool(ctx: ToolContext): GrafeTool {
           let original: paper.Item = child.data.original;
           original.copyContent(child);
           original.visible = true;
+          original.selected = false;
         }
       }
       tool.removeChildren();
     }
-
-    const canvasHit = canvas.hitTest(event.point);
     if (!canvasHit) {
       dragState = {
         type: "notdragging"
@@ -83,6 +173,7 @@ export function selectTool(ctx: ToolContext): GrafeTool {
       return;
     }
 
+    // Clone from canvas into tool project
     let cloned = canvasHit.item.clone({ insert: false, deep: true });
     canvasHit.item.visible = false;
     cloned.data.original = canvasHit.item;
@@ -96,9 +187,60 @@ export function selectTool(ctx: ToolContext): GrafeTool {
       return;
     }
 
-    for (let i = 0; i < foreground.selectedItems.length; i++) {
-      let item = foreground.selectedItems[i];
-      item.position = item.position.add(event.delta);
+    if (dragState.type == "draggingsegment") {
+      selectedSegments(foreground).forEach(segment => {
+        segment.point = segment.point.add(event.delta);
+      });
+      return;
+    }
+
+    if (dragState.type == "draggingcontrol") {
+      const controlState: DraggingControl = dragState;
+      let newHandle = event.point
+        .subtract(event.downPoint)
+        .add(dragState.start)
+        .clone();
+      let initialAngleDelta = newHandle.angle - dragState.start.angle;
+      let initialScale = newHandle.length / dragState.start.length;
+
+      let currentHandleDelta = dragState.last.angle - dragState.start.angle;
+      let currentScale = dragState.last.length / dragState.start.length;
+
+      selectedSegments(foreground).forEach(segment => {
+        if (controlState.handle == "handle-in") {
+          // angle between initial handle and current handle
+          segment.handleIn.angle =
+            segment.handleIn.angle - currentHandleDelta + initialAngleDelta;
+          segment.handleIn.length =
+            (segment.handleIn.length * initialScale) / currentScale;
+          if (!event.modifiers.shift) {
+            segment.handleOut.angle =
+              segment.handleOut.angle - currentHandleDelta + initialAngleDelta;
+            segment.handleOut.length =
+              (segment.handleOut.length * initialScale) / currentScale;
+          }
+        } else {
+          segment.handleOut.angle =
+            segment.handleOut.angle - currentHandleDelta + initialAngleDelta;
+          segment.handleOut.length =
+            (segment.handleOut.length * initialScale) / currentScale;
+          if (!event.modifiers.shift) {
+            segment.handleIn.angle =
+              segment.handleIn.angle - currentHandleDelta + initialAngleDelta;
+            segment.handleIn.length =
+              (segment.handleIn.length * initialScale) / currentScale;
+          }
+        }
+      });
+      dragState = { ...dragState, last: newHandle };
+      return;
+    }
+
+    if (dragState.type == "draggingitem") {
+      for (let i = 0; i < foreground.selectedItems.length; i++) {
+        let item = foreground.selectedItems[i];
+        item.position = item.position.add(event.delta);
+      }
     }
   };
 
@@ -114,313 +256,10 @@ export function selectTool(ctx: ToolContext): GrafeTool {
       if (child.data.original) {
         let original: paper.Item = child.data.original;
         original.copyContent(child);
+        original.selected = false;
       }
     }
   };
 
   return selectTool;
 }
-
-/* EVENTS */
-/*
-export function selectionToolUpdate(
-  scope: GrafeScope,
-  event: ToolEventType
-): GrafeScope {
-  scope.canvas.activate();
-  switch (scope.tool.type) {
-    case "noselection":
-      return onNoSelection(scope, event);
-    case "draggingobject":
-      return onDraggingObject(scope, event);
-    case "selected":
-      return onSelected(scope, event);
-    case "draggingcontrol":
-      return onDraggingControl(scope, event);
-    case "dragginghandle":
-      return onDraggingHandle(scope, event);
-    default:
-      return scope;
-  }
-}
-
-function onNoSelection(scope: GrafeScope, event: ToolEventType): GrafeScope {
-  // Ensure nothing is selected
-  paper.project.deselectAll();
-
-  // Early exit to avoid hittest unless mouse down
-  switch (event.type) {
-    case "mousemove":
-    case "keydown":
-    case "keyup":
-    case "mouseup":
-      return { ...scope, tool: { type: "noselection" } };
-  }
-
-  console.log("MOUSE DOWN");
-
-  // hittest
-  const mouseEvent = event.event;
-  const hitResult = paper.project.hitTest(mouseEvent.point);
-  if (!hitResult) {
-    return { ...scope, tool: { type: "noselection" } };
-  }
-  const hitResultItem = hitResult.item;
-  if (hitResultItem.className == "Path") {
-    // Note fully selected should change depending if there are multiple...
-    (hitResultItem as paper.Path).selected = true;
-  }
-
-  switch (event.type) {
-    case "mousedown":
-      hitResultItem.selected = true;
-      return {
-        ...scope,
-        tool: {
-          type: "draggingobject",
-          initialPoint: mouseEvent.point,
-          delta: new paper.Point(0, 0)
-        }
-      };
-  }
-}
-
-function onDraggingObject(scope: GrafeScope, event: ToolEventType): GrafeScope {
-  switch (event.type) {
-    case "keydown":
-      if (event.event.key == "escape") {
-        paper.project.deselectAll();
-        return { ...scope, tool: { type: "noselection" } };
-      }
-      return { ...scope };
-    case "keyup":
-      return { ...scope };
-  }
-
-  if (!(scope.tool.type == "draggingobject")) return { ...scope };
-  let tool = scope.tool;
-
-  let delta = event.event.point.subtract(event.event.downPoint);
-
-  switch (event.type) {
-    case "mousemove":
-      paper.project.selectedItems.forEach(selected => {
-        selected.position = selected.position.subtract(tool.delta).add(delta);
-      });
-      return { ...scope, tool: { ...tool, delta } };
-    case "mouseup":
-      return { ...scope, tool: { type: "selected" } };
-
-    // Escape hatch, pretend we are noSelection
-    case "mousedown":
-      return onNoSelection(scope, event);
-  }
-}
-
-function onSelected(scope: GrafeScope, event: ToolEventType): GrafeScope {
-  switch (event.type) {
-    case "keydown":
-      if (event.event.key == "escape") {
-        paper.project.deselectAll();
-        return { ...scope, tool: { type: "noselection" } };
-      }
-      return { ...scope };
-    case "keyup":
-    case "mousemove":
-    case "mouseup":
-      return { ...scope };
-  }
-
-  // hittest controls of currently selected
-  const mouseEvent = event.event;
-
-  for (let i = 0; i < paper.project.selectedItems.length; i++) {
-    const selected = paper.project.selectedItems[i];
-    // TODO skip handles unless segment is selected
-    const handleHit = selected.hitTest(mouseEvent.point, {
-      segments: true,
-      handles: true,
-      fill: false,
-      stroke: false,
-      match: result => result.type == "segment" || result.segment.selected,
-      tolerance: 10
-    });
-
-    if (!handleHit) {
-      continue;
-    }
-
-    handleHit.segment.selected = true;
-
-    if (handleHit.type == "handle-in") {
-      return {
-        ...scope,
-        tool: {
-          type: "dragginghandle",
-          handle: "in",
-          initialPoint: handleHit.segment.point,
-          initialHandle: handleHit.segment.handleIn,
-          handleDelta: handleHit.segment.handleIn
-        }
-      };
-    } else if (handleHit.type == "handle-out") {
-      return {
-        ...scope,
-        tool: {
-          type: "dragginghandle",
-          handle: "out",
-          initialPoint: handleHit.segment.point,
-          initialHandle: handleHit.segment.handleOut,
-          handleDelta: handleHit.segment.handleOut
-        }
-      };
-    } else if (handleHit.type == "segment") {
-      return {
-        ...scope,
-        tool: {
-          type: "draggingcontrol",
-          initialPoint: mouseEvent.point,
-          delta: new paper.Point(0, 0)
-        }
-      };
-    }
-  }
-
-  // No handles...
-  if (!event.event.modifiers.shift == true) {
-    paper.project.deselectAll();
-  }
-
-  const hitResult = paper.project.hitTest(mouseEvent.point);
-  // Hittest everything else
-  if (!hitResult) {
-    return {
-      ...scope,
-      tool: { type: "noselection" }
-    };
-  }
-  const hitResultItem = hitResult.item;
-  if (hitResultItem.className == "Path") {
-    // Note fully selected should change depending if there are multiple...
-    (hitResultItem as paper.Path).selected = true;
-  }
-  return {
-    ...scope,
-    tool: {
-      type: "draggingobject",
-      initialPoint: mouseEvent.point,
-      delta: new paper.Point(0, 0)
-    }
-  };
-}
-
-function onDraggingControl(
-  scope: GrafeScope,
-  event: ToolEventType
-): GrafeScope {
-  switch (event.type) {
-    case "keydown":
-      if (event.event.key == "escape") {
-        return {
-          ...scope,
-          tool: { type: "selected" }
-        };
-      }
-      return { ...scope };
-    case "mouseup":
-      return {
-        ...scope,
-        tool: { type: "selected" }
-      };
-    // Escape hatch, pretend we aen't dragging
-    case "mousedown":
-      return {
-        ...scope,
-        tool: { type: "selected" }
-      };
-    case "keyup":
-      return { ...scope };
-  }
-
-  if (scope.tool.type != "draggingcontrol") return { ...scope };
-  let tool: DraggingControl = scope.tool;
-  let delta = event.event.point.subtract(event.event.downPoint);
-
-  paper.project.selectedItems
-    .filter(item => item.className == "Path")
-    .map(item => item as paper.Path)
-    .forEach(item =>
-      item.segments
-        .filter(segment => segment.selected == true)
-        .forEach(segment => {
-          segment.point = segment.point.subtract(tool.delta).add(delta);
-        })
-    );
-  return { ...scope, tool: { ...tool, delta } };
-}
-
-function onDraggingHandle(scope: GrafeScope, event: ToolEventType): GrafeScope {
-  switch (event.type) {
-    case "keydown":
-      if (event.event.key == "escape") {
-        return { ...scope, tool: { type: "selected" } };
-      }
-      return { ...scope };
-    case "mouseup":
-      return { ...scope, tool: { type: "selected" } };
-    // Escape hatch, pretend we aen't dragging
-    case "mousedown":
-      return { ...scope, tool: { type: "selected" } };
-    case "keyup":
-      return { ...scope };
-  }
-
-  let newHandle = event.event.point.subtract(event.event.downPoint);
-  if (scope.tool.type != "dragginghandle") return { ...scope };
-  let tool: DraggingHandle = scope.tool;
-  //let handleDelta = newHandle.subtract(state.initialHandle);
-  // Angle between new handle and initial handle
-  let initialAngleDelta = newHandle.angle - tool.initialHandle.angle;
-  let initialScale = newHandle.length / tool.initialHandle.length;
-  let currentHandleDelta = tool.handleDelta.angle - tool.initialHandle.angle;
-  let currentScale = tool.handleDelta.length / tool.initialHandle.length;
-
-  paper.project.selectedItems
-    .filter(item => item.className == "Path")
-    .map(item => item as paper.Path)
-    .forEach(item =>
-      item.segments
-        .filter(segment => segment.selected == true)
-        .forEach(segment => {
-          if (tool.handle == "in") {
-            // angle between initial handle and current handle
-            segment.handleIn.angle =
-              segment.handleIn.angle + currentHandleDelta + initialAngleDelta;
-            segment.handleIn.length =
-              segment.handleIn.length * initialScale * currentScale;
-            if (!event.event.modifiers.shift) {
-              segment.handleOut.angle =
-                segment.handleOut.angle +
-                currentHandleDelta +
-                initialAngleDelta;
-              segment.handleOut.length =
-                segment.handleOut.length * initialScale * currentScale;
-            }
-          } else {
-            segment.handleOut.angle =
-              segment.handleOut.angle +
-              (currentHandleDelta + initialAngleDelta);
-            segment.handleOut.length =
-              segment.handleOut.length * initialScale * currentScale;
-            if (!event.event.modifiers.shift) {
-              segment.handleIn.angle =
-                segment.handleIn.angle + currentHandleDelta + initialAngleDelta;
-              segment.handleIn.length =
-                segment.handleIn.length * initialScale * currentScale;
-            }
-          }
-        })
-    );
-  return { ...scope, tool: { ...tool, handleDelta: newHandle } };
-}
-*/

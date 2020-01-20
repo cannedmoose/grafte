@@ -103,7 +103,7 @@ window.onload = function() {
   );
 
   menuDiv.appendChild(
-    createMenu("tooloptions-menu", [createToolOptions()], {
+    createMenu("tooloptions-menu", [createToolOptions(toolContext)], {
       title: "Options",
       minimized: false,
       bounds: new paper.Rectangle(0, 140, 70, 140)

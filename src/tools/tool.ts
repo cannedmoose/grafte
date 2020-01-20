@@ -13,6 +13,7 @@ export interface ToolContext {
 export class GrafeTool extends paper.Tool {
   ctx: ToolContext;
   onActivate?: () => void;
+  onDeactivate?: () => void;
 
   constructor(ctx: ToolContext) {
     super();
@@ -20,11 +21,21 @@ export class GrafeTool extends paper.Tool {
   }
 
   activate() {
+    if (this.ctx.tool.data.cleanup) {
+      this.ctx.tool.data.cleanup();
+      this.ctx.tool.data.cleanup = undefined;
+    }
+
+    this.ctx.canvas.deselectAll();
+    this.ctx.tool.removeChildren();
+
+    super.activate();
+
     if (this.onActivate) {
       this.onActivate();
     }
-    this.ctx.canvas.deselectAll();
-    this.ctx.tool.removeChildren();
-    super.activate();
+    if (this.onDeactivate) {
+      this.ctx.tool.data.cleanup = this.onDeactivate;
+    }
   }
 }

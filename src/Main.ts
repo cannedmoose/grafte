@@ -1,7 +1,7 @@
 import * as paper from "paper";
 import { createTools } from "./tools/tools";
-import { showLayers } from "./ui/layers";
-import { querySelectorOrThrow, createButton, createDiv } from "./ui/utils";
+import { viewProject } from "./ui/layers";
+import { queryOrThrow, button, div, text } from "./ui/utils";
 import { createMenu } from "./ui/menu";
 import { Snap, snapMap, identity, gridSnap } from "./snaps/snaps";
 import { ToolContext } from "./tools/tool";
@@ -19,13 +19,13 @@ function rtoPoint(rect: paper.Rectangle) {
 }
 
 window.onload = function() {
-  let canvasDom: HTMLCanvasElement = querySelectorOrThrow(
+  let canvasDom: HTMLCanvasElement = queryOrThrow(
     "#canvas"
   ) as HTMLCanvasElement;
-  let foregroundDom: HTMLCanvasElement = querySelectorOrThrow(
+  let foregroundDom: HTMLCanvasElement = queryOrThrow(
     "#foreground"
   ) as HTMLCanvasElement;
-  let backgroundDom: HTMLCanvasElement = querySelectorOrThrow(
+  let backgroundDom: HTMLCanvasElement = queryOrThrow(
     "#background"
   ) as HTMLCanvasElement;
 
@@ -57,50 +57,60 @@ window.onload = function() {
 
   let { circleTool, penTool, rectTool, selectTool } = createTools(toolContext);
 
-  let menuDiv = querySelectorOrThrow("#menus");
+  let menuDiv = queryOrThrow("#menus");
   menuDiv.appendChild(
-    createMenu("layers-menu", [createDiv("layers", "vertical", [])], {
+    createMenu("layers-menu", [div({ id: "layers", class: "vertical" }, [])], {
       title: "Layers",
       minimized: false,
       bounds: new paper.Rectangle(70, 0, 240, 140)
     })
   );
 
-  window.requestAnimationFrame(() => showLayers(canvas, "#layers"));
+  //window.requestAnimationFrame(() => showLayers(canvas, "#layers"));
 
   menuDiv.appendChild(
     createMenu(
       "tool-menu",
       [
-        createDiv("", "vertical", [
-          createButton("", "select", () => {
-            selectTool.activate();
+        div({ class: "vertical" }, [
+          button({}, [text("select")], {
+            click: () => {
+              selectTool.activate();
+            }
           }),
-          createButton("", "circle", () => {
-            circleTool.activate();
+          button({}, [text("elipse")], {
+            click: () => {
+              circleTool.activate();
+            }
           }),
-          createButton("", "rect", () => {
-            rectTool.activate();
+          button({}, [text("rect")], {
+            click: () => {
+              rectTool.activate();
+            }
           }),
-          createButton("", "pen", () => {
-            penTool.activate();
+          button({}, [text("pen")], {
+            click: () => {
+              penTool.activate();
+            }
           }),
-          createButton("", "grid", () => {
-            if (!snapLayer.data.snap) {
-              snapLayer.data.snap = gridSnap(
-                new paper.Point(30, 30),
-                new paper.Point(0, 0)
-              );
+          button({}, [text("grid")], {
+            click: () => {
+              if (!snapLayer.data.snap) {
+                snapLayer.data.snap = gridSnap(
+                  new paper.Point(30, 30),
+                  new paper.Point(0, 0)
+                );
 
-              snapLayer.activate();
-              snapLayer.style.strokeWidth = 2;
-              snapLayer.style.strokeColor = new paper.Color("black");
-              snapLayer.data.snap.view(new paper.Point(0, 0));
-            } else {
-              foreground.activate();
-              snapLayer.activate();
-              snapLayer.removeChildren();
-              snapLayer.data.snap = undefined;
+                snapLayer.activate();
+                snapLayer.style.strokeWidth = 2;
+                snapLayer.style.strokeColor = new paper.Color("black");
+                snapLayer.data.snap.view(new paper.Point(0, 0));
+              } else {
+                foreground.activate();
+                snapLayer.activate();
+                snapLayer.removeChildren();
+                snapLayer.data.snap = undefined;
+              }
             }
           })
         ])

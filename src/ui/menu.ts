@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { querySelectorOrThrow, createDiv, createCheckBox } from "./utils";
+import { div, checkbox, text } from "./utils";
 
 /**
  * Menu is a movable and resizable container for children elements.
@@ -23,17 +23,22 @@ export function createMenu(
   // Copy menu, keep as closure
   menu = { ...menu };
 
-  let title = createDiv("", "titlebar", [
-    createDiv("", "title", [document.createTextNode(menu.title)]),
-    createDiv("", "minimize", [
-      createCheckBox("", "", !menu.minimized, event => {
-        menu.minimized = !event.target.checked;
-        draw();
-      })
+  let title = div({ class: "titlebar" }, [
+    div({ class: "title" }, [text(menu.title)]),
+    div({ class: "minimize" }, [
+      checkbox(
+        { checked: menu.minimized ? "" : "true" },
+        {
+          change: event => {
+            menu.minimized = !event.target.checked;
+            draw();
+          }
+        }
+      )
     ])
   ]);
-  let content = createDiv("", "menucontent", children);
-  let handle = createDiv("", "resizehandle", [document.createTextNode("░")]);
+  let content = div({ class: "menucontent" }, children);
+  let handle = div({ class: "resizehandle" }, [text("░")]);
 
   let initalDragPoint;
   let initalRectPoint;
@@ -88,7 +93,7 @@ export function createMenu(
     resizeInitalDragPoint = undefined;
   });
 
-  let dom = createDiv(id, "menu", [
+  let dom = div({ id: "id", class: "menu" }, [
     // Title bar
     title,
 

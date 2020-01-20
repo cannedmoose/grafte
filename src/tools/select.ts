@@ -1,6 +1,5 @@
 import * as paper from "paper";
 import { GrafeTool, ToolContext } from "./tool";
-import { GrafeScope } from "../grafe";
 
 /**
  * TOOL RUNNING

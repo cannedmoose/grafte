@@ -1,11 +1,11 @@
 import * as paper from "paper";
-import { createTools, createToolOptions } from "./tools/tools";
-import { showLayers } from "./layers";
-import { querySelectorOrThrow, createButton, createDiv } from "./utils";
-import { createMenu } from "./menu";
+import { createTools } from "./tools/tools";
+import { showLayers } from "./ui/layers";
+import { querySelectorOrThrow, createButton, createDiv } from "./ui/utils";
+import { createMenu } from "./ui/menu";
 import { Snap, snapMap, identity, gridSnap } from "./snaps/snaps";
-import { GrafeScope } from "./grafe";
 import { ToolContext } from "./tools/tool";
+import { createToolOptions } from "./ui/tools";
 
 function stoPoint(size: paper.Size) {
   return new paper.Point(
@@ -41,15 +41,8 @@ window.onload = function() {
   styleLayer.strokeColor = new paper.Color("black");
   styleLayer.strokeWidth = 1;
   const toolLayer = new paper.Layer({ name: "tool" });
-  snapLayer.data.snap = gridSnap(
-    new paper.Point(20, 20),
-    new paper.Point(0, 0)
-  );
 
-  snapLayer.activate();
-  snapLayer.style.strokeWidth = 2;
-  snapLayer.style.strokeColor = new paper.Color("black");
-  snapLayer.data.snap.view(new paper.Point(0, 0));
+  snapLayer.opacity = 0.3;
 
   console.log(canvas);
   let toolContext: ToolContext = {
@@ -93,12 +86,22 @@ window.onload = function() {
             penTool.activate();
           }),
           createButton("", "grid", () => {
-            /*scope.snap = gridSnap(
-              new paper.Point(20, 20),
-              new paper.Point(0, 0)
-            );
-            scope.background.activate;
-            scope.snap.view(new paper.Point(0, 0));*/
+            if (!snapLayer.data.snap) {
+              snapLayer.data.snap = gridSnap(
+                new paper.Point(30, 30),
+                new paper.Point(0, 0)
+              );
+
+              snapLayer.activate();
+              snapLayer.style.strokeWidth = 2;
+              snapLayer.style.strokeColor = new paper.Color("black");
+              snapLayer.data.snap.view(new paper.Point(0, 0));
+            } else {
+              foreground.activate();
+              snapLayer.activate();
+              snapLayer.removeChildren();
+              snapLayer.data.snap = undefined;
+            }
           })
         ])
       ],

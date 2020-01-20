@@ -41,6 +41,10 @@ export function rectangleTool(ctx: ToolContext): GrafeTool {
     tool.activate();
     tool.removeChildren();
     canvas.activate();
+    if (snap.data.snap) {
+      event.downPoint = snap.data.snap.fn(event.downPoint);
+      event.point = snap.data.snap.fn(event.point);
+    }
     if (!event.modifiers.shift) {
       new paper.Path.Rectangle({
         style: style.style,

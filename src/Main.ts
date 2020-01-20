@@ -34,14 +34,22 @@ window.onload = function() {
   const foreground = new paper.Project(foregroundDom);
   const background = new paper.Project(backgroundDom);
 
-  // TODO FIX THIS
   foreground.activate();
   const snapLayer = new paper.Layer({ name: "snap" });
   const styleLayer = new paper.Layer({ name: "style" });
-  styleLayer.fillColor = new paper.Color("red");
-  styleLayer.strokeColor = new paper.Color("green");
-  styleLayer.strokeWidth = 10;
+  styleLayer.fillColor = new paper.Color("white");
+  styleLayer.strokeColor = new paper.Color("black");
+  styleLayer.strokeWidth = 1;
   const toolLayer = new paper.Layer({ name: "tool" });
+  snapLayer.data.snap = gridSnap(
+    new paper.Point(20, 20),
+    new paper.Point(0, 0)
+  );
+
+  snapLayer.activate();
+  snapLayer.style.strokeWidth = 2;
+  snapLayer.style.strokeColor = new paper.Color("black");
+  snapLayer.data.snap.view(new paper.Point(0, 0));
 
   console.log(canvas);
   let toolContext: ToolContext = {
@@ -104,7 +112,7 @@ window.onload = function() {
 
   menuDiv.appendChild(
     createMenu("tooloptions-menu", [createToolOptions(toolContext)], {
-      title: "Options",
+      title: "Style",
       minimized: false,
       bounds: new paper.Rectangle(0, 140, 70, 140)
     })

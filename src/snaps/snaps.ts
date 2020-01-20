@@ -26,33 +26,38 @@ export function gridSnap(size: paper.Point, offset: paper.Point): Snap {
   function fn(point: paper.Point): paper.Point {
     return point
       .divide(size)
-      .floor()
+      .round()
       .multiply(size)
       .add(offset);
   }
 
   function view(point: paper.Point) {
     const overshoot = new paper.Point(3, 3);
-    const lastPoint = fn(new paper.Point(paper.view.size).divide(size).floor());
+    const lastPoint = fn(new paper.Point(paper.view.size).divide(size).round());
     for (let i = -overshoot.x; i < lastPoint.x + overshoot.x; i++) {
-      new paper.Path.Line(
+      let x = new paper.Path.Line(
         new paper.Point(i, 0).multiply(size).add(offset),
         new paper.Point(i, 0)
           .multiply(size)
           .add(new paper.Point(0, paper.view.size.height))
           .add(offset)
       );
+      x.strokeWidth = 1;
+      x.strokeColor = new paper.Color("black");
     }
 
     for (let k = -overshoot.y; k < lastPoint.y + overshoot.y; k++) {
-      new paper.Path.Line(
+      let x = new paper.Path.Line(
         new paper.Point(0, k).multiply(size).add(offset),
         new paper.Point(0, k)
           .multiply(size)
           .add(new paper.Point(paper.view.size.width, 0))
           .add(offset)
       );
+      x.strokeWidth = 1;
+      x.strokeColor = new paper.Color("black");
     }
+    console.log("viewsnap");
   }
   return { fn, view };
 }

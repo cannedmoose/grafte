@@ -10,23 +10,32 @@ import { elipseTool } from "./elipse";
 import { rectangleTool } from "./rectangle";
 import { ToolContext } from "./tool";
 import { selectTool } from "./select";
+import { penTool } from "./pen";
 
 export function createTools(ctx: ToolContext) {
-  let penTool = new paper.Tool();
+  let noTool = new paper.Tool();
+  let p = penTool(ctx);
   let circleTool = elipseTool(ctx);
   let rectTool = rectangleTool(ctx);
   let s = selectTool(ctx);
 
-  return { circleTool, penTool, rectTool, selectTool: s };
+  p.activate();
+
+  return { circleTool, penTool: p, rectTool, selectTool: s };
 }
 
 export function createToolOptions(ctx: ToolContext) {
   return createDiv("", "vertical", [
-    createSlider("opacity", "", 1, 0, 1, event => {}),
-    createSlider("width", "", 1, 0, 50, event => {}),
+    createSlider("width", "", 1, 0, 50, event => {
+      ctx.style.style.strokeWidth = event.target.value;
+    }),
     createDiv("", "horizontal", [
-      createColor("stroke", "", "#000000", event => {}),
-      createColor("fill", "", "#FFFFFF", event => {})
+      createColor("stroke", "", "#000000", event => {
+        ctx.style.style.strokeColor = event.target.value;
+      }),
+      createColor("fill", "", "#FFFFFF", event => {
+        ctx.style.style.fillColor = event.target.value;
+      })
     ])
   ]);
 }

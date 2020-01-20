@@ -3,6 +3,9 @@ import { createTools, createToolOptions } from "./tools/tools";
 import { showLayers } from "./layers";
 import { querySelectorOrThrow, createButton, createDiv } from "./utils";
 import { createMenu } from "./menu";
+import { Snap, snapMap, identity, gridSnap } from "./snaps/snaps";
+import { GrafeScope } from "./grafe";
+import { ToolContext } from "./tools/tool";
 
 function stoPoint(size: paper.Size) {
   return new paper.Point(
@@ -19,18 +22,39 @@ window.onload = function() {
   let canvasDom: HTMLCanvasElement = querySelectorOrThrow(
     "#canvas"
   ) as HTMLCanvasElement;
-  let uiDom: HTMLCanvasElement = querySelectorOrThrow(
-    "#ui"
+  let foregroundDom: HTMLCanvasElement = querySelectorOrThrow(
+    "#foreground"
+  ) as HTMLCanvasElement;
+  let backgroundDom: HTMLCanvasElement = querySelectorOrThrow(
+    "#background"
   ) as HTMLCanvasElement;
 
   paper.setup(canvasDom);
-  let canvas = paper.project;
-  let ui = new paper.Project(uiDom);
+  const canvas = paper.project;
+  const foreground = new paper.Project(foregroundDom);
+  const background = new paper.Project(backgroundDom);
 
-  let { circleTool, penTool, rectTool, selectTool } = createTools(
-    { canvas, ui },
-    () => showLayers(canvas, "#layers")
-  );
+  // TODO FIX THIS
+  foreground.activate();
+  const snapLayer = new paper.Layer({ name: "snap" });
+  const styleLayer = new paper.Layer({ name: "style" });
+  styleLayer.fillColor = new paper.Color("red");
+  styleLayer.strokeColor = new paper.Color("green");
+  styleLayer.strokeWidth = 10;
+  const toolLayer = new paper.Layer({ name: "tool" });
+
+  console.log(canvas);
+  let toolContext: ToolContext = {
+    canvas,
+    foreground,
+    tool: toolLayer,
+    snap: snapLayer,
+    style: styleLayer,
+
+    updated: () => {}
+  };
+
+  let { circleTool, penTool, rectTool, selectTool } = createTools(toolContext);
 
   let menuDiv = querySelectorOrThrow("#menus");
   menuDiv.appendChild(
@@ -49,20 +73,24 @@ window.onload = function() {
       [
         createDiv("", "vertical", [
           createButton("", "select", () => {
-            canvas.deselectAll();
             selectTool.activate();
           }),
           createButton("", "circle", () => {
-            canvas.deselectAll();
             circleTool.activate();
           }),
           createButton("", "rect", () => {
-            canvas.deselectAll();
             rectTool.activate();
           }),
           createButton("", "pen", () => {
-            canvas.deselectAll();
             penTool.activate();
+          }),
+          createButton("", "grid", () => {
+            /*scope.snap = gridSnap(
+              new paper.Point(20, 20),
+              new paper.Point(0, 0)
+            );
+            scope.background.activate;
+            scope.snap.view(new paper.Point(0, 0));*/
           })
         ])
       ],

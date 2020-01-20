@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-interface Snap {
+export interface Snap {
   // Maps points
   fn: (point: paper.Point) => paper.Point;
 
@@ -15,7 +15,7 @@ export function snapMap(from: Snap, to: Snap): Snap {
   };
 }
 
-const identity = {
+export const identity = {
   fn: p => p,
   view: p => p
 };

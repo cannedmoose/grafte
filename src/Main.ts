@@ -29,8 +29,11 @@ window.onload = function() {
     "#background"
   ) as HTMLCanvasElement;
 
+  // Set up main canvas
   paper.setup(canvasDom);
   const canvas = paper.project;
+  new paper.Layer();
+
   const foreground = new paper.Project(foregroundDom);
   const background = new paper.Project(backgroundDom);
 
@@ -42,9 +45,18 @@ window.onload = function() {
   styleLayer.strokeWidth = 1;
   const toolLayer = new paper.Layer({ name: "tool" });
 
-  snapLayer.opacity = 0.3;
+  snapLayer.opacity = 0.1;
+  toolLayer.opacity = 0.1;
 
-  console.log(canvas);
+  const layersDiv = div({ id: "layers", class: "vertical" }, []);
+  const refreshLayers = () => {
+    while (layersDiv.firstChild) {
+      layersDiv.removeChild(layersDiv.firstChild);
+    }
+    layersDiv.appendChild(viewProject(canvas, refreshLayers));
+  };
+  window.requestAnimationFrame(refreshLayers);
+
   let toolContext: ToolContext = {
     canvas,
     foreground,
@@ -52,21 +64,36 @@ window.onload = function() {
     snap: snapLayer,
     style: styleLayer,
 
-    updated: () => {}
+    updated: refreshLayers
   };
+
+  console.log(toolContext);
 
   let { circleTool, penTool, rectTool, selectTool } = createTools(toolContext);
 
   let menuDiv = queryOrThrow("#menus");
   menuDiv.appendChild(
-    createMenu("layers-menu", [div({ id: "layers", class: "vertical" }, [])], {
-      title: "Layers",
-      minimized: false,
-      bounds: new paper.Rectangle(70, 0, 240, 140)
-    })
+    createMenu(
+      "layers-menu",
+      [
+        div({ class: "vertical" }, [
+          button({ id: "addlayer", class: "horizontal" }, [text("add")], {
+            click: event => {
+              canvas.activate();
+              let layer = new paper.Layer();
+              refreshLayers();
+            }
+          }),
+          layersDiv
+        ])
+      ],
+      {
+        title: "Layers",
+        minimized: false,
+        bounds: new paper.Rectangle(70, 0, 240, 140)
+      }
+    )
   );
-
-  //window.requestAnimationFrame(() => showLayers(canvas, "#layers"));
 
   menuDiv.appendChild(
     createMenu(

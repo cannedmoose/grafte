@@ -1,114 +1,124 @@
 import * as paper from "paper";
 import { slider, div, text, checkbox, button, queryOrThrow } from "./utils";
+import { words } from "./words";
+
+/**
+ * SHOULD DIFFERENTIATE BETWEEN CLICK AND DRAG
+ * What to do on item click
+ *  Depends on item type
+ * Path:
+ *  Select it (switch to select tool)
+ * Layer: activate it (keep current tool)
+ *
+ * DO LATER
+ * what to do on item drag
+ * To make this easier we should have each parent be it's own div for drop detection/dragging together
+ * Path:
+ *  Re-arrange within layer/switch layer
+ * Layer:
+ *  Re-arrange within project
+ */
+
+const depthColors = ["red", "green", "blue", "pink", "yellowgreen", "cyan"];
 
 function viewItemLabel(item: paper.Item, depth: number): HTMLElement {
   if (!item.name) {
-    item.name = item.className + " " + item.id;
+    // Generate random name
+    item.name =
+      item.className + " " + words[Math.floor(Math.random() * words.length)];
   }
+
+  const depthColor = depthColors[depth % depthColors.length];
+  const weight = item.id == item.project.activeLayer.id ? "bold" : "regular";
 
   // For label, variable width
-  return div({}, [
+  return div({ class: "horizontal" }, [
     // For level indicator, fixed per depth
-    div({}, []),
+    div(
+      { style: `width:${8 * depth}px;border-right: 2px solid ${depthColor};` },
+      []
+    ),
     // For label, variable width
-    div({}, [text(item.name)])
+    div({ style: `font-weight:${weight}` }, [text(item.name)])
   ]);
 }
 
-function viewItemControls(item: paper.Item): HTMLElement {
+function viewItemControls(item: paper.Item, update: () => void): HTMLElement {
   // For controls together, fixed width
-  return div({}, [
+  return div({ class: "horizontal", style: "justify-content: flex-end" }, [
     // For visibility, fixed
-    div({}, []),
+    div({ class: "icon" }, [text(item.visible ? "😀" : "😆")], {
+      click: (event: MouseEvent) => {
+        event.stopPropagation();
+        item.visible = !item.visible;
+        update();
+      }
+    })
     // For lock, fixed
-    div({}, [])
+    /*div({ class: "icon" }, [text(item.locked ? "🔒" : "🔓")], {
+      click: event => {
+        event.stopPropagation();
+        item.locked = !item.locked;
+        update();
+      }
+    })*/
   ]);
 }
 
-function viewItem(item: paper.Item, depth: number): HTMLElement {
+function viewItem(
+  item: paper.Item,
+  depth: number,
+  updated: () => void
+): HTMLElement {
   // For layer, fixed width (or overflow), flex
-  return div({}, [
-    // For visibility, fixed
-    viewItemLabel(item, depth),
-    // For lock, fixed
-    viewItemControls(item)
-  ]);
+  return div(
+    {
+      class: "horizontal",
+      style: `background-color:${item.selected ? "cyan" : "white"}`
+    },
+    [
+      // For visibility, fixed
+      viewItemLabel(item, depth),
+      // For lock, fixed
+      viewItemControls(item, updated)
+    ],
+    {
+      click: event => {
+        if (item.className == "Layer") {
+          (item as paper.Layer).activate();
+        } else {
+          const newSelected = !item.selected;
+          item.project.deselectAll();
+          item.selected = newSelected;
+        }
+        updated();
+      }
+    }
+  );
 }
 
-function addChildren(results: HTMLElement[], item: paper.Item, depth: number) {
+function addChildren(
+  results: HTMLElement[],
+  item: paper.Item,
+  depth: number,
+  updated: () => void
+) {
+  if (!item.children) return;
   for (let i = 0; i < item.children.length; i++) {
     const child = item.children[i];
-    results.push(viewItem(child, depth + 1));
-    addChildren(results, child, depth + 1);
+    results.push(viewItem(child, depth + 1, updated));
+    addChildren(results, child, depth + 1, updated);
   }
 }
 
-export function viewProject(project: paper.Project) {
+export function viewProject(project: paper.Project, updated: () => void) {
   let results: HTMLElement[] = [];
   for (let i = 0; i < project.layers.length; i++) {
     const layer = project.layers[i];
-    results.push(viewItem(project.layers[i], 0));
-    addChildren(results, layer, 0);
+    results.push(viewItem(project.layers[i], 0, updated));
+    addChildren(results, layer, 0, updated);
   }
 
   // All items container
   return div({}, results);
 }
-
-/*function createLayer(updatFn: () => void, layer: paper.Layer): HTMLElement {
-  let layerDiv = createDiv("", "horizontal", [
-    createCheckBox("", "V", layer.visible, event => {
-      layer.visible = !layer.visible;
-      updatFn();
-    }),
-    createButton(
-      layer == paper.project.activeLayer ? "selected" : "",
-      layer.name,
-      () => {
-        layer.activate();
-        updatFn();
-      }
-    ),
-    createSlider("", "", layer.opacity, 0, 1, event => {
-      layer.opacity = event.target.value;
-    }),
-    createDiv(
-      "",
-      "vertical",
-      layer.children.map(child =>
-        createButton("", child.className, () => {
-          child.selected = !child.selected;
-        })
-      )
-    )
-  ]);
-
-  return layerDiv;
-}
-
-export function showLayers(canvas: paper.Project, id: string) {
-  let updatFn = () => showLayers(canvas, id);
-  let layersDiv = queryOrThrow(id);
-  while (layersDiv.firstChild) {
-    layersDiv.removeChild(layersDiv.firstChild);
-  }
-  for (let i = 0; i < canvas.layers.length; i++) {
-    let layer = canvas.layers[i];
-    if (!layer.name) {
-      layer.name = "layer " + i;
-    }
-    let itemDiv = document.createElement("li");
-    itemDiv.appendChild(createLayer(updatFn, layer));
-    layersDiv.appendChild(itemDiv);
-  }
-
-  let addDiv = document.createElement("li");
-  addDiv.appendChild(
-    createButton("", "Add", () => {
-      canvas.activate();
-      let l = new paper.Layer();
-      updatFn();
-    })
-  );
-  layersDiv.appendChild(addDiv);
-}*/

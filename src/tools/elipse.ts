@@ -64,6 +64,7 @@ export function elipseTool(ctx: ToolContext): GrafeTool {
         radius: event.downPoint.getDistance(event.point)
       });
     }
+    ctx.updated();
   };
   return elipseTool;
 }

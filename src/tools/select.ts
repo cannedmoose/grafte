@@ -1,6 +1,5 @@
 import * as paper from "paper";
 import { GrafeTool, ToolContext } from "./tool";
-
 /**
  * TOOL RUNNING
  * On mousedown we check for hit objects, first on tool then canvas layer

@@ -59,6 +59,7 @@ export function rectangleTool(ctx: ToolContext): GrafeTool {
         size: new paper.Point(l, l)
       });
     }
+    ctx.updated();
   };
   return rectangleTool;
 }

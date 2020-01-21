@@ -43,6 +43,7 @@ export function penTool(ctx: ToolContext): GrafeTool {
     newPath.simplify();
 
     tool.removeChildren();
+    ctx.updated();
   };
   return penTool;
 }

@@ -74,6 +74,7 @@ div .contract {
 
 .menucontent {
   overflow: scroll;
+  padding: 1em;
 }
 
 .titlebar {
@@ -89,4 +90,8 @@ div .contract {
   position: absolute;
   bottom: 0px;
   right: 0px;
+}
+
+.icon {
+  width: 1em;
 }

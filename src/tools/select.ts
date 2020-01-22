@@ -23,26 +23,41 @@ import { GrafeTool, ToolContext } from "./tool";
  * Need to figure out style changes
  */
 
-interface NotDragging {
-  type: "notdragging";
+interface ItemSelect {
+  type: "itemselect";
 }
 
-interface DraggingItem {
-  type: "draggingitem";
+interface MovingItem {
+  type: "movingitem";
 }
 
-interface DraggingSegment {
-  type: "draggingsegment";
+interface MovingBounds {
+  type: "movingbounds";
+  handle: "topright" | "topleft" | "bottomright" | "bottomleft";
 }
 
-interface DraggingControl {
-  type: "draggingcontrol";
+interface SegmentSelect {
+  type: "segmentselect";
+}
+
+interface MovingSegment {
+  type: "movingsegment";
+}
+
+interface MovingHandle {
+  type: "movinghandle";
   handle: "handle-in" | "handle-out";
   start: paper.Point;
   last: paper.Point;
 }
 
-type DragState = NotDragging | DraggingItem | DraggingSegment | DraggingControl;
+type DragState =
+  | ItemSelect
+  | MovingItem
+  | MovingSegment
+  | MovingHandle
+  | MovingBounds
+  | SegmentSelect;
 
 /**
  * Returns selected segments of selected shapes in project
@@ -65,30 +80,56 @@ function selectedSegments(project: paper.Project): paper.Segment[] {
   return selected;
 }
 
+export function doSelect(ctx: ToolContext, item: paper.Item) {
+  // Clone from canvas into tool project
+  let cloned = item.clone({
+    insert: false,
+    deep: true
+  });
+  cloned.data.original = item;
+  cloned.data.style = {};
+  ctx.select.addChild(cloned);
+  cloned.selected = true;
+}
+
 export function selectTool(ctx: ToolContext): GrafeTool {
-  const { canvas, foreground, tool, snap, style } = ctx;
+  const { canvas, foreground, select, snap, style } = ctx;
   const selectTool = new GrafeTool(ctx);
   let dragState: DragState = {
-    type: "notdragging"
+    type: "itemselect"
   };
   selectTool.onActivate = function() {
     dragState = {
-      type: "notdragging"
+      type: "itemselect"
     };
   };
 
-  selectTool.onDeactivate = function() {
-    for (let i = 0; i < tool.children.length; i++) {
-      let child = tool.children[i];
-      if (child.data.original) {
-        child.data.original.visible = true;
-      }
+  selectTool.onDeactivate = function() {};
+
+  selectTool.onKeyDown = function(event: KeyboardEvent) {
+    console.log(event);
+    if (event.key === "control") {
+      select.children.forEach(child => {
+        child.selected = false;
+      });
+      select.bounds.selected = true;
+      select.position.selected = true;
+      select.bounds.center.selected = true;
+    }
+  };
+  selectTool.onKeyUp = function(event: KeyboardEvent) {
+    if (event.key === "control") {
+      select.children.forEach(child => {
+        child.selected = true;
+      });
+      select.bounds.selected = false;
+      select.position.selected = false;
     }
   };
 
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
     // Check to see if we hit handles/segments
-    const handleHit = tool.hitTest(event.point, {
+    const handleHit = select.hitTest(event.point, {
       segments: true,
       handles: true,
       fill: false,
@@ -105,18 +146,19 @@ export function selectTool(ctx: ToolContext): GrafeTool {
           });
         }
         handleHit.segment.selected = true;
-        dragState = { type: "draggingsegment" };
+        //handleHit.segment.handleIn.selected = false;
+        dragState = { type: "movingsegment" };
       } else {
         if (handleHit.type == "handle-in") {
           dragState = {
-            type: "draggingcontrol",
+            type: "movinghandle",
             handle: "handle-in",
             start: handleHit.segment.handleIn.clone(),
             last: handleHit.segment.handleIn.clone()
           };
         } else {
           dragState = {
-            type: "draggingcontrol",
+            type: "movinghandle",
             handle: "handle-out",
             start: handleHit.segment.handleOut.clone(),
             last: handleHit.segment.handleOut.clone()
@@ -127,25 +169,26 @@ export function selectTool(ctx: ToolContext): GrafeTool {
     }
 
     // Check to see if we hit already selected shapes
-    const toolHit = tool.hitTest(event.point);
+    const toolHit = select.hitTest(event.point);
     if (toolHit) {
       selectedSegments(foreground).forEach(segment => {
         segment.selected = false;
       });
       if (event.modifiers.shift) {
-        for (let i = 0; i < tool.children.length; i++) {
-          let child = tool.children[i];
+        let toRemove: paper.Item[] = [];
+        for (let i = 0; i < select.children.length; i++) {
+          let child = select.children[i];
           if (child.id == toolHit.item.id) continue;
           if (child.data.original) {
             let original: paper.Item = child.data.original;
             original.copyContent(child);
-            original.visible = true;
             original.selected = false;
           }
-          child.remove();
+          toRemove.push(child);
         }
+        toRemove.forEach(child => child.remove());
       }
-      dragState = { type: "draggingitem" };
+      dragState = { type: "movingitem" };
       return;
     }
 
@@ -153,47 +196,44 @@ export function selectTool(ctx: ToolContext): GrafeTool {
     const canvasHit = canvas.hitTest(event.point);
 
     if (!event.modifiers.shift) {
-      for (let i = 0; i < tool.children.length; i++) {
-        let child = tool.children[i];
+      for (let i = 0; i < select.children.length; i++) {
+        let child = select.children[i];
         if (child.data.original) {
           let original: paper.Item = child.data.original;
           original.copyContent(child);
-          original.visible = true;
           original.selected = false;
         }
       }
-      tool.removeChildren();
+      select.removeChildren();
     }
     if (!canvasHit) {
       dragState = {
-        type: "notdragging"
+        type: "itemselect"
       };
       return;
     }
 
     // Clone from canvas into tool project
-    let cloned = canvasHit.item.clone({ insert: false, deep: true });
-    canvasHit.item.visible = false;
-    cloned.data.original = canvasHit.item;
-    tool.addChild(cloned);
-    cloned.selected = true;
-    dragState = { type: "draggingitem" };
+    doSelect(ctx, canvasHit.item);
+    dragState = {
+      type: "movingitem"
+    };
   };
 
   selectTool.onMouseDrag = function(event: paper.ToolEvent) {
-    if (dragState.type == "notdragging") {
+    if (dragState.type == "itemselect") {
       return;
     }
 
-    if (dragState.type == "draggingsegment") {
+    if (dragState.type == "movingsegment") {
       selectedSegments(foreground).forEach(segment => {
         segment.point = segment.point.add(event.delta);
       });
       return;
     }
 
-    if (dragState.type == "draggingcontrol") {
-      const controlState: DraggingControl = dragState;
+    if (dragState.type == "movinghandle") {
+      const controlState: MovingHandle = dragState;
       let newHandle = event.point
         .subtract(event.downPoint)
         .add(dragState.start)
@@ -234,23 +274,23 @@ export function selectTool(ctx: ToolContext): GrafeTool {
       return;
     }
 
-    if (dragState.type == "draggingitem") {
-      for (let i = 0; i < foreground.selectedItems.length; i++) {
-        let item = foreground.selectedItems[i];
+    if (dragState.type == "movingitem") {
+      for (let i = 0; i < select.children.length; i++) {
+        let item = select.children[i];
         item.position = item.position.add(event.delta);
       }
     }
   };
 
   selectTool.onMouseUp = function(event: paper.ToolEvent) {
-    if (dragState.type == "notdragging") {
+    if (dragState.type == "itemselect") {
       return;
     }
 
-    dragState = { type: "notdragging" };
+    dragState = { type: "itemselect" };
 
-    for (let i = 0; i < tool.children.length; i++) {
-      let child = tool.children[i];
+    for (let i = 0; i < select.children.length; i++) {
+      let child = select.children[i];
       if (child.data.original) {
         let original: paper.Item = child.data.original;
         original.copyContent(child);

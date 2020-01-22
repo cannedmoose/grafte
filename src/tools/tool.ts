@@ -8,6 +8,7 @@ export interface ToolContext {
   tool: paper.Layer; // Tool display layer
   snap: paper.Layer; // Snap dispaly layer
   style: paper.Layer; // Style layer (should always be empty)
+  select: paper.Layer; //
 }
 
 export class GrafeTool extends paper.Tool {

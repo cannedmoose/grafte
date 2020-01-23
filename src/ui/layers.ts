@@ -1,6 +1,7 @@
 import * as paper from "paper";
 import { slider, div, text, checkbox, button, queryOrThrow } from "./utils";
 import { words } from "./words";
+import { deselectAll } from "../tools/select";
 
 /**
  * SHOULD DIFFERENTIATE BETWEEN CLICK AND DRAG
@@ -54,14 +55,6 @@ function viewItemControls(item: paper.Item, update: () => void): HTMLElement {
         update();
       }
     })
-    // For lock, fixed
-    /*div({ class: "icon" }, [text(item.locked ? "🔒" : "🔓")], {
-      click: event => {
-        event.stopPropagation();
-        item.locked = !item.locked;
-        update();
-      }
-    })*/
   ]);
 }
 
@@ -87,9 +80,8 @@ function viewItem(
         if (item.className == "Layer") {
           (item as paper.Layer).activate();
         } else {
-          const newSelected = !item.selected;
-          item.project.deselectAll();
-          item.selected = newSelected;
+          // TODO
+          //deselectAll(ctx, item);
         }
         updated();
       }

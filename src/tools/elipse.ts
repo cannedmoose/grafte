@@ -21,23 +21,22 @@ export function elipseTool(ctx: ToolContext): GrafeTool {
     foreground.activate();
     tool.activate();
     tool.removeChildren();
+    tool.bounds.selected = true;
     if (snap.data.snap) {
       event.downPoint = snap.data.snap.fn(event.downPoint);
       event.point = snap.data.snap.fn(event.point);
     }
     if (!event.modifiers.shift) {
       new paper.Path.Ellipse({
-        style: style.style,
+        style: tool.style,
         center: event.downPoint,
-        radius: event.downPoint.subtract(event.point),
-        selected: true
+        radius: event.downPoint.subtract(event.point)
       });
     } else {
       new paper.Path.Circle({
-        style: style.style,
+        style: tool.style,
         center: event.downPoint,
-        radius: event.downPoint.getDistance(event.point),
-        selected: true
+        radius: event.downPoint.getDistance(event.point)
       });
     }
   };
@@ -47,6 +46,7 @@ export function elipseTool(ctx: ToolContext): GrafeTool {
     tool.activate();
     tool.removeChildren();
     canvas.activate();
+    tool.internalBounds.selected = false;
     if (snap.data.snap) {
       event.downPoint = snap.data.snap.fn(event.downPoint);
       event.point = snap.data.snap.fn(event.point);

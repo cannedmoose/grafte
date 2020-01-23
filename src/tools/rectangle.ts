@@ -22,16 +22,14 @@ export function rectangleTool(ctx: ToolContext): GrafeTool {
       new paper.Path.Rectangle({
         style: style.style,
         center: event.downPoint,
-        size: event.downPoint.subtract(event.point).multiply(2),
-        selected: true
+        size: event.downPoint.subtract(event.point).multiply(2)
       });
     } else {
       let l = event.downPoint.getDistance(event.point) * Math.sqrt(2);
       new paper.Path.Rectangle({
         style: style.style,
         center: event.downPoint,
-        size: new paper.Point(l, l),
-        selected: true
+        size: new paper.Point(l, l)
       });
     }
   };

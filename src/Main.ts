@@ -38,17 +38,20 @@ window.onload = function() {
   const background = new paper.Project(backgroundDom);
 
   foreground.activate();
-  paper.settings.handleSize = 10;
+  paper.settings.handleSize = 7;
   const snapLayer = new paper.Layer({ name: "snap" });
   const styleLayer = new paper.Layer({ name: "style" });
   styleLayer.fillColor = new paper.Color("white");
   styleLayer.strokeColor = new paper.Color("black");
   styleLayer.strokeWidth = 1;
   const toolLayer = new paper.Layer({ name: "tool" });
+  toolLayer.fillColor = null;
+  toolLayer.strokeColor = new paper.Color("#009dec");
+  toolLayer.strokeWidth = 1;
+  toolLayer.bounds.selected = true;
   const selectLayer = new paper.Layer({ name: "select" });
 
   snapLayer.opacity = 0.1;
-  selectLayer.opacity = 0;
 
   const layersDiv = div({ id: "layers", class: "vertical" }, []);
   const refreshLayers = () => {

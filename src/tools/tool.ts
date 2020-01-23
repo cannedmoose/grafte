@@ -28,6 +28,7 @@ export class GrafeTool extends paper.Tool {
     }
 
     this.ctx.canvas.deselectAll();
+    this.ctx.foreground.deselectAll();
     this.ctx.tool.removeChildren();
 
     super.activate();

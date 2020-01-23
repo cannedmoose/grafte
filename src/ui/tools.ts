@@ -8,6 +8,11 @@ export function createToolOptions(ctx: ToolContext) {
       {
         input: event => {
           ctx.style.style.strokeWidth = event.target.value;
+          ctx.select.children.forEach(child => {
+            let original = child.data.original as paper.Item;
+            original.strokeWidth = event.target.value;
+          });
+          ctx.canvas.view.requestUpdate();
         }
       }
     ),
@@ -17,6 +22,11 @@ export function createToolOptions(ctx: ToolContext) {
         {
           input: event => {
             ctx.style.style.strokeColor = event.target.value;
+            ctx.select.children.forEach(child => {
+              let original = child.data.original as paper.Item;
+              original.strokeColor = event.target.value;
+            });
+            ctx.canvas.view.requestUpdate();
           }
         }
       ),
@@ -25,6 +35,11 @@ export function createToolOptions(ctx: ToolContext) {
         {
           input: event => {
             ctx.style.style.fillColor = event.target.value;
+            ctx.select.children.forEach(child => {
+              let original = child.data.original as paper.Item;
+              original.fillColor = event.target.value;
+            });
+            ctx.canvas.view.requestUpdate();
           }
         }
       )

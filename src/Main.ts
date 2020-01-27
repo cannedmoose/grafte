@@ -6,6 +6,7 @@ import { createMenu } from "./ui/menu";
 import { Snap, snapMap, identity, gridSnap } from "./snaps/snaps";
 import { ToolContext } from "./tools/tool";
 import { createToolOptions } from "./ui/tools";
+import { deselectAll } from "./tools/select";
 
 function stoPoint(size: paper.Size) {
   return new paper.Point(
@@ -93,7 +94,24 @@ window.onload = function() {
               refreshLayers();
             }
           }),
-          layersDiv
+          layersDiv,
+          button({ id: "savebutton", class: "horizontal" }, [text("save")], {
+            click: event => {
+              const json = canvas.exportJSON({ asString: "true" });
+              window.localStorage.setItem("saved", json);
+            }
+          }),
+          button({ id: "loadbutton", class: "horizontal" }, [text("load")], {
+            click: event => {
+              const json = window.localStorage.getItem("saved");
+              if (json) {
+                deselectAll(toolContext);
+                canvas.clear();
+                canvas.importJSON(json);
+                refreshLayers();
+              }
+            }
+          })
         ])
       ],
       {

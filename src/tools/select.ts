@@ -51,6 +51,7 @@ interface SegmentMovingItem {
 
 interface MovingSegment {
   type: "movingsegment";
+  wasSelected: boolean;
 }
 
 interface MovingHandle {
@@ -136,18 +137,27 @@ export function selectTool(ctx: ToolContext): GrafeTool {
           fill: false,
           stroke: false,
           match: result => result.type == "segment" || result.segment.selected,
-          tolerance: 10
+          tolerance: paper.settings.handleSize
         });
         if (handleHit) {
+          const wasSelected = handleHit.segment.selected;
           if (handleHit.type == "segment") {
-            if (!event.modifiers.shift && !handleHit.segment.selected) {
-              selectedSegments(foreground).forEach(segment => {
-                segment.selected = false;
-              });
+            if (event.modifiers.shift) {
+              handleHit.segment.selected = !handleHit.segment.selected;
+              if (!handleHit.segment.selected) {
+                dragState = { type: "segmentselect" };
+              } else {
+                dragState = { type: "movingsegment", wasSelected };
+              }
+            } else {
+              if (!wasSelected) {
+                selectedSegments(foreground).forEach(segment => {
+                  segment.selected = false;
+                });
+              }
+              handleHit.segment.selected = true;
+              dragState = { type: "movingsegment", wasSelected };
             }
-            handleHit.segment.selected = true;
-            //handleHit.segment.handleIn.selected = false;
-            dragState = { type: "movingsegment" };
           } else {
             if (handleHit.type == "handle-in") {
               dragState = {
@@ -195,7 +205,6 @@ export function selectTool(ctx: ToolContext): GrafeTool {
         }
         // No hit
         deselectAll(ctx);
-        console.log("RAH");
         return updateSelection(ctx, dragState);
       }
       // Default case
@@ -236,38 +245,56 @@ export function selectTool(ctx: ToolContext): GrafeTool {
   };
 
   selectTool.onMouseUp = function(event: paper.ToolEvent): DragState {
-    switch (dragState.type) {
-      case "itemselect":
-      case "segmentselect":
-        return updateSelection(ctx, dragState);
-
-      case "movingbounds":
-        select.applyMatrix = true;
-      case "movingsegment":
-      case "segmentmovingitem":
-      case "movingitem":
-      case "movinghandle":
-        for (let i = 0; i < select.children.length; i++) {
-          let child = select.children[i];
-          if (child.data.original) {
-            let original: paper.Item = child.data.original;
-            original.copyContent(child);
-            original.selected = false;
+    if (
+      dragState.type == "movingsegment" ||
+      dragState.type == "segmentselect"
+    ) {
+      // TODO make ConstPoint child class of Point
+      const zero = new paper.Point(0, 0);
+      if (event.delta.isClose(zero, 1)) {
+        const handleHit = select.hitTest(event.point, {
+          segments: true,
+          handles: true,
+          fill: false,
+          stroke: false,
+          match: result => result.type == "segment" || result.segment.selected,
+          tolerance: paper.settings.handleSize
+        });
+        if (handleHit) {
+          const wasSelected = handleHit.segment.selected;
+          if (handleHit.type == "segment") {
+            if (event.modifiers.shift) {
+              dragState = { type: "segmentselect" };
+            } else if (event.modifiers.alt) {
+              const zeroIn = handleHit.segment.handleIn.isClose(zero, 0);
+              const zeroOut = handleHit.segment.handleOut.isClose(zero, 0);
+              if (zeroIn && zeroOut) {
+                // TODO base on prev/next segment
+                handleHit.segment.handleOut = new paper.Point(10, 10);
+              } else if (!zeroIn && !zeroOut) {
+                handleHit.segment.handleOut = new paper.Point(0, 0);
+                handleHit.segment.handleIn = new paper.Point(0, 0);
+              } else if (zeroIn) {
+                handleHit.segment.handleIn = handleHit.segment.handleOut
+                  .clone()
+                  .multiply(-1);
+              } else {
+                handleHit.segment.handleOut = new paper.Point(10, 10);
+                handleHit.segment.handleIn = new paper.Point(0, 0);
+              }
+              dragState = { type: "segmentselect" };
+            } else {
+              selectedSegments(foreground).forEach(segment => {
+                segment.selected = false;
+              });
+              handleHit.segment.selected = wasSelected;
+              dragState = { type: "segmentselect" };
+            }
+            return updateSelection(ctx, dragState);
           }
         }
-        if (
-          dragState.type === "movingitem" ||
-          dragState.type === "movingbounds"
-        ) {
-          dragState = { type: "itemselect" };
-        } else {
-          dragState = { type: "segmentselect" };
-        }
-        return updateSelection(ctx, dragState);
+      }
     }
-  };
-
-  selectTool.onMouseUp = function(event: paper.ToolEvent): DragState {
     // TODO CHECK FOR DOUBLE CLICK
     switch (dragState.type) {
       case "itemselect":

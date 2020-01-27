@@ -40,15 +40,18 @@ window.onload = function() {
   foreground.activate();
   paper.settings.handleSize = 7;
   const snapLayer = new paper.Layer({ name: "snap" });
+  // Style layer stores current style
   const styleLayer = new paper.Layer({ name: "style" });
   styleLayer.fillColor = new paper.Color("white");
   styleLayer.strokeColor = new paper.Color("black");
   styleLayer.strokeWidth = 1;
+  // Tool layer stores tool draw paths, these do not exist on the canvas
   const toolLayer = new paper.Layer({ name: "tool" });
   toolLayer.fillColor = null;
   toolLayer.strokeColor = new paper.Color("#009dec");
   toolLayer.strokeWidth = 1;
   toolLayer.bounds.selected = true;
+  // Select layer stores selections. Objects are copied here when selected and copied back to canvas after.
   const selectLayer = new paper.Layer({ name: "select" });
 
   snapLayer.opacity = 0.1;
@@ -163,4 +166,30 @@ window.onload = function() {
       bounds: new paper.Rectangle(0, 140, 70, 140)
     })
   );
+
+  // SCROLLING WIP
+  window.addEventListener("wheel", function(e: WheelEvent) {
+    /**
+     * Have mouse coords in view space
+     * want to zoom and maintain mouse coords in project space
+     */
+    let newZoom = Math.max(0.01, canvas.view.zoom + e.deltaY * 0.1);
+    let oldMouse = canvas.view.viewToProject(new paper.Point(e.x, e.y));
+
+    canvas.view.zoom = newZoom;
+    let newMouuse = canvas.view.viewToProject(new paper.Point(e.x, e.y));
+    let newCenter = canvas.view.center.add(oldMouse.subtract(newMouuse));
+    canvas.view.center = newCenter;
+
+    foreground.view.center = newCenter;
+    foreground.view.zoom = newZoom;
+
+    background.view.center = newCenter;
+    background.view.zoom = newZoom;
+    console.log(newCenter);
+
+    canvas.view.requestUpdate();
+    foreground.view.requestUpdate();
+    background.view.requestUpdate();
+  });
 };

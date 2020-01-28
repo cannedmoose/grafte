@@ -98,10 +98,7 @@ export function createMenu(
     title,
 
     // Content
-    content,
-
-    // Resize
-    handle
+    content
   ]);
 
   function draw() {

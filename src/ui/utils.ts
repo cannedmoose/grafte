@@ -12,6 +12,15 @@ export function div(
   return el;
 }
 
+export function canvas(
+  attribs: { [key: string]: string },
+  events: { [key: string]: (event) => void } = {}
+): HTMLCanvasElement {
+  const el = document.createElement("canvas");
+  elHelper(el, attribs, [], events);
+  return el;
+}
+
 export function button(
   attribs: { [key: string]: string },
   children: Node[],

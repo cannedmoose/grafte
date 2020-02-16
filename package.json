@@ -1,0 +1,27 @@
+{
+  "name": "grafte",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "dependencies": {
+    "browserify": "^16.5.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "ts-loader": "^6.2.1",
+    "tsify": "^4.0.1",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.1",
+    "write-file-webpack-plugin": "^4.5.1",
+    "xstate": "^4.7.7"
+  },
+  "devDependencies": {
+    "paper": "file:../paper.js",
+    "typescript": "^3.7.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

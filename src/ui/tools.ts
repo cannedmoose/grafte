@@ -1,18 +1,16 @@
 import { div, slider, color } from "./utils";
-import { ToolContext } from "../tools/tool";
 
-export function createToolOptions(ctx: ToolContext) {
+export function createToolOptions(canvas: paper.Project) {
   return div({ class: "vertical" }, [
     slider(
       { value: "1", min: "0", max: "50", step: ".01" },
       {
         input: event => {
-          ctx.style.style.strokeWidth = event.target.value;
-          ctx.select.children.forEach(child => {
-            let original = child.data.original as paper.Item;
-            original.strokeWidth = event.target.value;
+          canvas.currentStyle.strokeWidth = event.target.value;
+          canvas.selectedItems.forEach(child => {
+            child.style = canvas.currentStyle;
           });
-          ctx.canvas.view.requestUpdate();
+          canvas.view.requestUpdate();
         }
       }
     ),
@@ -21,12 +19,11 @@ export function createToolOptions(ctx: ToolContext) {
         { value: "#000000" },
         {
           input: event => {
-            ctx.style.style.strokeColor = event.target.value;
-            ctx.select.children.forEach(child => {
-              let original = child.data.original as paper.Item;
-              original.strokeColor = event.target.value;
+            canvas.currentStyle.strokeColor = event.target.value;
+            canvas.selectedItems.forEach(child => {
+              child.style = canvas.currentStyle;
             });
-            ctx.canvas.view.requestUpdate();
+            canvas.view.requestUpdate();
           }
         }
       ),
@@ -34,12 +31,11 @@ export function createToolOptions(ctx: ToolContext) {
         { value: "#FFFFFF" },
         {
           input: event => {
-            ctx.style.style.fillColor = event.target.value;
-            ctx.select.children.forEach(child => {
-              let original = child.data.original as paper.Item;
-              original.fillColor = event.target.value;
+            canvas.currentStyle.fillColor = event.target.value;
+            canvas.selectedItems.forEach(child => {
+              child.style = canvas.currentStyle;
             });
-            ctx.canvas.view.requestUpdate();
+            canvas.view.requestUpdate();
           }
         }
       )

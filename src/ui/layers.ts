@@ -1,7 +1,6 @@
 import * as paper from "paper";
 import { slider, div, text, checkbox, button, queryOrThrow } from "./utils";
 import { words } from "./words";
-import { deselectAll } from "../tools/select";
 
 /**
  * SHOULD DIFFERENTIATE BETWEEN CLICK AND DRAG
@@ -66,8 +65,8 @@ function viewItem(
   // For layer, fixed width (or overflow), flex
   return div(
     {
-      class: "horizontal",
-      style: `background-color:${item.selected ? "cyan" : "white"}`
+      class: "horizontal"
+      //style: `background-color:${item.selected ? "cyan" : "white"}`
     },
     [
       // For visibility, fixed
@@ -108,7 +107,7 @@ export function viewProject(project: paper.Project, updated: () => void) {
   for (let i = 0; i < project.layers.length; i++) {
     const layer = project.layers[i];
     results.push(viewItem(project.layers[i], 0, updated));
-    addChildren(results, layer, 0, updated);
+    //addChildren(results, layer, 0, updated);
   }
 
   // All items container

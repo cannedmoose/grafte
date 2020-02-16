@@ -1,18 +1,17 @@
 import * as paper from "paper";
 import { elipseTool } from "./elipse";
 import { rectangleTool } from "./rectangle";
-import { ToolContext } from "./tool";
 import { selectTool } from "./select";
 import { penTool } from "./pen";
 
-export function createTools(ctx: ToolContext) {
+export function createTools(canvas: paper.Project) {
   let noTool = new paper.Tool();
-  let p = penTool(ctx);
-  let circleTool = elipseTool(ctx);
-  let rectTool = rectangleTool(ctx);
-  let s = selectTool(ctx);
+  let p = penTool({ canvas });
+  let circleTool = elipseTool({ canvas });
+  let rectTool = rectangleTool({ canvas });
+  let s = selectTool({ canvas });
 
   p.activate();
 
-  return { circleTool, penTool: p, rectTool, selectTool: s };
+  return { noTool, circleTool, penTool: p, rectTool, selectTool: s };
 }

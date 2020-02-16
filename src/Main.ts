@@ -3,59 +3,110 @@ import { createTools } from "./tools/tools";
 import { viewProject } from "./ui/layers";
 import { queryOrThrow, button, div, text, canvas } from "./ui/utils";
 import { createMenu } from "./ui/menu";
-import { Snap, snapMap, identity, gridSnap } from "./snaps/snaps";
-import { ToolContext } from "./tools/tool";
 import { createToolOptions } from "./ui/tools";
-import { deselectAll } from "./tools/select";
 
-function stoPoint(size: paper.Size) {
-  return new paper.Point(
-    paper.view.bounds.size.width,
-    paper.view.bounds.size.height
-  );
-}
+let drawingcanvas;
 
-function rtoPoint(rect: paper.Rectangle) {
-  return stoPoint(rect.size);
-}
+window.onresize = function(event) {
+  var bounds = queryOrThrow(".drawingArea").getBoundingClientRect();
+  drawingcanvas.view.viewSize = new paper.Size(bounds.width, bounds.height);
+};
 
 window.onload = function() {
-  let canvasDom: HTMLCanvasElement = queryOrThrow(
+  const documentSize = new paper.Size(600, 400);
+  const canvasDom: HTMLCanvasElement = queryOrThrow(
     "#canvas"
   ) as HTMLCanvasElement;
-  let foregroundDom: HTMLCanvasElement = queryOrThrow(
-    "#foreground"
-  ) as HTMLCanvasElement;
-  let backgroundDom: HTMLCanvasElement = queryOrThrow(
-    "#background"
-  ) as HTMLCanvasElement;
+
+  const menuDiv = queryOrThrow("#menus");
+
+  const bgPattern = makeBgPattern(canvasDom.getContext("2d"));
 
   // Set up main canvas
+  var bounds = queryOrThrow(".drawingArea").getBoundingClientRect();
   paper.setup(canvasDom);
-  const drawingcanvas = paper.project;
-  new paper.Layer();
+  drawingcanvas = paper.project;
 
-  const foreground = new paper.Project(foregroundDom);
-  const background = new paper.Project(backgroundDom);
+  // @ts-ignore
+  drawingcanvas._bgPattern = bgPattern;
+  drawingcanvas._docSize = documentSize;
 
-  foreground.activate();
-  paper.settings.handleSize = 7;
-  const snapLayer = new paper.Layer({ name: "snap" });
-  // Style layer stores current style
-  const styleLayer = new paper.Layer({ name: "style" });
-  styleLayer.fillColor = new paper.Color("white");
-  styleLayer.strokeColor = new paper.Color("black");
-  styleLayer.strokeWidth = 1;
-  // Tool layer stores tool draw paths, these do not exist on the canvas
-  const toolLayer = new paper.Layer({ name: "tool" });
-  toolLayer.fillColor = null;
-  toolLayer.strokeColor = new paper.Color("#009dec");
-  toolLayer.strokeWidth = 1;
-  toolLayer.bounds.selected = true;
-  // Select layer stores selections. Objects are copied here when selected and copied back to canvas after.
-  const selectLayer = new paper.Layer({ name: "select" });
+  drawingcanvas.view.viewSize = new paper.Size(bounds.width, bounds.height);
 
-  snapLayer.opacity = 0.1;
+  if (bounds.width < bounds.height) {
+    // Scale width;
+    drawingcanvas.view.zoom = bounds.width / (documentSize.width * 1.1);
+  } else {
+    // Scale height
+  }
+
+  drawingcanvas.view.center = new paper.Point(
+    documentSize.width / 2,
+    documentSize.height / 2
+  );
+
+  drawingcanvas.currentStyle.strokeWidth = 1;
+  drawingcanvas.currentStyle.strokeColor = new paper.Color("black");
+
+  //let docRect = new paper.Path.Rectangle(new paper.Point(0, 0), documentSize);
+  //docRect.fillColor = new paper.Color("0xFF0000");
+
+  // Set up viewport canvas
+  const viewportDom = canvas({});
+  // @ts-ignore
+  const viewport: paper.View = new paper.CanvasView(
+    drawingcanvas,
+    viewportDom
+  ) as paper.View;
+  window.requestAnimationFrame(() => {
+    var width = viewportDom.parentElement?.parentElement?.clientWidth;
+    var height = viewportDom.parentElement?.parentElement?.clientHeight;
+    if (!width || !height) {
+      return;
+    }
+    viewport.viewSize = new paper.Size(width, height);
+
+    viewport.center = new paper.Point(
+      documentSize.width / 2,
+      documentSize.height / 2
+    );
+    var scaleFactor = Math.max(documentSize.width, documentSize.height) * 1.2;
+    viewport.scaling = new paper.Point(
+      width / scaleFactor,
+      height / scaleFactor
+    );
+  });
+  // @ts-ignore
+  viewport._skipSelection = true;
+
+  //@ts-ignore
+  drawingcanvas.on("change", e => {
+    // @ts-ignore
+    viewport._needsUpdate = true;
+    viewport.requestUpdate();
+
+    refreshLayers();
+  });
+
+  viewport.on("mousedown", e => {
+    drawingcanvas.view.center = e.point;
+    e.stop();
+  });
+  viewport.on("mousedrag", e => {
+    drawingcanvas.view.center = e.point;
+    e.stop();
+  });
+  viewport.on("mouseup", e => {
+    drawingcanvas.view.center = e.point;
+    e.stop();
+  });
+  menuDiv.appendChild(
+    createMenu("viewport-menu", [viewportDom], {
+      title: "Viewport",
+      minimized: false,
+      class: "viewportArea"
+    })
+  );
 
   const layersDiv = div({ id: "layers", class: "vertical" }, []);
   const refreshLayers = () => {
@@ -66,22 +117,11 @@ window.onload = function() {
   };
   window.requestAnimationFrame(refreshLayers);
 
-  let toolContext: ToolContext = {
-    canvas: drawingcanvas,
-    foreground,
-    tool: toolLayer,
-    snap: snapLayer,
-    style: styleLayer,
-    select: selectLayer,
+  let { circleTool, penTool, rectTool, selectTool } = createTools(
+    drawingcanvas
+  );
+  penTool.activate();
 
-    updated: refreshLayers
-  };
-
-  console.log(toolContext);
-
-  let { circleTool, penTool, rectTool, selectTool } = createTools(toolContext);
-
-  let menuDiv = queryOrThrow("#menus");
   menuDiv.appendChild(
     createMenu(
       "layers-menu",
@@ -105,10 +145,9 @@ window.onload = function() {
             click: event => {
               const json = window.localStorage.getItem("saved");
               if (json) {
-                deselectAll(toolContext);
+                drawingcanvas.deselectAll();
                 drawingcanvas.clear();
                 drawingcanvas.importJSON(json);
-                refreshLayers();
               }
             }
           })
@@ -117,7 +156,7 @@ window.onload = function() {
       {
         title: "Layers",
         minimized: false,
-        bounds: new paper.Rectangle(70, 0, 240, 140)
+        class: "layersArea"
       }
     )
   );
@@ -146,98 +185,23 @@ window.onload = function() {
             click: () => {
               penTool.activate();
             }
-          }),
-          button({}, [text("grid")], {
-            click: () => {
-              if (!snapLayer.data.snap) {
-                snapLayer.data.snap = gridSnap(
-                  new paper.Point(30, 30),
-                  new paper.Point(0, 0)
-                );
-
-                snapLayer.activate();
-                snapLayer.style.strokeWidth = 2;
-                snapLayer.style.strokeColor = new paper.Color("black");
-                snapLayer.data.snap.view(new paper.Point(0, 0));
-              } else {
-                foreground.activate();
-                snapLayer.activate();
-                snapLayer.removeChildren();
-                snapLayer.data.snap = undefined;
-              }
-            }
           })
         ])
       ],
       {
         title: "Tools",
         minimized: false,
-        bounds: new paper.Rectangle(0, 0, 70, 140)
+        class: "toolArea"
       }
     )
   );
 
   menuDiv.appendChild(
-    createMenu("tooloptions-menu", [createToolOptions(toolContext)], {
+    createMenu("tooloptions-menu", [createToolOptions(drawingcanvas)], {
       title: "Style",
       minimized: false,
-      bounds: new paper.Rectangle(0, 140, 70, 140)
+      class: "toolOptionsArea"
     })
-  );
-
-  const viewportDom = canvas({ style: "position:relative" });
-  const viewport = new paper.Project(viewportDom);
-  viewport.view.viewSize = new paper.Size(
-    window.innerWidth / 4,
-    window.innerHeight / 4
-  );
-  menuDiv.appendChild(
-    createMenu(
-      "viewport-menu",
-      [
-        viewportDom,
-        button({}, [text("gen")], {
-          click: event => {
-            viewport.activate();
-            viewport.clear();
-            const el = new paper.Point(
-              viewport.view.element.width / 2,
-              viewport.view.element.height / 2
-            );
-            const inner = new paper.Point(
-              window.innerWidth,
-              window.innerHeight
-            );
-            const s = el.divide(inner);
-            const json = drawingcanvas.exportJSON({ asString: false });
-
-            viewport.view.scaling = s;
-            viewport.view.center = drawingcanvas.view.center;
-
-            const view = new paper.Path.Rectangle(new paper.Point(0, 0), inner);
-            view.bounds.center = drawingcanvas.view.center;
-            view.scaling = new paper.Point(1, 1).divide(
-              new paper.Point(drawingcanvas.view.zoom, drawingcanvas.view.zoom)
-            );
-            view.strokeColor = new paper.Color("black");
-            view.strokeWidth = 2;
-
-            viewport.importJSON(json);
-            viewport.view.requestUpdate();
-          }
-        })
-      ],
-      {
-        title: "Viewport",
-        minimized: false,
-        bounds: new paper.Rectangle(
-          70,
-          140,
-          window.innerWidth / 3,
-          window.innerHeight / 2
-        )
-      }
-    )
   );
 
   // SCROLLING WIP
@@ -248,22 +212,51 @@ window.onload = function() {
      *
      * TODO add max/min zoom levels
      */
-    let newZoom = Math.max(0.01, drawingcanvas.view.zoom + e.deltaY * 0.1);
-    let oldMouse = drawingcanvas.view.viewToProject(new paper.Point(e.x, e.y));
+    e.stopPropagation();
+    e.preventDefault();
+    let newZoom = Math.min(
+      Math.max(0.25, drawingcanvas.view.zoom + e.deltaY * 0.1),
+      4
+    );
+
+    let rect = drawingcanvas.view.element.getBoundingClientRect();
+    let mousePoint = new paper.Point(e.x - rect.x, e.y - rect.y);
+    let oldMouse = drawingcanvas.view.viewToProject(mousePoint);
 
     drawingcanvas.view.zoom = newZoom;
-    let newMouuse = drawingcanvas.view.viewToProject(new paper.Point(e.x, e.y));
+    let newMouuse = drawingcanvas.view.viewToProject(mousePoint);
     let newCenter = drawingcanvas.view.center.add(oldMouse.subtract(newMouuse));
     drawingcanvas.view.center = newCenter;
 
-    foreground.view.center = newCenter;
-    foreground.view.zoom = newZoom;
-
-    background.view.center = newCenter;
-    background.view.zoom = newZoom;
-
     drawingcanvas.view.requestUpdate();
-    foreground.view.requestUpdate();
-    background.view.requestUpdate();
   });
 };
+
+function makeBgPattern(ctx) {
+  // Create a pattern, offscreen
+  const patternCanvas = document.createElement("canvas");
+  const patternContext = patternCanvas.getContext("2d");
+
+  if (!patternContext) return;
+
+  // Give the pattern a width and height of 50
+  patternCanvas.width = 50;
+  patternCanvas.height = 50;
+
+  // Give the pattern a background color and draw an arc
+  patternContext.fillStyle = "#aaa";
+  patternContext.fillRect(
+    0,
+    0,
+    patternCanvas.width / 2,
+    patternCanvas.height / 2
+  );
+  patternContext.fillRect(
+    patternCanvas.width / 2,
+    patternCanvas.height / 2,
+    patternCanvas.width,
+    patternCanvas.height
+  );
+
+  return ctx.createPattern(patternCanvas, "repeat");
+}

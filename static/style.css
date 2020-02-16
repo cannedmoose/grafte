@@ -6,18 +6,8 @@ body {
 }
 
 /* Scale canvas with resize attribute to full size */
-canvas {
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-}
 
 .expand {
-  position: fixed;
-  top: 0px;
-  left: 0px;
   width: 100%;
   height: 100%;
 }
@@ -53,16 +43,42 @@ div .contract {
 */
 
 #menus {
-  position: absolute;
-  top: 0;
-  bottom: 0;
+  display: grid;
+
+  grid-template-columns: 150px calc(100vw - 300px) 150px;
+  grid-template-rows: 150px calc(50vh - 150px) calc(50vh - 150px) 150px;
+
+  grid-template-areas:
+    "viewport drawing ."
+    "tools drawing layers"
+    "toolOptions drawing layers"
+    ". drawing .";
+}
+
+.toolArea {
+  grid-area: tools;
+}
+
+.toolOptionsArea {
+  grid-area: toolOptions;
+}
+
+.drawingArea {
+  grid-area: drawing;
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
-  pointer-events: none;
+  overflow: hidden;
+  border: 2px inset black;
+  background-color: white;
+  pointer-events: all;
+}
+
+.layersArea {
+  grid-area: layers;
 }
 
 .menu {
-  position: absolute;
   border: 2px inset black;
   background-color: white;
   pointer-events: all;
@@ -70,10 +86,12 @@ div .contract {
   display: flex;
   flex-direction: column;
   cursor: default;
-  overflow: hidden;
+  overflow: scroll;
+  box-sizing: border-box;
 }
 
 .menucontent {
+  overflow: hidden;
 }
 
 .titlebar {

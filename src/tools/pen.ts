@@ -12,6 +12,7 @@ export function penTool({ canvas }): paper.Tool {
   };
 
   penTool.onMouseDrag = function(event: paper.ToolEvent) {
+    if (!path) return;
     path.add(event.point);
     if (event.modifiers.shift) {
       path.closed = true;
@@ -22,6 +23,7 @@ export function penTool({ canvas }): paper.Tool {
   };
 
   penTool.onMouseUp = function(event: paper.ToolEvent) {
+    if (!path) return;
     path.simplify();
     path = undefined;
   };

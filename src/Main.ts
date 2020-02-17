@@ -5,82 +5,79 @@ import { queryOrThrow, button, div, text, canvas } from "./ui/utils";
 import { createMenu } from "./ui/menu";
 import { createToolOptions } from "./ui/tools";
 
-let drawingcanvas;
-
-window.onresize = function(event) {
-  var bounds = queryOrThrow(".drawingArea").getBoundingClientRect();
-  drawingcanvas.view.viewSize = new paper.Size(bounds.width, bounds.height);
-};
-
 window.onload = function() {
-  const documentSize = new paper.Size(600, 400);
   const canvasDom: HTMLCanvasElement = queryOrThrow(
     "#canvas"
   ) as HTMLCanvasElement;
-
   const menuDiv = queryOrThrow("#menus");
+  const documentDom = canvas({
+    id: "documentcanvas"
+  });
 
-  const bgPattern = makeBgPattern(canvasDom.getContext("2d"));
+  window.onresize = onResize;
 
   // Set up main canvas
-  var bounds = queryOrThrow(".drawingArea").getBoundingClientRect();
   paper.setup(canvasDom);
-  drawingcanvas = paper.project;
+  onResize();
+
+  paper.project.view.viewSize = new paper.Size(
+    canvasDom.width,
+    canvasDom.height
+  );
+
+  const document= new paper.CanvasView(paper.project, documentDom);
+
+  document.viewSize = new paper.Size(600, 400);
 
   // @ts-ignore
-  drawingcanvas._bgPattern = bgPattern;
-  drawingcanvas._docSize = documentSize;
+  paper.project._docSize = new paper.Size(600, 400);
 
-  drawingcanvas.view.viewSize = new paper.Size(bounds.width, bounds.height);
-
-  if (bounds.width < bounds.height) {
+  if (canvasDom.width < canvasDom.height) {
     // Scale width;
-    drawingcanvas.view.zoom = bounds.width / (documentSize.width * 1.1);
+    paper.project.view.zoom = canvasDom.width / (document.bounds.width * 1.1);
   } else {
     // Scale height
   }
 
-  drawingcanvas.view.center = new paper.Point(
-    documentSize.width / 2,
-    documentSize.height / 2
+  paper.project.view.center = new paper.Point(
+    document.bounds.width / 2,
+    document.bounds.height / 2
   );
-
-  drawingcanvas.currentStyle.strokeWidth = 1;
-  drawingcanvas.currentStyle.strokeColor = new paper.Color("black");
-
-  //let docRect = new paper.Path.Rectangle(new paper.Point(0, 0), documentSize);
-  //docRect.fillColor = new paper.Color("0xFF0000");
 
   // Set up viewport canvas
   const viewportDom = canvas({});
   // @ts-ignore
-  const viewport: paper.View = new paper.CanvasView(
-    drawingcanvas,
-    viewportDom
-  ) as paper.View;
-  window.requestAnimationFrame(() => {
-    var width = viewportDom.parentElement?.parentElement?.clientWidth;
-    var height = viewportDom.parentElement?.parentElement?.clientHeight;
-    if (!width || !height) {
-      return;
-    }
-    viewport.viewSize = new paper.Size(width, height);
+  const viewport = new paper.CanvasView(paper.project, viewportDom);
 
-    viewport.center = new paper.Point(
-      documentSize.width / 2,
-      documentSize.height / 2
-    );
-    var scaleFactor = Math.max(documentSize.width, documentSize.height) * 1.2;
-    viewport.scaling = new paper.Point(
-      width / scaleFactor,
-      height / scaleFactor
-    );
-  });
   // @ts-ignore
   viewport._skipSelection = true;
 
+  window.requestAnimationFrame(() => {
+    var viewPortRect = viewportDom.parentElement?.parentElement?.getBoundingClientRect();
+    if (viewPortRect) {
+      viewport.viewSize = new paper.Size(
+        viewPortRect.width,
+        viewPortRect.height
+      );
+
+      viewport.center = new paper.Point(
+        document.bounds.width / 2,
+        document.bounds.height / 2
+      );
+      var scaleFactor =
+        Math.max(document.bounds.width, document.bounds.height) * 1.2;
+      viewport.scaling = new paper.Point(
+        viewPortRect.width / scaleFactor,
+        viewPortRect.height / scaleFactor
+      );
+    }
+  });
+
+  paper.project.currentStyle.strokeWidth = 1;
+  paper.project.currentStyle.strokeColor = new paper.Color("black");
+
   //@ts-ignore
-  drawingcanvas.on("change", e => {
+  paper.project.view.on("update", e => {
     // @ts-ignore
     viewport._needsUpdate = true;
     viewport.requestUpdate();
@@ -89,15 +86,15 @@ window.onload = function() {
   });
 
   viewport.on("mousedown", e => {
-    drawingcanvas.view.center = e.point;
+    paper.project.view.center = e.point;
     e.stop();
   });
   viewport.on("mousedrag", e => {
-    drawingcanvas.view.center = e.point;
+    paper.project.view.center = e.point;
     e.stop();
   });
   viewport.on("mouseup", e => {
-    drawingcanvas.view.center = e.point;
+    paper.project.view.center = e.point;
     e.stop();
   });
   menuDiv.appendChild(
@@ -113,12 +110,12 @@ window.onload = function() {
     while (layersDiv.firstChild) {
       layersDiv.removeChild(layersDiv.firstChild);
     }
-    layersDiv.appendChild(viewProject(drawingcanvas, refreshLayers));
+    layersDiv.appendChild(viewProject(paper.project, refreshLayers));
   };
   window.requestAnimationFrame(refreshLayers);
 
   let { circleTool, penTool, rectTool, selectTool } = createTools(
-    drawingcanvas
+    paper.project
   );
   penTool.activate();
 
@@ -129,28 +126,42 @@ window.onload = function() {
         div({ class: "vertical" }, [
           button({ id: "addlayer", class: "horizontal" }, [text("add")], {
             click: event => {
-              drawingcanvas.activate();
+              paper.project.activate();
               let layer = new paper.Layer();
               refreshLayers();
             }
           }),
           layersDiv,
-          button({ id: "savebutton", class: "horizontal" }, [text("save")], {
-            click: event => {
-              const json = drawingcanvas.exportJSON({ asString: "true" });
-              window.localStorage.setItem("saved", json);
-            }
-          }),
-          button({ id: "loadbutton", class: "horizontal" }, [text("load")], {
-            click: event => {
-              const json = window.localStorage.getItem("saved");
-              if (json) {
-                drawingcanvas.deselectAll();
-                drawingcanvas.clear();
-                drawingcanvas.importJSON(json);
+          button(
+            {
+              id: "savebutton",
+              class: "horizontal"
+            },
+            [text("save")],
+            {
+              click: event => {
+                const json = paper.project.exportJSON({ asString: "true" });
+                window.localStorage.setItem("saved", json);
               }
             }
-          })
+          ),
+          button(
+            {
+              id: "loadbutton",
+              class: "horizontal"
+            },
+            [text("load")],
+            {
+              click: event => {
+                const json = window.localStorage.getItem("saved");
+                if (json) {
+                  paper.project.deselectAll();
+                  paper.project.clear();
+                  paper.project.importJSON(json);
+                }
+              }
+            }
+          )
         ])
       ],
       {
@@ -197,7 +208,7 @@ window.onload = function() {
   );
 
   menuDiv.appendChild(
-    createMenu("tooloptions-menu", [createToolOptions(drawingcanvas)], {
+    createMenu("tooloptions-menu", [createToolOptions(paper.project)], {
       title: "Style",
       minimized: false,
       class: "toolOptionsArea"
@@ -215,22 +226,49 @@ window.onload = function() {
     e.stopPropagation();
     e.preventDefault();
     let newZoom = Math.min(
-      Math.max(0.25, drawingcanvas.view.zoom + e.deltaY * 0.1),
+      Math.max(0.25, paper.project.view.zoom + e.deltaY * 0.1),
       4
     );
 
-    let rect = drawingcanvas.view.element.getBoundingClientRect();
+    let rect = paper.project.view.element.getBoundingClientRect();
     let mousePoint = new paper.Point(e.x - rect.x, e.y - rect.y);
-    let oldMouse = drawingcanvas.view.viewToProject(mousePoint);
+    let oldMouse = paper.project.view.viewToProject(mousePoint);
 
-    drawingcanvas.view.zoom = newZoom;
-    let newMouuse = drawingcanvas.view.viewToProject(mousePoint);
-    let newCenter = drawingcanvas.view.center.add(oldMouse.subtract(newMouuse));
-    drawingcanvas.view.center = newCenter;
+    paper.project.view.zoom = newZoom;
+    let newMouuse = paper.project.view.viewToProject(mousePoint);
+    let newCenter = paper.project.view.center.add(oldMouse.subtract(newMouuse));
+    paper.project.view.center = newCenter;
 
-    drawingcanvas.view.requestUpdate();
+    paper.project.view.requestUpdate();
   });
 };
+
+function setupBgCanvas() {
+  const canvasDom: HTMLCanvasElement = queryOrThrow(
+    "#canvas"
+  ) as HTMLCanvasElement;
+  const bgPattern = makeBgPattern(canvasDom.getContext("2d"));
+}
+
+function onResize(event?) {
+  var bounds = queryOrThrow(".drawingArea").getBoundingClientRect();
+  paper.project.view.viewSize = new paper.Size(bounds.width, bounds.height);
+
+  const canvasDom: HTMLCanvasElement = queryOrThrow(
+    "#backgroundcanvas"
+  ) as HTMLCanvasElement;
+  const ctx = canvasDom.getContext("2d");
+  const bgPattern = makeBgPattern(ctx);
+
+  canvasDom.width = bounds.width;
+  canvasDom.height = bounds.height;
+
+  if (!ctx) {
+    throw "No background context";
+  }
+  ctx.fillStyle = bgPattern;
+  ctx.fillRect(0, 0, bounds.width, bounds.height);
+}
 
 function makeBgPattern(ctx) {
   // Create a pattern, offscreen
@@ -239,9 +277,9 @@ function makeBgPattern(ctx) {
 
   if (!patternContext) return;
 
-  // Give the pattern a width and height of 50
-  patternCanvas.width = 50;
-  patternCanvas.height = 50;
+  // Give the pattern a width and height of 10
+  patternCanvas.width = 10;
+  patternCanvas.height = 10;
 
   // Give the pattern a background color and draw an arc
   patternContext.fillStyle = "#aaa";

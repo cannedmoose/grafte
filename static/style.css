@@ -72,10 +72,19 @@ div .contract {
   border: 2px inset black;
   background-color: white;
   pointer-events: all;
+  position: relative;
 }
 
 .layersArea {
   grid-area: layers;
+}
+
+#backgroundcanvas {
+  position: absolute;
+}
+
+#canvas {
+  position: absolute;
 }
 
 .menu {

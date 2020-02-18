@@ -20,37 +20,28 @@ window.onload = function() {
   paper.setup(canvasDom);
   onResize();
 
-  paper.project.view.viewSize = new paper.Size(
-    canvasDom.width,
-    canvasDom.height
-  );
+  const projectView = paper.project.view;
 
-  const document= new paper.CanvasView(paper.project, documentDom);
-
+  const document = new paper.CanvasView(paper.project, documentDom);
   document.viewSize = new paper.Size(600, 400);
+  document.drawSelection = false;
 
-  // @ts-ignore
-  paper.project._docSize = new paper.Size(600, 400);
-
-  if (canvasDom.width < canvasDom.height) {
+  if (projectView.bounds.width < projectView.bounds.height) {
     // Scale width;
-    paper.project.view.zoom = canvasDom.width / (document.bounds.width * 1.1);
+    projectView.zoom = projectView.bounds.width / (document.bounds.width * 1.1);
   } else {
-    // Scale height
+    projectView.zoom = projectView.bounds.height / (document.bounds.height * 1.1);
   }
 
-  paper.project.view.center = new paper.Point(
+  projectView.center = new paper.Point(
     document.bounds.width / 2,
     document.bounds.height / 2
   );
 
   // Set up viewport canvas
   const viewportDom = canvas({});
-  // @ts-ignore
   const viewport = new paper.CanvasView(paper.project, viewportDom);
-
-  // @ts-ignore
-  viewport._skipSelection = true;
+  viewport.drawSelection = false;
 
   window.requestAnimationFrame(() => {
     var viewPortRect = viewportDom.parentElement?.parentElement?.getBoundingClientRect();
@@ -76,25 +67,47 @@ window.onload = function() {
   paper.project.currentStyle.strokeWidth = 1;
   paper.project.currentStyle.strokeColor = new paper.Color("black");
 
-  //@ts-ignore
-  paper.project.view.on("update", e => {
-    // @ts-ignore
-    viewport._needsUpdate = true;
-    viewport.requestUpdate();
-
+  projectView.on("updated", e => {
+    projectView.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
+      ctx.save();
+      const tl = matrix.transform(document.bounds.topLeft);
+      const br = matrix.transform(document.bounds.bottomRight);
+      ctx.strokeStyle = "#333333";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      ctx.restore();
+    });
+    viewport.markDirty();
     refreshLayers();
   });
 
+  viewport.on("updated", e => {
+    viewport.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
+      ctx.save();
+      ctx.lineWidth = 1;
+      let tl = matrix.transform(document.bounds.topLeft);
+      let br = matrix.transform(document.bounds.bottomRight);
+      ctx.strokeStyle = "#333333";
+      ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+
+      tl = matrix.transform(projectView.bounds.topLeft);
+      br = matrix.transform(projectView.bounds.bottomRight);
+      ctx.strokeStyle = "#009dec";
+      ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      ctx.restore();
+    });
+  });
+
   viewport.on("mousedown", e => {
-    paper.project.view.center = e.point;
+    projectView.center = e.point;
     e.stop();
   });
   viewport.on("mousedrag", e => {
-    paper.project.view.center = e.point;
+    projectView.center = e.point;
     e.stop();
   });
   viewport.on("mouseup", e => {
-    paper.project.view.center = e.point;
+    projectView.center = e.point;
     e.stop();
   });
   menuDiv.appendChild(
@@ -226,29 +239,22 @@ window.onload = function() {
     e.stopPropagation();
     e.preventDefault();
     let newZoom = Math.min(
-      Math.max(0.25, paper.project.view.zoom + e.deltaY * 0.1),
+      Math.max(0.25, projectView.zoom + e.deltaY * 0.1),
       4
     );
 
-    let rect = paper.project.view.element.getBoundingClientRect();
+    let rect = projectView.element.getBoundingClientRect();
     let mousePoint = new paper.Point(e.x - rect.x, e.y - rect.y);
-    let oldMouse = paper.project.view.viewToProject(mousePoint);
+    let oldMouse = projectView.viewToProject(mousePoint);
 
-    paper.project.view.zoom = newZoom;
-    let newMouuse = paper.project.view.viewToProject(mousePoint);
-    let newCenter = paper.project.view.center.add(oldMouse.subtract(newMouuse));
-    paper.project.view.center = newCenter;
+    projectView.zoom = newZoom;
+    let newMouuse = projectView.viewToProject(mousePoint);
+    let newCenter = projectView.center.add(oldMouse.subtract(newMouuse));
+    projectView.center = newCenter;
 
-    paper.project.view.requestUpdate();
+    projectView.requestUpdate();
   });
 };
-
-function setupBgCanvas() {
-  const canvasDom: HTMLCanvasElement = queryOrThrow(
-    "#canvas"
-  ) as HTMLCanvasElement;
-  const bgPattern = makeBgPattern(canvasDom.getContext("2d"));
-}
 
 function onResize(event?) {
   var bounds = queryOrThrow(".drawingArea").getBoundingClientRect();

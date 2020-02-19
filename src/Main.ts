@@ -69,6 +69,8 @@ window.onload = function() {
 
   paper.project.currentStyle.strokeWidth = 1;
   paper.project.currentStyle.strokeColor = new paper.Color("black");
+  paper.project.currentStyle.strokeCap = "round";
+  paper.project.currentStyle.strokeJoin = "round";
 
   projectView.on("updated", e => {
     projectView.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {

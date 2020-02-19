@@ -5,6 +5,7 @@ import { queryOrThrow, button, div, text, canvas } from "./ui/utils";
 import { createMenu } from "./ui/menu";
 import { createToolOptions } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
+import { createLoadMenu } from "./ui/load";
 
 createSaveMenu
 
@@ -223,23 +224,8 @@ window.onload = function() {
   )
 
   menuDiv.append(
-    createMenu("load-menu", [ 
-    button(
-      {
-        id: "loadbutton",
-        class: "horizontal"
-      },
-      [text("load")],
-      {
-        click: event => {
-          const json = window.localStorage.getItem("saved");
-          if (json) {
-            paper.project.deselectAll();
-            paper.project.clear();
-            paper.project.importJSON(json);
-          }
-        }
-      })], {
+    createMenu("load-menu", [ createLoadMenu(documentView)
+    ], {
       title: "Style",
       minimized: false,
       class: "loadArea"

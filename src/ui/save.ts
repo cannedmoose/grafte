@@ -31,7 +31,7 @@ export function createSaveMenu(document: paper.View) {
               let svg = paper.project.exportSVG({ asString: "true", bounds: document.bounds }) as string;
               blob = new Blob(
                 [svg],
-                { type: 'text/svg' }
+                { type: 'image/svg' }
               );
               downloadBlob(blob, "image.svg");
               break;

@@ -4,14 +4,17 @@ import { viewProject } from "./ui/layers";
 import { queryOrThrow, button, div, text, canvas } from "./ui/utils";
 import { createMenu } from "./ui/menu";
 import { createToolOptions } from "./ui/tools";
+import { createSaveMenu } from "./ui/save";
+
+createSaveMenu
 
 window.onload = function() {
   const canvasDom: HTMLCanvasElement = queryOrThrow(
     "#canvas"
   ) as HTMLCanvasElement;
   const menuDiv = queryOrThrow("#menus");
-  const documentDom = canvas({
-    id: "documentcanvas"
+  const documentViewDom = canvas({
+    id: "documentViewcanvas"
   });
 
   window.onresize = onResize;
@@ -22,20 +25,20 @@ window.onload = function() {
 
   const projectView = paper.project.view;
 
-  const document = new paper.CanvasView(paper.project, documentDom);
-  document.viewSize = new paper.Size(600, 400);
-  document.drawSelection = false;
+  const documentView = new paper.CanvasView(paper.project, documentViewDom);
+  documentView.viewSize = new paper.Size(600, 400);
+  documentView.drawSelection = false;
 
   if (projectView.bounds.width < projectView.bounds.height) {
     // Scale width;
-    projectView.zoom = projectView.bounds.width / (document.bounds.width * 1.1);
+    projectView.zoom = projectView.bounds.width / (documentView.bounds.width * 1.1);
   } else {
-    projectView.zoom = projectView.bounds.height / (document.bounds.height * 1.1);
+    projectView.zoom = projectView.bounds.height / (documentView.bounds.height * 1.1);
   }
 
   projectView.center = new paper.Point(
-    document.bounds.width / 2,
-    document.bounds.height / 2
+    documentView.bounds.width / 2,
+    documentView.bounds.height / 2
   );
 
   // Set up viewport canvas
@@ -52,11 +55,11 @@ window.onload = function() {
       );
 
       viewport.center = new paper.Point(
-        document.bounds.width / 2,
-        document.bounds.height / 2
+        documentView.bounds.width / 2,
+        documentView.bounds.height / 2
       );
       var scaleFactor =
-        Math.max(document.bounds.width, document.bounds.height) * 1.2;
+        Math.max(documentView.bounds.width, documentView.bounds.height) * 1.2;
       viewport.scaling = new paper.Point(
         viewPortRect.width / scaleFactor,
         viewPortRect.height / scaleFactor
@@ -70,8 +73,8 @@ window.onload = function() {
   projectView.on("updated", e => {
     projectView.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
       ctx.save();
-      const tl = matrix.transform(document.bounds.topLeft);
-      const br = matrix.transform(document.bounds.bottomRight);
+      const tl = matrix.transform(documentView.bounds.topLeft);
+      const br = matrix.transform(documentView.bounds.bottomRight);
       ctx.fillStyle = "#99999999";
       let region = new Path2D();
       region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
@@ -88,8 +91,8 @@ window.onload = function() {
     viewport.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
       ctx.save();
       ctx.lineWidth = 1;
-      let tl = matrix.transform(document.bounds.topLeft);
-      let br = matrix.transform(document.bounds.bottomRight);
+      let tl = matrix.transform(documentView.bounds.topLeft);
+      let br = matrix.transform(documentView.bounds.bottomRight);
 
       ctx.fillStyle = "#999999";
       let region = new Path2D();
@@ -155,37 +158,7 @@ window.onload = function() {
               refreshLayers();
             }
           }),
-          layersDiv,
-          button(
-            {
-              id: "savebutton",
-              class: "horizontal"
-            },
-            [text("save")],
-            {
-              click: event => {
-                const json = paper.project.exportJSON({ asString: "true" });
-                window.localStorage.setItem("saved", json);
-              }
-            }
-          ),
-          button(
-            {
-              id: "loadbutton",
-              class: "horizontal"
-            },
-            [text("load")],
-            {
-              click: event => {
-                const json = window.localStorage.getItem("saved");
-                if (json) {
-                  paper.project.deselectAll();
-                  paper.project.clear();
-                  paper.project.importJSON(json);
-                }
-              }
-            }
-          )
+          layersDiv
         ])
       ],
       {
@@ -238,6 +211,38 @@ window.onload = function() {
       class: "toolOptionsArea"
     })
   );
+
+  menuDiv.append(
+    createMenu("save-menu", [createSaveMenu(documentView)], {
+      title: "Style",
+      minimized: false,
+      class: "saveArea"
+    })
+  )
+
+  menuDiv.append(
+    createMenu("load-menu", [ 
+    button(
+      {
+        id: "loadbutton",
+        class: "horizontal"
+      },
+      [text("load")],
+      {
+        click: event => {
+          const json = window.localStorage.getItem("saved");
+          if (json) {
+            paper.project.deselectAll();
+            paper.project.clear();
+            paper.project.importJSON(json);
+          }
+        }
+      })], {
+      title: "Style",
+      minimized: false,
+      class: "loadArea"
+    })
+  )
 
   // SCROLLING WIP
   window.addEventListener("wheel", function(e: WheelEvent) {

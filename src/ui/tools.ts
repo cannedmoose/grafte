@@ -1,3 +1,4 @@
+import * as paper from "paper";
 import { div, slider, color } from "./utils";
 
 export function createToolOptions(canvas: paper.Project) {

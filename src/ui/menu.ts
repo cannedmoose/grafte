@@ -1,4 +1,3 @@
-import * as paper from "paper";
 import { div, checkbox, text } from "./utils";
 
 /**

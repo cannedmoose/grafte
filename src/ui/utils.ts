@@ -2,6 +2,25 @@ export function text(data): Node {
   return document.createTextNode(data);
 }
 
+export function select(
+  attribs: { [key: string]: string },
+  children: Node[],
+  events: { [key: string]: (event) => void } = {}
+): HTMLSelectElement {
+  const el = document.createElement("select");
+  elHelper(el, attribs, children, events);
+  return el;
+}
+
+export function option(
+  attribs: { [key: string]: string },
+  children: Node[]
+): HTMLOptionElement {
+  const el = document.createElement("option");
+  elHelper(el, attribs, children);
+  return el;
+}
+
 export function div(
   attribs: { [key: string]: string },
   children: Node[],

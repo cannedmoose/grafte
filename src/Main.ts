@@ -7,7 +7,9 @@ import { createToolOptions } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
 import { createLoadMenu } from "./ui/load";
 
-createSaveMenu
+/**
+ * TODO resize view handler so we can change document size.
+ */
 
 window.onload = function() {
   const canvasDom: HTMLCanvasElement = queryOrThrow(

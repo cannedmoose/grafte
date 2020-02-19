@@ -72,9 +72,12 @@ window.onload = function() {
       ctx.save();
       const tl = matrix.transform(document.bounds.topLeft);
       const br = matrix.transform(document.bounds.bottomRight);
-      ctx.strokeStyle = "#333333";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      ctx.fillStyle = "#99999999";
+      let region = new Path2D();
+      region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      region.rect(0, 0, projectView.element.width, projectView.element.height);
+      ctx.clip(region, "evenodd");
+      ctx.fillRect(0, 0, projectView.element.width, projectView.element.height);
       ctx.restore();
     });
     viewport.markDirty();
@@ -87,8 +90,16 @@ window.onload = function() {
       ctx.lineWidth = 1;
       let tl = matrix.transform(document.bounds.topLeft);
       let br = matrix.transform(document.bounds.bottomRight);
-      ctx.strokeStyle = "#333333";
-      ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+
+      ctx.fillStyle = "#999999";
+      let region = new Path2D();
+      region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      region.rect(0, 0, projectView.element.width, projectView.element.height);
+      ctx.clip(region, "evenodd");
+      ctx.fillRect(0, 0, projectView.element.width, projectView.element.height);
+      ctx.restore();
+
+      ctx.save();
 
       tl = matrix.transform(projectView.bounds.topLeft);
       br = matrix.transform(projectView.bounds.bottomRight);

@@ -23,6 +23,7 @@ export function createLoadMenu(document: paper.View) {
             });
         } else if(file.type == "image/png" || file.type == "image/png") {
           let l = new paper.Raster(URL.createObjectURL(file));
+          // Todo resize canvas
           l.smoothing = false;
         } else {
           console.log(file.type);

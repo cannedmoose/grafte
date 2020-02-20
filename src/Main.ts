@@ -9,131 +9,96 @@ import { createLoadMenu } from "./ui/load";
 
 /**
  * TODO resize view handler so we can change document size.
+ * Important concepts:
+ * Viewport: the main view of the project
+ * preview: smaller preview window of the project
+ * page: the vview of the window that is exported
  */
 
 window.onload = function() {
-  const canvasDom: HTMLCanvasElement = queryOrThrow(
+  const viewportDom: HTMLCanvasElement = queryOrThrow(
     "#canvas"
   ) as HTMLCanvasElement;
   const menuDiv = queryOrThrow("#menus");
-  const documentViewDom = canvas({
-    id: "documentViewcanvas"
+  const pageDom = canvas({
+    id: "pagecanvas"
   });
 
-  window.onresize = onResize;
+  // Set up main viewport
+  paper.setup(viewportDom);
+  const viewport = paper.project.view;
+  resizeViewport(viewport);
+  window.onresize = (e) => resizeViewport(viewport);
 
-  // Set up main canvas
-  paper.setup(canvasDom);
-  onResize();
+  // Set up page
+  const page = new paper.CanvasView(paper.project, pageDom);
+  page.viewSize = new paper.Size(600, 400);
+  page.drawSelection = false;
+  centerPage(viewport, page);
+  page.on("changed", () => centerPage(viewport, page));
 
-  const projectView = paper.project.view;
-
-  const documentView = new paper.CanvasView(paper.project, documentViewDom);
-  documentView.viewSize = new paper.Size(600, 400);
-  documentView.drawSelection = false;
-
-  if (projectView.bounds.width < projectView.bounds.height) {
-    // Scale width;
-    projectView.zoom = projectView.bounds.width / (documentView.bounds.width * 1.1);
-  } else {
-    projectView.zoom = projectView.bounds.height / (documentView.bounds.height * 1.1);
-  }
-
-  projectView.center = new paper.Point(
-    documentView.bounds.width / 2,
-    documentView.bounds.height / 2
-  );
-
-  // Set up viewport canvas
-  const viewportDom = canvas({});
-  const viewport = new paper.CanvasView(paper.project, viewportDom);
-  viewport.drawSelection = false;
-
-  window.requestAnimationFrame(() => {
-    var viewPortRect = viewportDom.parentElement?.parentElement?.getBoundingClientRect();
-    if (viewPortRect) {
-      viewport.viewSize = new paper.Size(
-        viewPortRect.width,
-        viewPortRect.height
-      );
-
-      viewport.center = new paper.Point(
-        documentView.bounds.width / 2,
-        documentView.bounds.height / 2
-      );
-      var scaleFactor =
-        Math.max(documentView.bounds.width, documentView.bounds.height) * 1.2;
-      viewport.scaling = new paper.Point(
-        viewPortRect.width / scaleFactor,
-        viewPortRect.height / scaleFactor
-      );
-    }
-  });
+  // Set up preview canvas
+  const previewDom = canvas({});
+  const preview = new paper.CanvasView(paper.project, previewDom);
+  preview.drawSelection = false;
+  resizePreview(viewport, preview, page);
+  viewport.on("changed", () => resizePreview(viewport, preview, page));
 
   paper.project.currentStyle.strokeWidth = 1;
   paper.project.currentStyle.strokeColor = new paper.Color("black");
   paper.project.currentStyle.strokeCap = "round";
   paper.project.currentStyle.strokeJoin = "round";
+  paper.settings.handleSize = 6;
 
-  projectView.on("updated", e => {
-    projectView.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
-      ctx.save();
-      const tl = matrix.transform(documentView.bounds.topLeft);
-      const br = matrix.transform(documentView.bounds.bottomRight);
-      ctx.fillStyle = "#99999999";
-      let region = new Path2D();
-      region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
-      region.rect(0, 0, projectView.element.width, projectView.element.height);
-      ctx.clip(region, "evenodd");
-      ctx.fillRect(0, 0, projectView.element.width, projectView.element.height);
-      ctx.restore();
-    });
-    viewport.markDirty();
-    refreshLayers();
-  });
-
+  // Draw page window onto viewport
   viewport.on("updated", e => {
     viewport.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
       ctx.save();
+      const tl = matrix.transform(page.bounds.topLeft);
+      const br = matrix.transform(page.bounds.bottomRight);
+      ctx.fillStyle = "#99999999";
+      let region = new Path2D();
+      region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      region.rect(0, 0, viewport.element.width, viewport.element.height);
+      ctx.clip(region, "evenodd");
+      ctx.fillRect(0, 0, viewport.element.width, viewport.element.height);
+      ctx.restore();
+    });
+    preview.markDirty();
+    refreshLayers();
+  });
+
+  // Draw page window and viewport rect onto preview
+  preview.on("updated", e => {
+    preview.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
+      ctx.save();
       ctx.lineWidth = 1;
-      let tl = matrix.transform(documentView.bounds.topLeft);
-      let br = matrix.transform(documentView.bounds.bottomRight);
+      let tl = matrix.transform(page.bounds.topLeft);
+      let br = matrix.transform(page.bounds.bottomRight);
 
       ctx.fillStyle = "#999999";
       let region = new Path2D();
       region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
-      region.rect(0, 0, projectView.element.width, projectView.element.height);
+      region.rect(0, 0, viewport.element.width, viewport.element.height);
       ctx.clip(region, "evenodd");
-      ctx.fillRect(0, 0, projectView.element.width, projectView.element.height);
+      ctx.fillRect(0, 0, viewport.element.width, viewport.element.height);
       ctx.restore();
 
       ctx.save();
 
-      tl = matrix.transform(projectView.bounds.topLeft);
-      br = matrix.transform(projectView.bounds.bottomRight);
+      tl = matrix.transform(viewport.bounds.topLeft);
+      br = matrix.transform(viewport.bounds.bottomRight);
       ctx.strokeStyle = "#009dec";
       ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
       ctx.restore();
     });
   });
 
-  viewport.on("mousedown", e => {
-    projectView.center = e.point;
-    e.stop();
-  });
-  viewport.on("mousedrag", e => {
-    projectView.center = e.point;
-    e.stop();
-  });
-  viewport.on("mouseup", e => {
-    projectView.center = e.point;
-    e.stop();
-  });
   menuDiv.appendChild(
-    createMenu("viewport-menu", [viewportDom], {
+    createMenu("preview-menu", [previewDom], {
       title: "Viewport",
       minimized: false,
-      class: "viewportArea"
+      class: "previewArea"
     })
   );
 
@@ -218,7 +183,7 @@ window.onload = function() {
   );
 
   menuDiv.append(
-    createMenu("save-menu", [createSaveMenu(documentView)], {
+    createMenu("save-menu", [createSaveMenu(page)], {
       title: "Style",
       minimized: false,
       class: "saveArea"
@@ -226,7 +191,7 @@ window.onload = function() {
   )
 
   menuDiv.append(
-    createMenu("load-menu", [ createLoadMenu(documentView)
+    createMenu("load-menu", [ createLoadMenu(page)
     ], {
       title: "Style",
       minimized: false,
@@ -234,55 +199,126 @@ window.onload = function() {
     })
   )
 
-  // SCROLLING WIP
+  // ZOOM
+  // TODO WIP, make better...
   window.addEventListener("wheel", function(e: WheelEvent) {
-    /**
-     * Have mouse coords in view space
-     * want to zoom and maintain mouse coords in project space
-     *
-     * TODO add max/min zoom levels
-     */
     e.stopPropagation();
     e.preventDefault();
+
+    // Max/min zoom should depend on document size compared to viewport size
+    // min size should be a 10th of the document
+    // max size should be 2x document
+
+    let maxZoom, minZoom;
+    if (viewport.bounds.width > viewport.bounds.height) {
+      maxZoom = viewport.viewSize.height / (page.viewSize.height * 2);
+      minZoom = viewport.viewSize.height / (page.viewSize.height * .2);
+    } else {
+      maxZoom = viewport.viewSize.width / (page.viewSize.width * 2);
+      minZoom = viewport.viewSize.width / (page.viewSize.width * .2);
+    }
+
+    console.log(maxZoom, minZoom);
+
+    // Zoom in/out
     let newZoom = Math.min(
-      Math.max(0.25, projectView.zoom + e.deltaY * 0.1),
-      4
+      Math.max(maxZoom, viewport.zoom + e.deltaY * 0.1),
+      minZoom
     );
 
-    let rect = projectView.element.getBoundingClientRect();
+    // Recenter viewport
+    let rect = viewport.element.getBoundingClientRect();
     let mousePoint = new paper.Point(e.x - rect.x, e.y - rect.y);
-    let oldMouse = projectView.viewToProject(mousePoint);
+    let oldMouse = viewport.viewToProject(mousePoint);
+    viewport.zoom = newZoom;
 
-    projectView.zoom = newZoom;
-    let newMouuse = projectView.viewToProject(mousePoint);
-    let newCenter = projectView.center.add(oldMouse.subtract(newMouuse));
-    projectView.center = newCenter;
-
-    projectView.requestUpdate();
+    let newMouuse = viewport.viewToProject(mousePoint);
+    let newCenter = viewport.center.add(oldMouse.subtract(newMouuse));
+    viewport.center = newCenter;
   });
+  function moveviewport(e:paper.MouseEvent) {
+    if (page.bounds.contains(e.point)){
+      viewport.center = e.point;
+    } else {
+      // TODO find closest edge to stick to
+      viewport.center = e.point;
+    }
+    e.stop();
+  }
+  preview.on("mousedown", moveviewport);
+  preview.on("mousedrag", moveviewport);
+  preview.on("mouseup", moveviewport);
 };
 
-function onResize(event?) {
-  var bounds = queryOrThrow(".drawingArea").getBoundingClientRect();
-  paper.project.view.viewSize = new paper.Size(bounds.width, bounds.height);
+function centerPage(viewport: paper.View, page: paper.View) {
+  window.requestAnimationFrame(() => {
+    if (viewport.bounds.width < viewport.bounds.height) {
+      viewport.zoom = viewport.bounds.height / (page.bounds.height * 1.1);
+    } else {
+      viewport.zoom = viewport.bounds.width / (page.bounds.width * 1.1);
+    }
+  
+    viewport.center = new paper.Point(
+      page.bounds.width / 2,
+      page.bounds.height / 2
+    );
+  });
+}
 
-  const canvasDom: HTMLCanvasElement = queryOrThrow(
-    "#backgroundcanvas"
-  ) as HTMLCanvasElement;
-  const ctx = canvasDom.getContext("2d");
-  const bgPattern = makeBgPattern(ctx);
+function resizePreview(viewport: paper.View, preview: paper.View, page: paper.View) {
+  window.requestAnimationFrame(() => {
+    var previewRect = preview.element.parentElement?.parentElement?.getBoundingClientRect();
+    if (!previewRect) return;
+    preview.viewSize = new paper.Size(
+      previewRect.width,
+      previewRect.height
+    );
 
-  canvasDom.width = bounds.width;
-  canvasDom.height = bounds.height;
+    // Zoom out to show both viewport and document
+    const minX = Math.min(viewport.bounds.topLeft.x, page.bounds.topLeft.x);
+    const minY = Math.min(viewport.bounds.topLeft.y, page.bounds.topLeft.y);
+    const maxX = Math.max(viewport.bounds.bottomRight.x, page.bounds.bottomRight.x);
+    const maxY = Math.max(viewport.bounds.bottomRight.y, page.bounds.bottomRight.y);
 
-  if (!ctx) {
-    throw "No background context";
-  }
-  ctx.fillStyle = bgPattern;
-  ctx.fillRect(0, 0, bounds.width, bounds.height);
+    // Always center on the document
+    preview.center = new paper.Point(minX + (maxX - minX)/2, minY + (maxY - minY)/2);
+    var scaleFactor =
+      2*Math.max(preview.center.x - minX, preview.center.y - minY, maxX - preview.center.x, maxY - preview.center.y) * 1.2;
+    preview.scaling = new paper.Point(
+      previewRect.width / scaleFactor,
+      previewRect.height / scaleFactor
+    );
+  });
+}
+
+function resizeViewport(viewport: paper.View) {
+  window.requestAnimationFrame(() => {
+    var viewportRect = viewport.element.parentElement?.getBoundingClientRect();
+    if (!viewportRect) return;
+    viewport.viewSize = new paper.Size(
+      viewportRect.width,
+      viewportRect.height
+    );
+
+    const backgroundDom: HTMLCanvasElement = queryOrThrow(
+      "#backgroundcanvas"
+    ) as HTMLCanvasElement;
+    const ctx = backgroundDom.getContext("2d");
+    const bgPattern = makeBgPattern(ctx);
+  
+    backgroundDom.width = viewportRect.width;
+    backgroundDom.height = viewportRect.height;
+  
+    if (!ctx) {
+      throw "No background context";
+    }
+    ctx.fillStyle = bgPattern;
+    ctx.fillRect(0, 0, viewportRect.width, viewportRect.height);
+  });
 }
 
 function makeBgPattern(ctx) {
+  // TODO cache this, it's a memory leak...
   // Create a pattern, offscreen
   const patternCanvas = document.createElement("canvas");
   const patternContext = patternCanvas.getContext("2d");

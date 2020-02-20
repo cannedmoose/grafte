@@ -39,7 +39,7 @@ function viewItemLabel(item: paper.Item, depth: number): HTMLElement {
       []
     ),
     // For label, variable width
-    div({ style: `font-weight:${weight}` }, [text(item.name)])
+    div({ style: `font-weight:${weight}; background-color:${item.selected? "cyan": "white"}` }, [text(item.name)])
   ]);
 }
 
@@ -75,12 +75,23 @@ function viewItem(
       viewItemControls(item, updated)
     ],
     {
-      click: event => {
+      click: (event:MouseEvent) => {
         if (item.className == "Layer") {
           (item as paper.Layer).activate();
         } else {
-          // TODO
-          //deselectAll(ctx, item);
+          if (item.selected) {
+            if(!event.shiftKey) {
+              paper.project.deselectAll();
+              item.selected = true;
+            } else {
+              item.selected = false;
+            }
+          } else {
+            if(!event.shiftKey) {
+              paper.project.deselectAll();
+            }
+            item.selected = true;
+          }
         }
         updated();
       }
@@ -107,7 +118,7 @@ export function viewProject(project: paper.Project, updated: () => void) {
   for (let i = 0; i < project.layers.length; i++) {
     const layer = project.layers[i];
     results.push(viewItem(project.layers[i], 0, updated));
-    //addChildren(results, layer, 0, updated);
+    addChildren(results, layer, 0, updated);
   }
 
   // All items container

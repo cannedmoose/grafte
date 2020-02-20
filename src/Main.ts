@@ -28,7 +28,7 @@ window.onload = function() {
   paper.setup(viewportDom);
   const viewport = paper.project.view;
   resizeViewport(viewport);
-  window.onresize = (e) => resizeViewport(viewport);
+  window.onresize = e => resizeViewport(viewport);
 
   // Set up page
   const page = new paper.CanvasView(paper.project, pageDom);
@@ -121,13 +121,37 @@ window.onload = function() {
       "layers-menu",
       [
         div({ class: "vertical" }, [
-          button({ id: "addlayer", class: "horizontal" }, [text("add")], {
-            click: event => {
-              paper.project.activate();
-              let layer = new paper.Layer();
-              refreshLayers();
-            }
-          }),
+          div({ class: "horizontal" }, [
+            button({ id: "addlayer" }, [text("add")], {
+              click: event => {
+                new paper.Layer();
+                refreshLayers();
+              }
+            }),
+            button({ id: "addlayer"}, [text("up")], {
+              // TODO fix these, they should do one pass to calculate final state
+              // rather than a bunch of inserts/not
+              // also consider moving into layer above/below
+              click: event => {
+                paper.project.selectedItems.forEach(item => {
+                  const index = item.parent.children.indexOf(item);
+                  if(index > 0){
+                    item.parent.insertChild(index - 1, item);
+                  }
+                });
+              }
+            }),
+            button({ id: "addlayer"}, [text("down")], {
+              click: event => {
+                paper.project.selectedItems.forEach(item => {
+                  const index = item.parent.children.indexOf(item);
+                  if(index < item.parent.children.length - 1){
+                    item.parent.insertChild(index + 1, item);
+                  }
+                });
+              }
+            })
+          ]),
           layersDiv
         ])
       ],
@@ -188,16 +212,15 @@ window.onload = function() {
       minimized: false,
       class: "saveArea"
     })
-  )
+  );
 
   menuDiv.append(
-    createMenu("load-menu", [ createLoadMenu(page)
-    ], {
+    createMenu("load-menu", [createLoadMenu(page)], {
       title: "Style",
       minimized: false,
       class: "loadArea"
     })
-  )
+  );
 
   // ZOOM
   // TODO WIP, make better...
@@ -212,10 +235,10 @@ window.onload = function() {
     let maxZoom, minZoom;
     if (viewport.bounds.width > viewport.bounds.height) {
       maxZoom = viewport.viewSize.height / (page.viewSize.height * 2);
-      minZoom = viewport.viewSize.height / (page.viewSize.height * .2);
+      minZoom = viewport.viewSize.height / (page.viewSize.height * 0.2);
     } else {
       maxZoom = viewport.viewSize.width / (page.viewSize.width * 2);
-      minZoom = viewport.viewSize.width / (page.viewSize.width * .2);
+      minZoom = viewport.viewSize.width / (page.viewSize.width * 0.2);
     }
 
     console.log(maxZoom, minZoom);
@@ -236,8 +259,8 @@ window.onload = function() {
     let newCenter = viewport.center.add(oldMouse.subtract(newMouuse));
     viewport.center = newCenter;
   });
-  function moveviewport(e:paper.MouseEvent) {
-    if (page.bounds.contains(e.point)){
+  function moveviewport(e: paper.MouseEvent) {
+    if (page.bounds.contains(e.point)) {
       viewport.center = e.point;
     } else {
       // TODO find closest edge to stick to
@@ -257,7 +280,7 @@ function centerPage(viewport: paper.View, page: paper.View) {
     } else {
       viewport.zoom = viewport.bounds.width / (page.bounds.width * 1.1);
     }
-  
+
     viewport.center = new paper.Point(
       page.bounds.width / 2,
       page.bounds.height / 2
@@ -265,25 +288,42 @@ function centerPage(viewport: paper.View, page: paper.View) {
   });
 }
 
-function resizePreview(viewport: paper.View, preview: paper.View, page: paper.View) {
+function resizePreview(
+  viewport: paper.View,
+  preview: paper.View,
+  page: paper.View
+) {
   window.requestAnimationFrame(() => {
     var previewRect = preview.element.parentElement?.parentElement?.getBoundingClientRect();
     if (!previewRect) return;
-    preview.viewSize = new paper.Size(
-      previewRect.width,
-      previewRect.height
-    );
+    preview.viewSize = new paper.Size(previewRect.width, previewRect.height);
 
     // Zoom out to show both viewport and document
     const minX = Math.min(viewport.bounds.topLeft.x, page.bounds.topLeft.x);
     const minY = Math.min(viewport.bounds.topLeft.y, page.bounds.topLeft.y);
-    const maxX = Math.max(viewport.bounds.bottomRight.x, page.bounds.bottomRight.x);
-    const maxY = Math.max(viewport.bounds.bottomRight.y, page.bounds.bottomRight.y);
+    const maxX = Math.max(
+      viewport.bounds.bottomRight.x,
+      page.bounds.bottomRight.x
+    );
+    const maxY = Math.max(
+      viewport.bounds.bottomRight.y,
+      page.bounds.bottomRight.y
+    );
 
     // Always center on the document
-    preview.center = new paper.Point(minX + (maxX - minX)/2, minY + (maxY - minY)/2);
+    preview.center = new paper.Point(
+      minX + (maxX - minX) / 2,
+      minY + (maxY - minY) / 2
+    );
     var scaleFactor =
-      2*Math.max(preview.center.x - minX, preview.center.y - minY, maxX - preview.center.x, maxY - preview.center.y) * 1.2;
+      2 *
+      Math.max(
+        preview.center.x - minX,
+        preview.center.y - minY,
+        maxX - preview.center.x,
+        maxY - preview.center.y
+      ) *
+      1.2;
     preview.scaling = new paper.Point(
       previewRect.width / scaleFactor,
       previewRect.height / scaleFactor
@@ -295,20 +335,17 @@ function resizeViewport(viewport: paper.View) {
   window.requestAnimationFrame(() => {
     var viewportRect = viewport.element.parentElement?.getBoundingClientRect();
     if (!viewportRect) return;
-    viewport.viewSize = new paper.Size(
-      viewportRect.width,
-      viewportRect.height
-    );
+    viewport.viewSize = new paper.Size(viewportRect.width, viewportRect.height);
 
     const backgroundDom: HTMLCanvasElement = queryOrThrow(
       "#backgroundcanvas"
     ) as HTMLCanvasElement;
     const ctx = backgroundDom.getContext("2d");
     const bgPattern = makeBgPattern(ctx);
-  
+
     backgroundDom.width = viewportRect.width;
     backgroundDom.height = viewportRect.height;
-  
+
     if (!ctx) {
       throw "No background context";
     }

@@ -26,7 +26,7 @@ export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
       }
     } else {
       canvas.deselectAll();
-    } // TODO else drag select
+    } // TODO else drag select, need to implement guides...
   };
 
   selectTool.onMouseDrag = function(event: paper.ToolEvent) {
@@ -36,6 +36,13 @@ export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
   };
 
   selectTool.onMouseUp = function(event: paper.ToolEvent) {};
+
+  selectTool.onKeyDown = function(event: paper.KeyEvent) {
+    // TODO figure out delete key
+    if(event.key == "d") {
+      paper.project.selectedItems.forEach(item => item.remove());
+    }
+  };
 
   return selectTool;
 }

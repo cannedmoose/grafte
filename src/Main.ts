@@ -24,6 +24,13 @@ window.onload = function() {
     id: "pagecanvas"
   });
 
+  // Prevent backspace key from going back.
+  window.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.key == "Backspace") {
+      event.preventDefault();
+    }
+  });
+
   // Set up main viewport
   paper.setup(viewportDom);
   const viewport = paper.project.view;
@@ -111,11 +118,6 @@ window.onload = function() {
   };
   window.requestAnimationFrame(refreshLayers);
 
-  let { circleTool, penTool, rectTool, selectTool } = createTools(
-    paper.project
-  );
-  penTool.activate();
-
   menuDiv.appendChild(
     createMenu(
       "layers-menu",
@@ -128,24 +130,24 @@ window.onload = function() {
                 refreshLayers();
               }
             }),
-            button({ id: "addlayer"}, [text("up")], {
+            button({ id: "addlayer" }, [text("up")], {
               // TODO fix these, they should do one pass to calculate final state
               // rather than a bunch of inserts/not
               // also consider moving into layer above/below
               click: event => {
                 paper.project.selectedItems.forEach(item => {
                   const index = item.parent.children.indexOf(item);
-                  if(index > 0){
+                  if (index > 0) {
                     item.parent.insertChild(index - 1, item);
                   }
                 });
               }
             }),
-            button({ id: "addlayer"}, [text("down")], {
+            button({ id: "addlayer" }, [text("down")], {
               click: event => {
                 paper.project.selectedItems.forEach(item => {
                   const index = item.parent.children.indexOf(item);
-                  if(index < item.parent.children.length - 1){
+                  if (index < item.parent.children.length - 1) {
                     item.parent.insertChild(index + 1, item);
                   }
                 });
@@ -163,32 +165,21 @@ window.onload = function() {
     )
   );
 
+  createTools(paper.project);
   menuDiv.appendChild(
     createMenu(
       "tool-menu",
       [
-        div({ class: "vertical" }, [
-          button({}, [text("select")], {
-            click: () => {
-              selectTool.activate();
-            }
-          }),
-          button({}, [text("elipse")], {
-            click: () => {
-              circleTool.activate();
-            }
-          }),
-          button({}, [text("rect")], {
-            click: () => {
-              rectTool.activate();
-            }
-          }),
-          button({}, [text("pen")], {
-            click: () => {
-              penTool.activate();
-            }
-          })
-        ])
+        div(
+          { class: "vertical" },
+          paper.tools.map(tool =>
+            button({}, [text(tool.name)], {
+              click: () => {
+                tool.activate();
+              }
+            })
+          )
+        )
       ],
       {
         title: "Tools",
@@ -222,15 +213,9 @@ window.onload = function() {
     })
   );
 
-  // ZOOM
-  // TODO WIP, make better...
   window.addEventListener("wheel", function(e: WheelEvent) {
     e.stopPropagation();
     e.preventDefault();
-
-    // Max/min zoom should depend on document size compared to viewport size
-    // min size should be a 10th of the document
-    // max size should be 2x document
 
     let maxZoom, minZoom;
     if (viewport.bounds.width > viewport.bounds.height) {
@@ -241,8 +226,7 @@ window.onload = function() {
       minZoom = viewport.viewSize.width / (page.viewSize.width * 0.2);
     }
 
-    console.log(maxZoom, minZoom);
-
+    // TODO smoother zooming
     // Zoom in/out
     let newZoom = Math.min(
       Math.max(maxZoom, viewport.zoom + e.deltaY * 0.1),

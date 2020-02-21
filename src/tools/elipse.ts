@@ -2,6 +2,7 @@ import * as paper from "paper";
 
 export function elipseTool({ canvas }): paper.Tool {
   const elipseTool = new paper.Tool();
+  elipseTool.name = "elipse";
 
   elipseTool.onMouseDown = function(event: paper.MouseEvent) {
     canvas.deselectAll();

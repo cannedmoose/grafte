@@ -2,6 +2,7 @@ import * as paper from "paper";
 
 export function rectangleTool({ canvas }): paper.Tool {
   const rectangleTool = new paper.Tool();
+  rectangleTool.name = "rectangle";
 
   rectangleTool.onMouseDown = function(event: paper.MouseEvent) {
     canvas.deselectAll();

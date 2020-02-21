@@ -2,6 +2,7 @@ import * as paper from "paper";
 
 export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
   const selectTool = new paper.Tool();
+  selectTool.name = "select";
 
   /**
    * Note if it complains about return it means we're missing a switch
@@ -39,7 +40,8 @@ export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
 
   selectTool.onKeyDown = function(event: paper.KeyEvent) {
     // TODO figure out delete key
-    if(event.key == "d") {
+    console.log(event.key);
+    if(event.key == "backspace") {
       paper.project.selectedItems.forEach(item => item.remove());
     }
   };

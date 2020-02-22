@@ -3,7 +3,7 @@ import { createTools } from "./tools/tools";
 import { viewProject } from "./ui/layers";
 import { queryOrThrow, button, div, text, canvas } from "./ui/utils";
 import { createMenu } from "./ui/menu";
-import { createToolOptions } from "./ui/tools";
+import { createToolOptions, createToolMenu } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
 import { createLoadMenu } from "./ui/load";
 
@@ -167,26 +167,11 @@ window.onload = function() {
 
   createTools(paper.project);
   menuDiv.appendChild(
-    createMenu(
-      "tool-menu",
-      [
-        div(
-          { class: "vertical" },
-          paper.tools.map(tool =>
-            button({}, [text(tool.name)], {
-              click: () => {
-                tool.activate();
-              }
-            })
-          )
-        )
-      ],
-      {
-        title: "Tools",
-        minimized: false,
-        class: "toolArea"
-      }
-    )
+    createMenu("tool-menu", [createToolMenu()], {
+      title: "Tools",
+      minimized: false,
+      class: "toolArea"
+    })
   );
 
   menuDiv.appendChild(

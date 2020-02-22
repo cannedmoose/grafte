@@ -1,5 +1,22 @@
 import * as paper from "paper";
-import { div, slider, color } from "./utils";
+import { div, slider, color, button, text, queryOrThrow } from "./utils";
+
+export function createToolMenu() {
+  // TODO we should be listening to on activate/deactivate and bolding/unbolding buttons based on that.
+  const createToolButtons = () => paper.tools.map(tool =>
+    button({style: paper.tool == tool ? "font-weight:bold" : "" }, [text(tool.name)], {
+      click: () => {
+        tool.activate();
+        var menu_el = queryOrThrow("#tool-menu");
+        while (menu_el.firstChild) menu_el.removeChild(menu_el.firstChild);
+        createToolButtons().forEach(child => menu_el.appendChild(child));
+      }
+    })
+  );
+  return div(
+    { class: "vertical", id: "tool-menu"}, createToolButtons()
+  )
+}
 
 export function createToolOptions(canvas: paper.Project) {
   return div({ class: "vertical" }, [

@@ -4,11 +4,13 @@ export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
   const selectTool = new paper.Tool();
   selectTool.name = "select";
 
+  let selectionRectangle: paper.Shape | undefined;
+
   /**
    * Note if it complains about return it means we're missing a switch
    */
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
-    var hitResult = canvas.hitTest(event.point);
+    var hitResult = canvas.hitTest(event.point, {tolerance: 5, fill: true, stroke: true});
 
     if (hitResult) {
       if (event.modifiers.shift) {
@@ -26,22 +28,43 @@ export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
         }
       }
     } else {
-      canvas.deselectAll();
-    } // TODO else drag select, need to implement guides...
+      if (!event.modifiers.shift) {
+        canvas.deselectAll();
+      }
+      selectionRectangle = new paper.Shape.Rectangle(
+        event.point,
+        new paper.Size(0, 0)
+      );
+      selectionRectangle.removeOnUp();
+      // TODO
+      //selectionRectangle.guide = true;
+
+      selectionRectangle.strokeColor = new paper.Color("red");
+    }
   };
 
   selectTool.onMouseDrag = function(event: paper.ToolEvent) {
-    canvas.selectedItems.forEach(item => {
-      item.translate(event.delta);
-    });
+    if (selectionRectangle) {
+      selectionRectangle.size = new paper.Size(event.downPoint.subtract(event.point));
+      selectionRectangle.position = event.downPoint.subtract(event.downPoint.subtract(event.point).divide(2));
+    } else {
+      canvas.selectedItems.forEach(item => {
+        item.translate(event.delta);
+      });
+    }
   };
 
-  selectTool.onMouseUp = function(event: paper.ToolEvent) {};
+  selectTool.onMouseUp = function(event: paper.ToolEvent) {
+    if(selectionRectangle) {
+      paper.project.activeLayer.getItems({inside: selectionRectangle.bounds}).forEach(item => item.selected = true);
+      selectionRectangle = undefined;
+    }
+  };
 
   selectTool.onKeyDown = function(event: paper.KeyEvent) {
     // TODO figure out delete key
     console.log(event.key);
-    if(event.key == "backspace") {
+    if (event.key == "backspace") {
       paper.project.selectedItems.forEach(item => item.remove());
     }
   };

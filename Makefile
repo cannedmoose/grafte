@@ -14,9 +14,7 @@ BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
 .PHONY: release
 release:
-	git checkout master
-	git merge $(BRANCH)
-	make clean
 	make build
-	git commit -a -m "release"
-	git push
+	rm -rf docs
+	mkdir docs
+	cp build/* docs/

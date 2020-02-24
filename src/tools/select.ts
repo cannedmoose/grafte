@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
+export function selectTool(canvas, history): paper.Tool {
   const selectTool = new paper.Tool();
   selectTool.name = "select";
 
@@ -10,7 +10,11 @@ export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
    * Note if it complains about return it means we're missing a switch
    */
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
-    var hitResult = canvas.hitTest(event.point, {tolerance: 5, fill: true, stroke: true});
+    var hitResult = canvas.hitTest(event.point, {
+      tolerance: 5,
+      fill: true,
+      stroke: true
+    });
 
     if (hitResult) {
       if (event.modifiers.shift) {
@@ -40,13 +44,18 @@ export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
       //selectionRectangle.guide = true;
 
       selectionRectangle.strokeColor = new paper.Color("red");
+      selectionRectangle.strokeWidth = 1;
     }
   };
 
   selectTool.onMouseDrag = function(event: paper.ToolEvent) {
     if (selectionRectangle) {
-      selectionRectangle.size = new paper.Size(event.downPoint.subtract(event.point));
-      selectionRectangle.position = event.downPoint.subtract(event.downPoint.subtract(event.point).divide(2));
+      selectionRectangle.size = new paper.Size(
+        event.downPoint.subtract(event.point)
+      );
+      selectionRectangle.position = event.downPoint.subtract(
+        event.downPoint.subtract(event.point).divide(2)
+      );
     } else {
       canvas.selectedItems.forEach(item => {
         item.translate(event.delta);
@@ -55,17 +64,16 @@ export function selectTool({ canvas }: { canvas: paper.Project }): paper.Tool {
   };
 
   selectTool.onMouseUp = function(event: paper.ToolEvent) {
-    if(selectionRectangle) {
-      paper.project.activeLayer.getItems({inside: selectionRectangle.bounds}).forEach(item => item.selected = true);
+    if (selectionRectangle) {
+      paper.project.activeLayer
+        .getItems({ inside: selectionRectangle.bounds })
+        .forEach(item => (item.selected = true));
       selectionRectangle = undefined;
-    }
-  };
-
-  selectTool.onKeyDown = function(event: paper.KeyEvent) {
-    // TODO figure out delete key
-    console.log(event.key);
-    if (event.key == "backspace") {
-      paper.project.selectedItems.forEach(item => item.remove());
+    } else if (
+      paper.project.selectedItems.length > 0 &&
+      event.downPoint.getDistance(event.point)
+    ) {
+      history.commit();
     }
   };
 

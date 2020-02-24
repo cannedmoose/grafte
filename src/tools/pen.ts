@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function penTool({ canvas }): paper.Tool {
+export function penTool(canvas, history): paper.Tool {
   const penTool = new paper.Tool();
   penTool.name = "pen";
 
@@ -36,6 +36,7 @@ export function penTool({ canvas }): paper.Tool {
   };
 
   penTool.onMouseUp = function(event: paper.ToolEvent) {
+    history.commit();
   };
 
   return penTool;

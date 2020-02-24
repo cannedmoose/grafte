@@ -6,6 +6,8 @@ import { createMenu } from "./ui/menu";
 import { createToolOptions, createToolMenu } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
 import { createLoadMenu } from "./ui/load";
+import { KeyboardHandler } from "./ui/keyboard";
+import { GrafteHistory } from "./tools/history";
 
 /**
  * TODO resize view handler so we can change document size.
@@ -22,13 +24,6 @@ window.onload = function() {
   const menuDiv = queryOrThrow("#menus");
   const pageDom = canvas({
     id: "pagecanvas"
-  });
-
-  // Prevent backspace key from going back.
-  window.addEventListener("keydown", (event: KeyboardEvent) => {
-    if (event.key == "Backspace") {
-      event.preventDefault();
-    }
   });
 
   // Set up main viewport
@@ -100,6 +95,28 @@ window.onload = function() {
       ctx.restore();
     });
   });
+  
+
+  const history = new GrafteHistory(paper.project);
+  createTools(paper.project, history);
+  
+  // Add keyboard event listener and default keyboard events
+  const keyboardHandler = new KeyboardHandler(window);
+  keyboardHandler.addShortcut("backspace", e => {
+    e.preventDefault();
+    paper.project.selectedItems.forEach(item => item.remove());
+    history.commit();
+  });
+
+  keyboardHandler.addShortcut("control+z", e => {
+    e.preventDefault();
+    history.undo();
+  });
+  
+  keyboardHandler.addShortcut("control+shift+z", e => {
+    e.preventDefault();
+    history.redo();
+  });
 
   menuDiv.appendChild(
     createMenu("preview-menu", [previewDom], {
@@ -165,7 +182,6 @@ window.onload = function() {
     )
   );
 
-  createTools(paper.project);
   menuDiv.appendChild(
     createMenu("tool-menu", [createToolMenu()], {
       title: "Tools",
@@ -175,7 +191,7 @@ window.onload = function() {
   );
 
   menuDiv.appendChild(
-    createMenu("tooloptions-menu", [createToolOptions(paper.project)], {
+    createMenu("tooloptions-menu", [createToolOptions(paper.project, history)], {
       title: "Style",
       minimized: false,
       class: "toolOptionsArea"

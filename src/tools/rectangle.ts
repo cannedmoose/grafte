@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function rectangleTool({ canvas }): paper.Tool {
+export function rectangleTool(canvas, history): paper.Tool {
   const rectangleTool = new paper.Tool();
   rectangleTool.name = "rectangle";
 
@@ -13,15 +13,21 @@ export function rectangleTool({ canvas }): paper.Tool {
   rectangleTool.onMouseDrag = function(event: paper.ToolEvent) {
     if (path) path.remove();
     if (!event.modifiers.shift) {
-      path = new paper.Path.Rectangle({
-        center: event.downPoint,
-        size: event.downPoint.subtract(event.point).multiply(2)
-      });
+      path = new paper.Path.Rectangle(event.downPoint, event.point);
     } else {
-      let l = event.downPoint.getDistance(event.point) * Math.sqrt(2);
+      // HACKEY HACKEY HACKEY
+      // Todo find a better way to figure out square points
+      let l = (event.downPoint.getDistance(event.point) * Math.sqrt(2)) / 2;
+      var x = event.point
+        .subtract(event.downPoint)
+        .normalize()
+        .round();
+      if (Math.abs(x.x) == 0) x.x = 1;
+      if (Math.abs(x.y) == 0) x.y = 1;
+      x = x.multiply(l).add(event.downPoint);
       path = new paper.Path.Rectangle({
-        center: event.downPoint,
-        size: new paper.Point(l, l)
+        from: event.downPoint,
+        to: x
       });
     }
   };
@@ -29,6 +35,7 @@ export function rectangleTool({ canvas }): paper.Tool {
   rectangleTool.onMouseUp = function(event: paper.ToolEvent) {
     if (path) path.selected = true;
     path = undefined;
+    history.commit();
   };
   return rectangleTool;
 }

@@ -1,8 +1,8 @@
 import * as paper from "paper";
 
-export function pencilTool({ canvas }): paper.Tool {
+export function pencilTool(canvas, history): paper.Tool {
   const pencilTool = new paper.Tool();
-  pencilTool.name = "pencil";
+  pencilTool.name = "freehand";
   
   pencilTool.minDistance = 1;
   let path;
@@ -28,6 +28,7 @@ export function pencilTool({ canvas }): paper.Tool {
     if (!path) return;
     path.simplify();
     path = undefined;
+    history.commit();
   };
   return pencilTool;
 }

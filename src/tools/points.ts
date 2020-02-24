@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function pointTool({ canvas }: { canvas: paper.Project }): paper.Tool {
+export function pointTool(canvas, history): paper.Tool {
   const selectTool = new paper.Tool();
   selectTool.name = "point";
 
@@ -28,7 +28,7 @@ export function pointTool({ canvas }: { canvas: paper.Project }): paper.Tool {
         hitResult.type == "segment"
       ) {
         dragType = hitResult.type;
-        dragSegment = hitResult.segment;
+        dragSegment = hitResult.segment as paper.Segment;
         dragSegment.selected = true;
         return;
       }
@@ -101,14 +101,7 @@ export function pointTool({ canvas }: { canvas: paper.Project }): paper.Tool {
     } else if (dragSegment && dragType) {
       dragSegment = undefined;
       dragType = undefined;
-    }
-  };
-
-  selectTool.onKeyDown = function(event: paper.KeyEvent) {
-    // TODO figure out delete key
-    console.log(event.key);
-    if (event.key == "backspace") {
-      paper.project.selectedItems.forEach(item => item.remove());
+      history.commit();
     }
   };
 

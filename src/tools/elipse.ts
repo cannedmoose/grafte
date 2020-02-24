@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function elipseTool({ canvas }): paper.Tool {
+export function elipseTool(canvas, history): paper.Tool {
   const elipseTool = new paper.Tool();
   elipseTool.name = "elipse";
 
@@ -23,11 +23,15 @@ export function elipseTool({ canvas }): paper.Tool {
         radius: event.downPoint.getDistance(event.point)
       });
     }
+    path.style = canvas.currentStyle;
   };
 
   elipseTool.onMouseUp = function(event: paper.ToolEvent) {
-    if (path) path.selected = true;
+    if (path) {
+      path.selected = true;
+    }
     path = undefined;
+    history.commit();
   };
   return elipseTool;
 }

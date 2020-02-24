@@ -1,5 +1,6 @@
 import * as paper from "paper";
 import { div, slider, color, button, text, queryOrThrow } from "./utils";
+import { GrafteHistory } from "../tools/history";
 
 export function createToolMenu() {
   // TODO we should be listening to on activate/deactivate and bolding/unbolding buttons based on that.
@@ -18,7 +19,7 @@ export function createToolMenu() {
   )
 }
 
-export function createToolOptions(canvas: paper.Project) {
+export function createToolOptions(canvas: paper.Project, history: GrafteHistory) {
   return div({ class: "vertical" }, [
     slider(
       { value: "1", min: "0", max: "50", step: ".01" },
@@ -26,10 +27,11 @@ export function createToolOptions(canvas: paper.Project) {
         input: event => {
           canvas.currentStyle.strokeWidth = event.target.value;
           canvas.selectedItems.forEach(child => {
-            child.style = canvas.currentStyle;
+            child.strokeWidth = canvas.currentStyle.strokeWidth;
           });
           canvas.view.requestUpdate();
-        }
+        },
+        change: event => history.commit()
       }
     ),
     div({ class: "horizontal" }, [
@@ -39,10 +41,11 @@ export function createToolOptions(canvas: paper.Project) {
           input: event => {
             canvas.currentStyle.strokeColor = event.target.value;
             canvas.selectedItems.forEach(child => {
-              child.style = canvas.currentStyle;
+              child.strokeColor = canvas.currentStyle.strokeColor;
             });
             canvas.view.requestUpdate();
-          }
+          },
+          change: event => history.commit()
         }
       ),
       color(
@@ -51,10 +54,11 @@ export function createToolOptions(canvas: paper.Project) {
           input: event => {
             canvas.currentStyle.fillColor = event.target.value;
             canvas.selectedItems.forEach(child => {
-              child.style = canvas.currentStyle;
+              child.fillColor = canvas.currentStyle.fillColor;
             });
             canvas.view.requestUpdate();
-          }
+          },
+          change: event => history.commit()
         }
       )
     ])

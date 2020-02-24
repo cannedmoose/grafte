@@ -5,6 +5,7 @@
     "sourceMap": true,
     "outDir": "build",
     "rootDir": "src",
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "downlevelIteration": true
   }
 }

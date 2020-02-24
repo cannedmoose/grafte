@@ -31,6 +31,13 @@ export function selectTool(canvas, history): paper.Tool {
           hitResult.item.selected = true;
         }
       }
+
+      if (event.modifiers.alt) {
+        paper.project.selectedItems.forEach(item => {
+          var cloned = item.clone();
+          cloned.selected = false;
+        });
+      }
     } else {
       if (!event.modifiers.shift) {
         canvas.deselectAll();

@@ -99,8 +99,9 @@ function elHelper(
   }
 }
 
-export function queryOrThrow(query: string): Element {
-  let el = document.querySelector(query);
+export function queryOrThrow(query: string, root?: Element | Document): Element {
+  if (!root) root = document;
+  let el = root.querySelector(query);
   if (!el) {
     throw "No element for query selector " + query;
   }

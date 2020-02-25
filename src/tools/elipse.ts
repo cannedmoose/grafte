@@ -1,11 +1,11 @@
 import * as paper from "paper";
 
-export function elipseTool(canvas, history): paper.Tool {
+export function elipseTool(history): paper.Tool {
   const elipseTool = new paper.Tool();
   elipseTool.name = "elipse";
 
   elipseTool.onMouseDown = function(event: paper.MouseEvent) {
-    canvas.deselectAll();
+    paper.project.deselectAll();
   };
 
   let path: paper.Path | undefined;
@@ -23,7 +23,7 @@ export function elipseTool(canvas, history): paper.Tool {
         radius: event.downPoint.getDistance(event.point)
       });
     }
-    path.style = canvas.currentStyle;
+    path.style = paper.project.currentStyle;
   };
 
   elipseTool.onMouseUp = function(event: paper.ToolEvent) {

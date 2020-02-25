@@ -1,9 +1,8 @@
 import * as paper from "paper";
-import { createTools } from "./tools/tools";
 import { viewProject } from "./ui/layers";
-import { queryOrThrow, button, div, text, canvas } from "./ui/utils";
+import { queryOrThrow, button, div, text,  canvas} from "./ui/utils";
 import { createMenu } from "./ui/menu";
-import { createToolOptions, createToolMenu } from "./ui/tools";
+import { createToolOptions, ToolBelt } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
 import { createLoadMenu } from "./ui/load";
 import { KeyboardHandler } from "./ui/keyboard";
@@ -23,13 +22,14 @@ window.onload = function() {
   ) as HTMLCanvasElement;
   const menuDiv = queryOrThrow("#menus");
   const pageDom = canvas({
-    id: "pagecanvas"
+    id: "canvaspage"
   });
 
   // Set up main viewport
   paper.setup(viewportDom);
   const viewport = paper.project.view;
   resizeViewport(viewport);
+  console.log("vp1", viewport);
   window.onresize = e => resizeViewport(viewport);
 
   // Set up page
@@ -39,7 +39,7 @@ window.onload = function() {
   centerPage(viewport, page);
   page.on("changed", () => centerPage(viewport, page));
 
-  // Set up preview canvas
+  // Set up preview paper.project
   const previewDom = canvas({});
   const preview = new paper.CanvasView(paper.project, previewDom);
   preview.drawSelection = false;
@@ -98,10 +98,11 @@ window.onload = function() {
   
 
   const history = new GrafteHistory(paper.project);
-  createTools(paper.project, history);
   
   // Add keyboard event listener and default keyboard events
   const keyboardHandler = new KeyboardHandler(window);
+  const toolBelt = new ToolBelt(history, keyboardHandler);
+
   keyboardHandler.addShortcut("backspace", e => {
     e.preventDefault();
     paper.project.selectedItems.forEach(item => item.remove());
@@ -181,9 +182,8 @@ window.onload = function() {
       }
     )
   );
-
   menuDiv.appendChild(
-    createMenu("tool-menu", [createToolMenu()], {
+    createMenu("tool-menu", [toolBelt.el], {
       title: "Tools",
       minimized: false,
       class: "toolArea"
@@ -191,7 +191,7 @@ window.onload = function() {
   );
 
   menuDiv.appendChild(
-    createMenu("tooloptions-menu", [createToolOptions(paper.project, history)], {
+    createMenu("tooloptions-menu", [createToolOptions(history)], {
       title: "Style",
       minimized: false,
       class: "toolOptionsArea"
@@ -321,6 +321,7 @@ function resizeViewport(viewport: paper.View) {
     var viewportRect = viewport.element.parentElement?.getBoundingClientRect();
     if (!viewportRect) return;
     viewport.viewSize = new paper.Size(viewportRect.width, viewportRect.height);
+    console.log(viewport.viewSize);
 
     const backgroundDom: HTMLCanvasElement = queryOrThrow(
       "#backgroundcanvas"

@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function penTool(canvas, history): paper.Tool {
+export function penTool(history): paper.Tool {
   const penTool = new paper.Tool();
   penTool.name = "pen";
 

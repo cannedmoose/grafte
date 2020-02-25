@@ -1,11 +1,11 @@
 import * as paper from "paper";
 
-export function rectangleTool(canvas, history): paper.Tool {
+export function rectangleTool(history): paper.Tool {
   const rectangleTool = new paper.Tool();
   rectangleTool.name = "rectangle";
 
   rectangleTool.onMouseDown = function(event: paper.MouseEvent) {
-    canvas.deselectAll();
+    paper.project.deselectAll();
   };
 
   let path: paper.Path | undefined;

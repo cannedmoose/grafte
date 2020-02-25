@@ -18,12 +18,11 @@ export function createLoadMenu(document: paper.View) {
         const file = curFiles[i];
         if(file.type == "image/svg+xml") {
            paper.project.importSVG(URL.createObjectURL(file), (item) => {
-             // TODO come up with some way to refresh viewport/canvas when document resizes.
              document.viewSize = item.bounds.size.clone();
             });
         } else if(file.type == "image/png" || file.type == "image/png") {
           let l = new paper.Raster(URL.createObjectURL(file));
-          // Todo resize canvas
+          // Todo resize paper.project
           l.smoothing = false;
         } else {
           console.log(file.type);

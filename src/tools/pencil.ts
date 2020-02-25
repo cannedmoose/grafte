@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function pencilTool(canvas, history): paper.Tool {
+export function pencilTool(history): paper.Tool {
   const pencilTool = new paper.Tool();
   pencilTool.name = "freehand";
   
@@ -8,7 +8,8 @@ export function pencilTool(canvas, history): paper.Tool {
   let path;
 
   pencilTool.onMouseDown = function(event: paper.ToolEvent) {
-    canvas.deselectAll();
+    paper.project.deselectAll();
+    
     path = new paper.Path([event.downPoint]);
     path.selected = true;
   };

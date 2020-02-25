@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function pointTool(canvas, history): paper.Tool {
+export function pointTool(history): paper.Tool {
   const selectTool = new paper.Tool();
   selectTool.name = "point";
 
@@ -13,7 +13,7 @@ export function pointTool(canvas, history): paper.Tool {
    */
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
     // First look for selected segments/handles
-    var hitResult = canvas.hitTest(event.point, {
+    var hitResult = paper.project.hitTest(event.point, {
       tolerance: 5,
       segments: true,
       handles: true,
@@ -34,7 +34,7 @@ export function pointTool(canvas, history): paper.Tool {
       }
     }
 
-    hitResult = canvas.hitTest(event.point, {
+    hitResult = paper.project.hitTest(event.point, {
       tolerance: 5,
       fill: true,
       stroke: true
@@ -49,7 +49,7 @@ export function pointTool(canvas, history): paper.Tool {
         }
       } else {
         if (!hitResult.item.selected) {
-          canvas.deselectAll();
+          paper.project.deselectAll();
           hitResult.item.selected = true;
         } else {
           hitResult.item.selected = true;
@@ -57,7 +57,7 @@ export function pointTool(canvas, history): paper.Tool {
       }
     } else {
       if (!event.modifiers.shift) {
-        canvas.deselectAll();
+        paper.project.deselectAll();
       }
       selectionRectangle = new paper.Shape.Rectangle(
         event.point,

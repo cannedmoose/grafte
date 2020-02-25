@@ -1,6 +1,6 @@
 import * as paper from "paper";
 
-export function selectTool(canvas, history): paper.Tool {
+export function selectTool(history): paper.Tool {
   const selectTool = new paper.Tool();
   selectTool.name = "select";
 
@@ -10,7 +10,8 @@ export function selectTool(canvas, history): paper.Tool {
    * Note if it complains about return it means we're missing a switch
    */
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
-    var hitResult = canvas.hitTest(event.point, {
+    console.log(event.point);
+    var hitResult = paper.project.hitTest(event.point, {
       tolerance: 5,
       fill: true,
       stroke: true
@@ -25,7 +26,7 @@ export function selectTool(canvas, history): paper.Tool {
         }
       } else {
         if (!hitResult.item.selected) {
-          canvas.deselectAll();
+          paper.project.deselectAll();
           hitResult.item.selected = true;
         } else {
           hitResult.item.selected = true;
@@ -40,7 +41,7 @@ export function selectTool(canvas, history): paper.Tool {
       }
     } else {
       if (!event.modifiers.shift) {
-        canvas.deselectAll();
+        paper.project.deselectAll();
       }
       selectionRectangle = new paper.Shape.Rectangle(
         event.point,
@@ -65,7 +66,7 @@ export function selectTool(canvas, history): paper.Tool {
         event.downPoint.subtract(event.point).divide(2)
       );
     } else {
-      canvas.selectedItems.forEach(item => {
+      paper.project.selectedItems.forEach(item => {
         item.translate(event.delta);
       });
     }

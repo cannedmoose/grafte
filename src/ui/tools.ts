@@ -1,35 +1,80 @@
 import * as paper from "paper";
 import { div, slider, color, button, text, queryOrThrow } from "./utils";
 import { GrafteHistory } from "../tools/history";
+import { selectTool } from "../tools/select";
+import { pointTool } from "../tools/points";
+import { penTool } from "../tools/pen";
+import { pencilTool } from "../tools/pencil";
+import { elipseTool } from "../tools/elipse";
+import { rectangleTool } from "../tools/rectangle";
+import { KeyboardHandler } from "./keyboard";
 
-export function createToolMenu() {
-  // TODO we should be listening to on activate/deactivate and bolding/unbolding buttons based on that.
-  const createToolButtons = () => paper.tools.map(tool =>
-    button({style: paper.tool == tool ? "font-weight:bold" : "" }, [text(tool.name)], {
-      click: () => {
-        tool.activate();
-        var menu_el = queryOrThrow("#tool-menu");
-        while (menu_el.firstChild) menu_el.removeChild(menu_el.firstChild);
-        createToolButtons().forEach(child => menu_el.appendChild(child));
+export class ToolBelt {
+  tools: {[key: string] : paper.Tool};
+  el: HTMLElement;
+
+  constructor(history: GrafteHistory, keyboard: KeyboardHandler) {
+    //this.createButton = this.createButton.bind(this);
+    const tools = this.createTools(history);
+    this.tools = {};
+    this.el = div(
+      { class: "vertical", id: "tool-menu"}, tools.map(this.createButton)
+    )
+    tools.forEach(tool => {
+      // Store in name map and add activate/deactivate handlers
+      this.tools[tool.name] = tool;
+      tool.on("activate", () => {
+        queryOrThrow(`#tool-${tool.name}`, this.el).setAttribute("style", "font-weight:bold");
+      });
+      tool.on("deactivate", () => {
+        queryOrThrow(`#tool-${tool.name}`, this.el).setAttribute("style", "");
+      });
+    });
+
+    this.tools["select"].activate();
+
+    keyboard.addShortcut("s", (e) => this.tools["select"].activate());
+    keyboard.addShortcut("p", (e) => this.tools["pen"].activate());
+    keyboard.addShortcut("r", (e) => this.tools["rectangle"].activate());
+    keyboard.addShortcut("e", (e) => this.tools["elipse"].activate());
+  }
+
+  createButton(tool: paper.Tool) {
+    return button(
+      { id: `tool-${tool.name}`, style: paper.tool == tool ? "font-weight:bold" : "" },
+      [text(tool.name)],
+      {
+        click: () => {
+          tool.activate();
+        }
       }
-    })
-  );
-  return div(
-    { class: "vertical", id: "tool-menu"}, createToolButtons()
-  )
+    );
+  }
+
+  createTools(history) {
+    return [
+      selectTool(history),
+      pointTool(history),
+      penTool(history),
+      pencilTool(history),
+      elipseTool(history),
+      rectangleTool(history)
+    ]
+  }
+
 }
 
-export function createToolOptions(canvas: paper.Project, history: GrafteHistory) {
+export function createToolOptions(history: GrafteHistory) {
   return div({ class: "vertical" }, [
     slider(
       { value: "1", min: "0", max: "50", step: ".01" },
       {
         input: event => {
-          canvas.currentStyle.strokeWidth = event.target.value;
-          canvas.selectedItems.forEach(child => {
-            child.strokeWidth = canvas.currentStyle.strokeWidth;
+          paper.project.currentStyle.strokeWidth = event.target.value;
+          paper.project.selectedItems.forEach(child => {
+            child.strokeWidth = paper.project.currentStyle.strokeWidth;
           });
-          canvas.view.requestUpdate();
+          paper.project.view.requestUpdate();
         },
         change: event => history.commit()
       }
@@ -39,11 +84,11 @@ export function createToolOptions(canvas: paper.Project, history: GrafteHistory)
         { value: "#000000" },
         {
           input: event => {
-            canvas.currentStyle.strokeColor = event.target.value;
-            canvas.selectedItems.forEach(child => {
-              child.strokeColor = canvas.currentStyle.strokeColor;
+            paper.project.currentStyle.strokeColor = event.target.value;
+            paper.project.selectedItems.forEach(child => {
+              child.strokeColor = paper.project.currentStyle.strokeColor;
             });
-            canvas.view.requestUpdate();
+            paper.project.view.requestUpdate();
           },
           change: event => history.commit()
         }
@@ -52,11 +97,11 @@ export function createToolOptions(canvas: paper.Project, history: GrafteHistory)
         { value: "#FFFFFF" },
         {
           input: event => {
-            canvas.currentStyle.fillColor = event.target.value;
-            canvas.selectedItems.forEach(child => {
-              child.fillColor = canvas.currentStyle.fillColor;
+            paper.project.currentStyle.fillColor = event.target.value;
+            paper.project.selectedItems.forEach(child => {
+              child.fillColor = paper.project.currentStyle.fillColor;
             });
-            canvas.view.requestUpdate();
+            paper.project.view.requestUpdate();
           },
           change: event => history.commit()
         }

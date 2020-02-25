@@ -28,7 +28,7 @@ export function createSaveMenu(document: paper.View) {
               document.on("updated", savePng);
               break;
             case "svg":
-              let svg = paper.project.exportSVG({ asString: "true", bounds: document.bounds }) as string;
+              let svg = paper.project.exportSVG({ asString: true, bounds: document.bounds }) as string;
               blob = new Blob(
                 [svg],
                 { type: 'image/svg' }
@@ -37,13 +37,13 @@ export function createSaveMenu(document: paper.View) {
               break;
             case "json":
               blob = new Blob(
-                [ paper.project.exportJSON({ asString: "true" }) ],
+                [ paper.project.exportJSON({ asString: true }) ],
                 { type: 'text/json' }
               );
               downloadBlob(blob, "image.json");
               break;
             case "local":
-              const json = paper.project.exportJSON({ asString: "true" });
+              const json = paper.project.exportJSON({ asString: true });
               window.localStorage.setItem("saved", json);
               break;
           }

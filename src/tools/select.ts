@@ -52,6 +52,7 @@ export function selectTool(canvas, history): paper.Tool {
 
       selectionRectangle.strokeColor = new paper.Color("red");
       selectionRectangle.strokeWidth = 1;
+      selectionRectangle.fillColor = null;
     }
   };
 

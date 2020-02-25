@@ -20,7 +20,6 @@ export function pointTool(history): paper.Tool {
       match: (match:paper.HitResult) => match.type == "segment" || match.segment.selected
     });
 
-    console.log(hitResult);
     if (hitResult) {
       if (
         hitResult.type == "handle-in" ||

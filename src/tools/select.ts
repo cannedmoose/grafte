@@ -10,7 +10,6 @@ export function selectTool(history): paper.Tool {
    * Note if it complains about return it means we're missing a switch
    */
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
-    console.log(event.point);
     var hitResult = paper.project.hitTest(event.point, {
       tolerance: 5,
       fill: true,

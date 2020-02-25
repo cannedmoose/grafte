@@ -17,7 +17,6 @@ export class GrafteHistory {
     this.history = [...this.history.slice(0, this.present + 1)];
     this.history.push(this.project.exportJSON({ asString: true }));
     this.present = this.history.length - 1;
-    console.log(this.history);
   }
 
   undo() {

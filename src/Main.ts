@@ -29,7 +29,6 @@ window.onload = function() {
   paper.setup(viewportDom);
   const viewport = paper.project.view;
   resizeViewport(viewport);
-  console.log("vp1", viewport);
   window.onresize = e => resizeViewport(viewport);
 
   // Set up page
@@ -321,7 +320,6 @@ function resizeViewport(viewport: paper.View) {
     var viewportRect = viewport.element.parentElement?.getBoundingClientRect();
     if (!viewportRect) return;
     viewport.viewSize = new paper.Size(viewportRect.width, viewportRect.height);
-    console.log(viewport.viewSize);
 
     const backgroundDom: HTMLCanvasElement = queryOrThrow(
       "#backgroundcanvas"

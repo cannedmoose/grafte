@@ -122,5 +122,5 @@ export function viewProject(project: paper.Project, updated: () => void) {
   }
 
   // All items container
-  return div({}, results);
+  return div({class: "vertical"}, results);
 }

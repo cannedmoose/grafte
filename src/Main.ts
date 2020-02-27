@@ -6,6 +6,7 @@ import { createToolOptions, ToolBelt } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
 import { createLoadMenu } from "./ui/load";
 import { KeyboardHandler } from "./ui/keyboard";
+import { createCodeEditor } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
 
 /**
@@ -212,6 +213,14 @@ window.onload = function() {
       class: "loadArea"
     })
   );
+
+  /*menuDiv.append(
+    createMenu("code", [createCodeEditor()], {
+      title: "Style",
+      minimized: false,
+      class: "codeArea"
+    })
+  );*/
 
   window.addEventListener("wheel", function(e: WheelEvent) {
     e.stopPropagation();

@@ -52,8 +52,8 @@ div .contract {
   grid-template-areas:
     "viewport drawing layers"
     "tools drawing layers"
-    "toolOptions drawing save"
-    ". drawing load";
+    "toolOptions code save"
+    "toolOptions code load";
 }
 
 .toolArea {
@@ -86,6 +86,10 @@ div .contract {
 
 .loadArea {
   grid-area: load;
+}
+
+.codeArea {
+  grid-area: code;
 }
 
 #backgroundcanvas {

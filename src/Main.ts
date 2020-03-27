@@ -8,6 +8,7 @@ import { createLoadMenu } from "./ui/load";
 import { KeyboardHandler } from "./ui/keyboard";
 import { createCodeEditor } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
+import { PaneerNode, PaneerLeaf } from "./ui/paneer/paneer";
 
 /**
  * TODO resize view handler so we can change document size.
@@ -18,10 +19,14 @@ import { GrafteHistory } from "./tools/history";
  */
 
 window.onload = function() {
-  const viewportDom: HTMLCanvasElement = queryOrThrow(
-    "#canvas"
-  ) as HTMLCanvasElement;
-  const menuDiv = queryOrThrow("#menus");
+  const viewportDom: HTMLCanvasElement = canvas({
+    id: "canvas",
+  });
+  const backgroundDom = canvas({
+    id: "backgroundcanvas"
+  });
+  const drawingArea = div({id:"drawingArea"}, [backgroundDom, viewportDom]);
+  const paneerDiv = queryOrThrow("#menus");
   const pageDom = canvas({
     id: "canvaspage"
   });
@@ -29,21 +34,20 @@ window.onload = function() {
   // Set up main viewport
   paper.setup(viewportDom);
   const viewport = paper.project.view;
-  resizeViewport(viewport);
   window.onresize = e => resizeViewport(viewport);
 
   // Set up page
   const page = new paper.CanvasView(paper.project, pageDom);
   page.viewSize = new paper.Size(600, 400);
   page.drawSelection = false;
-  centerPage(viewport, page);
   page.on("changed", () => centerPage(viewport, page));
 
   // Set up preview paper.project
   const previewDom = canvas({});
+  const previewContainer = div({}, [previewDom]);
+  previewContainer.style.overflow = "hidden";
   const preview = new paper.CanvasView(paper.project, previewDom);
   preview.drawSelection = false;
-  resizePreview(viewport, preview, page);
   viewport.on("changed", () => resizePreview(viewport, preview, page));
 
   paper.project.currentStyle.strokeWidth = 1;
@@ -119,14 +123,6 @@ window.onload = function() {
     history.redo();
   });
 
-  menuDiv.appendChild(
-    createMenu("preview-menu", [previewDom], {
-      title: "Viewport",
-      minimized: false,
-      class: "previewArea"
-    })
-  );
-
   const layersDiv = div({ id: "layers", class: "vertical" }, []);
   const refreshLayers = () => {
     while (layersDiv.firstChild) {
@@ -136,83 +132,64 @@ window.onload = function() {
   };
   window.requestAnimationFrame(refreshLayers);
 
-  menuDiv.appendChild(
-    createMenu(
-      "layers-menu",
-      [
-        div({ class: "vertical" }, [
-          div({ class: "horizontal" }, [
-            button({ id: "addlayer" }, [text("add")], {
-              click: event => {
-                new paper.Layer();
-                refreshLayers();
-              }
-            }),
-            button({ id: "addlayer" }, [text("up")], {
-              // TODO fix these, they should do one pass to calculate final state
-              // rather than a bunch of inserts/not
-              // also consider moving into layer above/below
-              click: event => {
-                paper.project.selectedItems.forEach(item => {
-                  const index = item.parent.children.indexOf(item);
-                  if (index > 0) {
-                    item.parent.insertChild(index - 1, item);
-                  }
-                });
-              }
-            }),
-            button({ id: "addlayer" }, [text("down")], {
-              click: event => {
-                paper.project.selectedItems.forEach(item => {
-                  const index = item.parent.children.indexOf(item);
-                  if (index < item.parent.children.length - 1) {
-                    item.parent.insertChild(index + 1, item);
-                  }
-                });
-              }
-            })
-          ]),
-          layersDiv
-        ])
-      ],
-      {
-        title: "Layers",
-        minimized: false,
-        class: "layersArea"
-      }
-    )
-  );
-  menuDiv.appendChild(
-    createMenu("tool-menu", [toolBelt.el], {
-      title: "Tools",
-      minimized: false,
-      class: "toolArea"
-    })
+  const layersContainer = div({ class: "vertical" }, [
+    div({ class: "horizontal" }, [
+      button({ id: "addlayer" }, [text("add")], {
+        click: event => {
+          new paper.Layer();
+          refreshLayers();
+        }
+      }),
+      button({ id: "addlayer" }, [text("up")], {
+        // TODO fix these, they should do one pass to calculate final state
+        // rather than a bunch of inserts/not
+        // also consider moving into layer above/below
+        click: event => {
+          paper.project.selectedItems.forEach(item => {
+            const index = item.parent.children.indexOf(item);
+            if (index > 0) {
+              item.parent.insertChild(index - 1, item);
+            }
+          });
+        }
+      }),
+      button({ id: "addlayer" }, [text("down")], {
+        click: event => {
+          paper.project.selectedItems.forEach(item => {
+            const index = item.parent.children.indexOf(item);
+            if (index < item.parent.children.length - 1) {
+              item.parent.insertChild(index + 1, item);
+            }
+          });
+        }
+      })
+    ]),
+    layersDiv
+  ]);
+
+  const paneer: PaneerNode = new PaneerNode(
+    "Horizontal",
+    "auto",
+    [
+      new PaneerNode("Vertical", "10%", [
+        new PaneerLeaf(previewContainer, "auto"),
+        new PaneerLeaf(toolBelt.el, "auto"),
+        new PaneerLeaf(createToolOptions(history), "auto")
+      ]),
+      new PaneerLeaf(drawingArea, "auto"),
+      new PaneerNode("Vertical", "10%", [
+        new PaneerLeaf(layersContainer, "auto"),
+        new PaneerLeaf(createSaveMenu(page), "auto"),
+        new PaneerLeaf(createLoadMenu(page), "auto")
+      ])
+    ]
   );
 
-  menuDiv.appendChild(
-    createMenu("tooloptions-menu", [createToolOptions(history)], {
-      title: "Style",
-      minimized: false,
-      class: "toolOptionsArea"
-    })
-  );
+  paneerDiv.appendChild(paneer.element);
 
-  menuDiv.append(
-    createMenu("save-menu", [createSaveMenu(page)], {
-      title: "Style",
-      minimized: false,
-      class: "saveArea"
-    })
-  );
-
-  menuDiv.append(
-    createMenu("load-menu", [createLoadMenu(page)], {
-      title: "Style",
-      minimized: false,
-      class: "loadArea"
-    })
-  );
+  resizeViewport(viewport);
+  centerPage(viewport, page);
+  resizePreview(viewport, preview, page);
 
   /*menuDiv.append(
     createMenu("code", [createCodeEditor()], {
@@ -248,8 +225,8 @@ window.onload = function() {
     let oldMouse = viewport.viewToProject(mousePoint);
     viewport.zoom = newZoom;
 
-    let newMouuse = viewport.viewToProject(mousePoint);
-    let newCenter = viewport.center.add(oldMouse.subtract(newMouuse));
+    let newMouse = viewport.viewToProject(mousePoint);
+    let newCenter = viewport.center.add(oldMouse.subtract(newMouse));
     viewport.center = newCenter;
   });
   function moveviewport(e: paper.MouseEvent) {
@@ -287,7 +264,7 @@ function resizePreview(
   page: paper.View
 ) {
   window.requestAnimationFrame(() => {
-    var previewRect = preview.element.parentElement?.parentElement?.getBoundingClientRect();
+    var previewRect = preview.element.parentElement?.getBoundingClientRect();
     if (!previewRect) return;
     preview.viewSize = new paper.Size(previewRect.width, previewRect.height);
 

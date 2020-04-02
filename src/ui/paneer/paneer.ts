@@ -19,6 +19,9 @@ function elementToPaneer(element: Element | null): Paneer | undefined {
   return NodeMap.get(id);
 }
 
+/**
+ * Dom interface for Paneer, creates dom element and links it to a paneer node.
+ */
 class PaneerDOM {
   _type = "DOM";
 

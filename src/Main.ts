@@ -1,7 +1,6 @@
 import * as paper from "paper";
 import { viewProject } from "./ui/layers";
 import { queryOrThrow, button, div, text,  canvas} from "./ui/utils";
-import { createMenu } from "./ui/menu";
 import { createToolOptions, ToolBelt } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
 import { createLoadMenu } from "./ui/load";
@@ -44,8 +43,6 @@ window.onload = function() {
 
   // Set up preview paper.project
   const previewDom = canvas({});
-  const previewContainer = div({}, [previewDom]);
-  previewContainer.style.overflow = "hidden";
   const preview = new paper.CanvasView(paper.project, previewDom);
   preview.drawSelection = false;
   viewport.on("changed", () => resizePreview(viewport, preview, page));
@@ -170,17 +167,18 @@ window.onload = function() {
   const paneer: PaneerNode = new PaneerNode(
     "Horizontal",
     "auto",
+    true, 
     [
-      new PaneerNode("Vertical", "10%", [
-        new PaneerLeaf(previewContainer, "auto"),
-        new PaneerLeaf(toolBelt.el, "auto"),
-        new PaneerLeaf(createToolOptions(history), "auto")
+      new PaneerNode("Vertical", "10%", true, [
+        new PaneerLeaf(previewDom, "1fr"),
+        new PaneerLeaf(toolBelt.el, "1fr"),
+        new PaneerLeaf(createToolOptions(history), "1fr")
       ]),
       new PaneerLeaf(drawingArea, "auto"),
-      new PaneerNode("Vertical", "10%", [
-        new PaneerLeaf(layersContainer, "auto"),
-        new PaneerLeaf(createSaveMenu(page), "auto"),
-        new PaneerLeaf(createLoadMenu(page), "auto")
+      new PaneerNode("Vertical", "10%", true, [
+        new PaneerLeaf(layersContainer, "1fr"),
+        new PaneerLeaf(createSaveMenu(page), "1fr"),
+        new PaneerLeaf(createLoadMenu(page), "1fr")
       ])
     ]
   );
@@ -266,6 +264,7 @@ function resizePreview(
   window.requestAnimationFrame(() => {
     var previewRect = preview.element.parentElement?.getBoundingClientRect();
     if (!previewRect) return;
+    // TODO keep aspect ratio...
     preview.viewSize = new paper.Size(previewRect.width, previewRect.height);
 
     // Zoom out to show both viewport and document

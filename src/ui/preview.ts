@@ -19,8 +19,8 @@ export class Preview {
     this.viewport = viewport;
 
     this.view.on("updated", this.onViewUpdated.bind(this));
-    viewport.on("changed",this.resize.bind(this));
-    this.viewport.on("updated", () => {this.view.markDirty();})
+    viewport.on("changed", this.resize.bind(this));
+    this.viewport.on("updated", () => { this.view.markDirty(); })
 
     this.view.on("mousedown", this.moveviewport.bind(this));
     this.view.on("mousedrag", this.moveviewport.bind(this));
@@ -69,22 +69,20 @@ export class Preview {
         minX + (maxX - minX) / 2,
         minY + (maxY - minY) / 2
       );
-      var scaleFactorX =
-        2 *
+      var scaleFactorX = previewRect.width / (2 *
         Math.max(
           this.view.center.x - minX,
           maxX - this.view.center.x,
         ) *
-        1.2;
-      var scaleFactorY =
-        2 *
+        1.2);
+      var scaleFactorY = previewRect.height / (2 *
         Math.max(
           this.view.center.y - minY,
           maxY - this.view.center.y
         ) *
-        1.2;
-      const scale = Math.min(previewRect.width / scaleFactorX, previewRect.height / scaleFactorY);
-      
+        1.2);
+      const scale = Math.min(scaleFactorX, scaleFactorY);
+
       this.view.scaling = new paper.Point(
         scale, scale
       );

@@ -113,7 +113,7 @@ window.onload = function () {
     [
       new PaneerNode("Vertical", "10%", true, [
         new PaneerLeaf(preview, "1fr"),
-        new PaneerLeaf(toolBelt, "1fr"),
+        new PaneerLeaf(toolBelt, "3fr"),
         new PaneerLeaf(new ToolOptions(history), "1fr")
       ]),
       new PaneerLeaf(viewport, "auto"),

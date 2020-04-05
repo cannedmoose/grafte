@@ -4,6 +4,7 @@ const WriteFilePlugin = require("write-file-webpack-plugin");
 
 module.exports = {
   mode: "development",
+  devtool: "source-map",
   entry: "./src/main.ts",
   devServer: {
     contentBase: "./build"

@@ -89,14 +89,13 @@ export class PaneerNode extends PaneerDOM {
     this._direction = direction;
     this._resizable = resizable;
 
-    children = [...children] || [];
+    children = children? [...children] : [];
 
     if (this._resizable) {
       for (let i = 1; i < children.length; i += 2) {
         children.splice(i, 0, new PaneerHandle());
       }
     }
-
 
     children.forEach(
       child => {
@@ -129,6 +128,15 @@ export class PaneerNode extends PaneerDOM {
     this._direction = direction;
     this.resize();
   }
+
+  append(what : Paneer) {
+    if (this._resizable) {
+      const handle = new PaneerHandle();
+      this.element.append(handle.element);
+    }
+    this.element.append(what.element);
+    this.resize();
+  } 
 
   resize() {
     this.element.style.display = "grid";

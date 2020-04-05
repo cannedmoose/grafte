@@ -8,6 +8,7 @@ import { pencilTool } from "../tools/pencil";
 import { elipseTool } from "../tools/elipse";
 import { rectangleTool } from "../tools/rectangle";
 import { KeyboardHandler } from "./keyboard";
+import { PaneerNode, PaneerLeaf } from "./paneer/paneer";
 
 class Tool {
   element: HTMLElement;
@@ -25,23 +26,28 @@ class Tool {
       }
     );
 
+    this.element.style.width = "100%";
+    this.element.style.height = "100%";
+
     this.tool = tool;
   }
 
   refresh() {
     if (paper.tool == this.tool) {
       this.element.style.fontWeight = "bold";
+      this.element.style.backgroundColor = "#AAAAAA";
     } else {
       this.element.style.fontWeight = "";
+      this.element.style.backgroundColor = "";
     }
   }
 }
 
-export class ToolBelt {
+export class ToolBelt extends PaneerNode {
   tools: Tool[];
-  element: HTMLElement;
 
   constructor(history: GrafteHistory, keyboard: KeyboardHandler) {
+    super("Vertical", "1fr", false);
     this.tools = [
       new Tool(this, selectTool(history)),
       new Tool(this, pointTool(history)),
@@ -50,7 +56,10 @@ export class ToolBelt {
       new Tool(this, elipseTool(history)),
       new Tool(this, rectangleTool(history))
     ];
-    this.element = div({}, this.tools.map(tool => tool.element));
+
+    this.tools.forEach(tool => {
+      this.append(new PaneerLeaf(tool, "1fr"));
+    });
     this.tools[0].tool.activate();
     this.refresh();
 
@@ -63,26 +72,30 @@ export class ToolBelt {
   }
 }
 
-export class ToolOptions {
-  element: HTMLElement;
+export class ToolOptions extends PaneerNode {
+  constructor(history: GrafteHistory) {
+    super("Vertical", "1fr", false);
+    this.append(
+      new PaneerLeaf({
+        element: slider(
+          { value: "1", min: "0", max: "50", step: ".01" },
+          {
+            input: event => {
+              paper.project.currentStyle.strokeWidth = event.target.value;
+              paper.project.selectedItems.forEach(child => {
+                child.strokeWidth = paper.project.currentStyle.strokeWidth;
+              });
+              paper.project.view.requestUpdate();
+            },
+            change: event => history.commit()
+          }
+        )
+      }, "1fr")
+    )
 
-  constructor (history: GrafteHistory) {
-    this.element = div({}, [
-      slider(
-        { value: "1", min: "0", max: "50", step: ".01" },
-        {
-          input: event => {
-            paper.project.currentStyle.strokeWidth = event.target.value;
-            paper.project.selectedItems.forEach(child => {
-              child.strokeWidth = paper.project.currentStyle.strokeWidth;
-            });
-            paper.project.view.requestUpdate();
-          },
-          change: event => history.commit()
-        }
-      ),
-      div({ class: "horizontal" }, [
-        color(
+    this.append(new PaneerNode("Horizontal", "1fr", false, [
+      new PaneerLeaf({
+        element: color(
           { value: "#000000" },
           {
             input: event => {
@@ -94,8 +107,10 @@ export class ToolOptions {
             },
             change: event => history.commit()
           }
-        ),
-        color(
+        )
+      }),
+      new PaneerLeaf({
+        element: color(
           { value: "#FFFFFF" },
           {
             input: event => {
@@ -108,7 +123,38 @@ export class ToolOptions {
             change: event => history.commit()
           }
         )
-      ])
-    ]);
+      })
+    ]));
+
+    this.append(
+      new PaneerLeaf({element: div({}, [])}, "3fr")
+    )
+
+    // @ts-ignore
+    this.children[0].pane.element.style.width = "100%";
+    // @ts-ignore
+    this.children[0].pane.element.style.height = "100%";
+    // @ts-ignore
+    this.children[0].pane.element.style.margin = "0px";
+    // @ts-ignore
+    this.children[0].pane.element.style.padding = "0px";
+
+    // @ts-ignore
+    this.children[1].children[0].pane.element.style.width = "100%";
+    // @ts-ignore
+    this.children[1].children[0].pane.element.style.height = "100%";
+    // @ts-ignore
+    this.children[1].children[0].pane.element.style.padding = "0px";
+    // @ts-ignore
+    this.children[1].children[0].pane.element.style.border = "none";
+
+    // @ts-ignore
+    this.children[1].children[1].pane.element.style.width = "100%";
+    // @ts-ignore
+    this.children[1].children[1].pane.element.style.height = "100%";
+    // @ts-ignore
+    this.children[1].children[1].pane.element.style.padding = "0px";
+    // @ts-ignore
+    this.children[1].children[1].pane.element.style.border = "none";
   }
 }

@@ -23,6 +23,8 @@ function elementToPaneer(element: Element | null): Paneer | undefined {
 interface Pane {
   element: HTMLElement;
 
+  // Todo currently passing leaf so we can hook into resize to set styles
+  // consider doing this another way
   resize?(paneer: PaneerLeaf): void;
 }
 

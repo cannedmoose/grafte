@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { viewProject } from "./ui/layers";
+import { viewProject, LayerControls } from "./ui/layers";
 import { queryOrThrow, button, div, text } from "./ui/utils/dom";
 import { ToolOptions, ToolBelt } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
@@ -10,6 +10,7 @@ import { GrafteHistory } from "./tools/history";
 import { PaneerNode, PaneerLeaf } from "./ui/paneer/paneer";
 import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
+import { SaveLoad } from "./ui/saveload";
 
 /**
  * TODO ADD RESIZE OBSERVER FOR CANVAS ELEMENT RESIZING.
@@ -61,51 +62,6 @@ window.onload = function () {
     history.redo();
   });
 
-  const layersDiv = div({ id: "layers", class: "vertical" }, []);
-  const refreshLayers = () => {
-    while (layersDiv.firstChild) {
-      layersDiv.removeChild(layersDiv.firstChild);
-    }
-    layersDiv.appendChild(viewProject(paper.project, refreshLayers));
-  };
-  viewport.view.on("updated", refreshLayers);
-  window.requestAnimationFrame(refreshLayers);
-
-  const layersContainer = div({ class: "vertical" }, [
-    div({ class: "horizontal" }, [
-      button({ id: "addlayer" }, [text("add")], {
-        click: event => {
-          new paper.Layer();
-          refreshLayers();
-        }
-      }),
-      button({ id: "addlayer" }, [text("up")], {
-        // TODO fix these, they should do one pass to calculate final state
-        // rather than a bunch of inserts/not
-        // also consider moving into layer above/below
-        click: event => {
-          paper.project.selectedItems.forEach(item => {
-            const index = item.parent.children.indexOf(item);
-            if (index > 0) {
-              item.parent.insertChild(index - 1, item);
-            }
-          });
-        }
-      }),
-      button({ id: "addlayer" }, [text("down")], {
-        click: event => {
-          paper.project.selectedItems.forEach(item => {
-            const index = item.parent.children.indexOf(item);
-            if (index < item.parent.children.length - 1) {
-              item.parent.insertChild(index + 1, item);
-            }
-          });
-        }
-      })
-    ]),
-    layersDiv
-  ]);
-
   const paneer: PaneerNode = new PaneerNode(
     "Horizontal",
     "auto",
@@ -118,9 +74,8 @@ window.onload = function () {
       ]),
       new PaneerLeaf(viewport, "auto"),
       new PaneerNode("Vertical", "10%", true, [
-        new PaneerLeaf({element: layersContainer}, "1fr"),
-        new PaneerLeaf({element: createSaveMenu(viewport.page)}, "1fr"),
-        new PaneerLeaf({element: createLoadMenu(viewport.page)}, "1fr")
+        new PaneerLeaf(new LayerControls(), "2fr"),
+        new PaneerLeaf(new SaveLoad(viewport.page), "1fr"),
       ])
     ]
   );

@@ -1,21 +1,69 @@
 import * as paper from "paper";
-import { div, text } from "./utils/dom";
+import { div, text, button } from "./utils/dom";
 import { words } from "./utils/words";
-import { PaneerNode } from "./paneer/paneer";
-
-/*export class LayerControls extends PaneerNode {
+import { PaneerNode, PaneerLeaf } from "./paneer/paneer";
+export class LayerControls extends PaneerNode {
   constructor() {
     super("Vertical", "1fr", false);
 
-    this.append(
+    this.appendAll([
       new PaneerNode("Horizontal", "1fr", false, [
-        new PaneerLeaf({element:}),
-        new PaneerLeaf(),
-        new PaneerLeaf(),
-      ])
+        new PaneerLeaf({
+          element: button({}, [text("add")], {
+            click: event => {
+              new paper.Layer();
+              this.refreshLayers();
+            }
+          }),
+          resize: leaf => {
+            leaf.pane.element.style.width = "100%";
+            leaf.pane.element.style.height = "100%";
+            leaf.pane.element.style.padding = "0px";
+          }
+        }),
+        new PaneerLeaf({
+          element: button({}, [text("up")], {
+            click: event => {
+              paper.project.selectedItems.forEach(item => {
+                const index = item.parent.children.indexOf(item);
+                if (index > 0) {
+                  item.parent.insertChild(index - 1, item);
+                }
+              });
+            }
+          }),
+          resize: leaf => {
+            leaf.pane.element.style.width = "100%";
+            leaf.pane.element.style.height = "100%";
+            leaf.pane.element.style.padding = "0px";
+          }
+        }),
+        new PaneerLeaf({
+          element: button({}, [text("down")], {
+            click: event => {
+              paper.project.selectedItems.forEach(item => {
+                const index = item.parent.children.indexOf(item);
+                if (index < item.parent.children.length - 1) {
+                  item.parent.insertChild(index + 1, item);
+                }
+              });
+            }
+          }),
+          resize: leaf => {
+            leaf.pane.element.style.width = "100%";
+            leaf.pane.element.style.height = "100%";
+            leaf.pane.element.style.padding = "0px";
+          }
+        }),
+      ]),
+      new PaneerLeaf({element: div({}, [])}, "10fr")
+    ]
     );
   }
-}*/
+
+  refreshLayers() {
+  }
+}
 
 /**
  * SHOULD DIFFERENTIATE BETWEEN CLICK AND DRAG
@@ -54,7 +102,7 @@ function viewItemLabel(item: paper.Item, depth: number): HTMLElement {
       []
     ),
     // For label, variable width
-    div({ style: `font-weight:${weight}; background-color:${item.selected? "cyan": "white"}` }, [text(item.name)])
+    div({ style: `font-weight:${weight}; background-color:${item.selected ? "cyan" : "white"}` }, [text(item.name)])
   ]);
 }
 
@@ -90,19 +138,19 @@ function viewItem(
       viewItemControls(item, updated)
     ],
     {
-      click: (event:MouseEvent) => {
+      click: (event: MouseEvent) => {
         if (item.className == "Layer") {
           (item as paper.Layer).activate();
         } else {
           if (item.selected) {
-            if(!event.shiftKey) {
+            if (!event.shiftKey) {
               paper.project.deselectAll();
               item.selected = true;
             } else {
               item.selected = false;
             }
           } else {
-            if(!event.shiftKey) {
+            if (!event.shiftKey) {
               paper.project.deselectAll();
             }
             item.selected = true;
@@ -137,5 +185,5 @@ export function viewProject(project: paper.Project, updated: () => void) {
   }
 
   // All items container
-  return div({class: "vertical"}, results);
+  return div({ class: "vertical" }, results);
 }

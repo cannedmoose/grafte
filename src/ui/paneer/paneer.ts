@@ -6,6 +6,7 @@ export type NodeDirection = "Horizontal" | "Vertical";
 export type Paneer = PaneerNode | PaneerLeaf | PaneerDOM;
 
 const PANEER_ID_ATTRIB = "data-paneer-id";
+// TODO THIS SHOULD BE PER ROOT NODE
 let NodeMap: Map<string, Paneer> = new Map();
 
 function elementToPaneer(element: Element | null): Paneer | undefined {
@@ -22,7 +23,7 @@ function elementToPaneer(element: Element | null): Paneer | undefined {
 interface Pane {
   element: HTMLElement;
 
-  resize?(): void;
+  resize?(paneer: PaneerLeaf): void;
 }
 
 /**
@@ -89,21 +90,7 @@ export class PaneerNode extends PaneerDOM {
     this._direction = direction;
     this._resizable = resizable;
 
-    children = children? [...children] : [];
-
-    if (this._resizable) {
-      for (let i = 1; i < children.length; i += 2) {
-        children.splice(i, 0, new PaneerHandle());
-      }
-    }
-
-    children.forEach(
-      child => {
-        this.element.appendChild(child.element);
-      }
-    );
-
-    this.resize();
+    if (children) this.appendAll(children);
   }
 
   get children(): Paneer[] {
@@ -129,14 +116,25 @@ export class PaneerNode extends PaneerDOM {
     this.resize();
   }
 
-  append(what : Paneer) {
+  append(child : Paneer) {
+    this.appendAll([child]);
+  }
+
+  appendAll(children: Paneer[]) {
     if (this._resizable) {
-      const handle = new PaneerHandle();
-      this.element.append(handle.element);
+      for (let i = 1; i < children.length; i += 2) {
+        children.splice(i, 0, new PaneerHandle());
+      }
     }
-    this.element.append(what.element);
+
+    children.forEach(
+      child => {
+        this.element.appendChild(child.element);
+      }
+    );
+
     this.resize();
-  } 
+  }
 
   resize() {
     this.element.style.display = "grid";
@@ -194,7 +192,7 @@ export class PaneerLeaf extends PaneerDOM {
     this.element.style.overflow = "hidden";
     this.element.style.border = "2px inset black"
     if (this.pane.resize)
-      this.pane.resize();
+      this.pane.resize(this);
   }
 }
 

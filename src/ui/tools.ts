@@ -75,7 +75,7 @@ export class ToolBelt extends PaneerNode {
 export class ToolOptions extends PaneerNode {
   constructor(history: GrafteHistory) {
     super("Vertical", "1fr", false);
-    this.append(
+    this.appendAll([
       new PaneerLeaf({
         element: slider(
           { value: "1", min: "0", max: "50", step: ".01" },
@@ -89,72 +89,59 @@ export class ToolOptions extends PaneerNode {
             },
             change: event => history.commit()
           }
-        )
-      }, "1fr")
-    )
-
-    this.append(new PaneerNode("Horizontal", "1fr", false, [
-      new PaneerLeaf({
-        element: color(
-          { value: "#000000" },
-          {
-            input: event => {
-              paper.project.currentStyle.strokeColor = event.target.value;
-              paper.project.selectedItems.forEach(child => {
-                child.strokeColor = paper.project.currentStyle.strokeColor;
-              });
-              paper.project.view.requestUpdate();
-            },
-            change: event => history.commit()
+        ),
+        resize: leaf => {
+          leaf.pane.element.style.width = "100%";
+          leaf.pane.element.style.height = "100%";
+          leaf.pane.element.style.margin = "0px";
+          leaf.pane.element.style.padding = "0px";
+        }
+      }, "1fr"),
+      new PaneerNode("Horizontal", "1fr", false, [
+        new PaneerLeaf({
+          element: color(
+            { value: "#000000" },
+            {
+              input: event => {
+                paper.project.currentStyle.strokeColor = event.target.value;
+                paper.project.selectedItems.forEach(child => {
+                  child.strokeColor = paper.project.currentStyle.strokeColor;
+                });
+                paper.project.view.requestUpdate();
+              },
+              change: event => history.commit()
+            }
+          ),
+          resize: leaf => {
+            leaf.pane.element.style.width = "100%";
+            leaf.pane.element.style.height = "100%";
+            leaf.pane.element.style.padding = "0px";
+            leaf.pane.element.style.border = "none";
           }
-        )
-      }),
-      new PaneerLeaf({
-        element: color(
-          { value: "#FFFFFF" },
-          {
-            input: event => {
-              paper.project.currentStyle.fillColor = event.target.value;
-              paper.project.selectedItems.forEach(child => {
-                child.fillColor = paper.project.currentStyle.fillColor;
-              });
-              paper.project.view.requestUpdate();
-            },
-            change: event => history.commit()
+        }),
+        new PaneerLeaf({
+          element: color(
+            { value: "#FFFFFF" },
+            {
+              input: event => {
+                paper.project.currentStyle.fillColor = event.target.value;
+                paper.project.selectedItems.forEach(child => {
+                  child.fillColor = paper.project.currentStyle.fillColor;
+                });
+                paper.project.view.requestUpdate();
+              },
+              change: event => history.commit()
+            }
+          ),
+          resize: leaf => {
+            leaf.pane.element.style.width = "100%";
+            leaf.pane.element.style.height = "100%";
+            leaf.pane.element.style.padding = "0px";
+            leaf.pane.element.style.border = "none";
           }
-        )
-      })
-    ]));
-
-    this.append(
-      new PaneerLeaf({element: div({}, [])}, "3fr")
-    )
-
-    // @ts-ignore
-    this.children[0].pane.element.style.width = "100%";
-    // @ts-ignore
-    this.children[0].pane.element.style.height = "100%";
-    // @ts-ignore
-    this.children[0].pane.element.style.margin = "0px";
-    // @ts-ignore
-    this.children[0].pane.element.style.padding = "0px";
-
-    // @ts-ignore
-    this.children[1].children[0].pane.element.style.width = "100%";
-    // @ts-ignore
-    this.children[1].children[0].pane.element.style.height = "100%";
-    // @ts-ignore
-    this.children[1].children[0].pane.element.style.padding = "0px";
-    // @ts-ignore
-    this.children[1].children[0].pane.element.style.border = "none";
-
-    // @ts-ignore
-    this.children[1].children[1].pane.element.style.width = "100%";
-    // @ts-ignore
-    this.children[1].children[1].pane.element.style.height = "100%";
-    // @ts-ignore
-    this.children[1].children[1].pane.element.style.padding = "0px";
-    // @ts-ignore
-    this.children[1].children[1].pane.element.style.border = "none";
+        })
+      ]),
+      new PaneerLeaf({ element: div({}, []) }, "3fr")]
+    );
   }
 }

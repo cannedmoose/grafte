@@ -1,6 +1,21 @@
 import * as paper from "paper";
 import { div, text } from "./utils/dom";
 import { words } from "./utils/words";
+import { PaneerNode } from "./paneer/paneer";
+
+/*export class LayerControls extends PaneerNode {
+  constructor() {
+    super("Vertical", "1fr", false);
+
+    this.append(
+      new PaneerNode("Horizontal", "1fr", false, [
+        new PaneerLeaf({element:}),
+        new PaneerLeaf(),
+        new PaneerLeaf(),
+      ])
+    );
+  }
+}*/
 
 /**
  * SHOULD DIFFERENTIATE BETWEEN CLICK AND DRAG

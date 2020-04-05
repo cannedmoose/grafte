@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { canvas, div, queryOrThrow } from "./utils";
+import { canvas, div } from "./utils/dom";
 
 // TODO CLEANUP!!!
 
@@ -16,10 +16,17 @@ export class Viewport {
 
 
   constructor() {
-    this.mainCanvas = canvas({ id: "canvas" });
-    this.backgroundCanvas = canvas({ id: "backgroundcanvas" });
+    this.mainCanvas = canvas({});
+    this.backgroundCanvas = canvas({});
 
-    this.element = div({ id: "drawingArea" }, [this.backgroundCanvas, this.mainCanvas]);
+    this.element = div({}, [this.backgroundCanvas, this.mainCanvas]);
+    this.element.style.pointerEvents = "all";
+    this.element.style.position = "relative";
+    this.element.style.height = "100%";
+
+    this.mainCanvas.style.position = "absolute";
+    this.mainCanvas.style.top = "0px";
+    this.mainCanvas.style.left = "0px";
 
     // TODO setup manually..
     paper.setup(this.mainCanvas);

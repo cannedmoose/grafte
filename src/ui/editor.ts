@@ -3,7 +3,7 @@ import "codemirror/lib/codemirror.css";
 import "codemirror/addon/display/fullscreen.css";
 import "codemirror/theme/neat.css";
 import "codemirror/mode/javascript/javascript.js";
-import { div } from "./utils";
+import { div } from "./utils/dom";
 
 export function createCodeEditor() {
   const d = div({}, []);

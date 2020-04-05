@@ -1,7 +1,7 @@
 import * as paper from "paper";
 import { viewProject } from "./ui/layers";
-import { queryOrThrow, button, div, text, canvas } from "./ui/utils";
-import { createToolOptions, ToolBelt } from "./ui/tools";
+import { queryOrThrow, button, div, text } from "./ui/utils/dom";
+import { ToolOptions, ToolBelt } from "./ui/tools";
 import { createSaveMenu } from "./ui/save";
 import { createLoadMenu } from "./ui/load";
 import { KeyboardHandler } from "./ui/keyboard";
@@ -113,8 +113,8 @@ window.onload = function () {
     [
       new PaneerNode("Vertical", "10%", true, [
         new PaneerLeaf(preview, "1fr"),
-        new PaneerLeaf({element:toolBelt.el}, "1fr"),
-        new PaneerLeaf({element: createToolOptions(history)}, "1fr")
+        new PaneerLeaf(toolBelt, "1fr"),
+        new PaneerLeaf(new ToolOptions(history), "1fr")
       ]),
       new PaneerLeaf(viewport, "auto"),
       new PaneerNode("Vertical", "10%", true, [

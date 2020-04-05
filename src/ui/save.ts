@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { div, slider, color, button, text, select, option, queryOrThrow } from "./utils";
+import { div, slider, color, button, text, select, option, queryOrThrow } from "./utils/dom";
 
 export function createSaveMenu(document: paper.View) {
   return div({ class: "vertical" }, [

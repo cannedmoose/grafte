@@ -1,6 +1,6 @@
 import * as paper from "paper";
-import { slider, div, text, checkbox, button, queryOrThrow } from "./utils";
-import { words } from "./words";
+import { div, text } from "./utils/dom";
+import { words } from "./utils/words";
 
 /**
  * SHOULD DIFFERENTIATE BETWEEN CLICK AND DRAG

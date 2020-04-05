@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { div, slider, color, button, text, select, option, queryOrThrow, checkbox } from "./utils";
+import { div, slider, color, button, text, select, option, queryOrThrow, checkbox } from "./utils/dom";
 
 export function createLoadMenu(document: paper.View) {
 

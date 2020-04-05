@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { canvas } from "./utils";
+import { canvas } from "./utils/dom";
 
 export class Preview {
   element: HTMLCanvasElement;
@@ -19,7 +19,8 @@ export class Preview {
     this.viewport = viewport;
 
     this.view.on("updated", this.onViewUpdated.bind(this));
-    viewport.on("changed", this.resize.bind(this));
+    // TODO confirm we need these callbacks
+    //this.viewport.on("changed", this.resize.bind(this));
     this.viewport.on("updated", () => { this.view.markDirty(); })
 
     this.view.on("mousedown", this.moveviewport.bind(this));
@@ -37,9 +38,9 @@ export class Preview {
       ctx.fillStyle = "#999999";
       let region = new Path2D();
       region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
-      region.rect(0, 0, this.project.view.element.width, this.project.view.element.height);
+      region.rect(0, 0, this.element.width, this.element.height);
       ctx.clip(region, "evenodd");
-      ctx.fillRect(0, 0, this.project.view.element.width, this.project.view.element.height);
+      ctx.fillRect(0, 0, this.element.width, this.element.height);
       ctx.restore();
 
       ctx.save();

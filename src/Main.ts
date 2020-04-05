@@ -1,9 +1,7 @@
 import * as paper from "paper";
-import { viewProject, LayerControls } from "./ui/layers";
+import { LayerControls } from "./ui/layers";
 import { queryOrThrow, button, div, text } from "./ui/utils/dom";
 import { ToolOptions, ToolBelt } from "./ui/tools";
-import { createSaveMenu } from "./ui/save";
-import { createLoadMenu } from "./ui/load";
 import { KeyboardHandler } from "./ui/keyboard";
 import { createCodeEditor } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
@@ -13,9 +11,6 @@ import { Viewport } from "./ui/viewport";
 import { SaveLoad } from "./ui/saveload";
 
 /**
- * TODO ADD RESIZE OBSERVER FOR CANVAS ELEMENT RESIZING.
- * SHOULD SPLIT OUT PREVIEW/VIEW WINDOW INTO SEPERATE FILE
- * 
  * Important concepts:
  * Viewport: the main view of the project
  * preview: smaller preview window of the project
@@ -29,7 +24,7 @@ window.onload = function () {
   const viewport = new Viewport();
 
   // Set up preview paper.project
-  // TODO pass in viewport instead
+  // TODO(P1) pass in viewport instead
   const preview = new Preview(paper.project, viewport.view, viewport.page);
   viewport.view.on("changed", () => preview.resize());
 

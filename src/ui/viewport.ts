@@ -1,8 +1,6 @@
 import * as paper from "paper";
 import { canvas, div } from "./utils/dom";
 
-// TODO CLEANUP!!!
-
 export class Viewport {
   element: HTMLDivElement;
   mainCanvas: HTMLCanvasElement;
@@ -28,7 +26,7 @@ export class Viewport {
     this.mainCanvas.style.top = "0px";
     this.mainCanvas.style.left = "0px";
 
-    // TODO setup manually..
+    // TODO(P3) setup manually..
     paper.setup(this.mainCanvas);
 
     this.view = paper.project.view;
@@ -82,7 +80,7 @@ export class Viewport {
   }
 
   makeBgPattern(ctx) {
-    // TODO cache this, it's a memory leak...
+    // TODO(P3) cache this, it's a memory leak...
     // Create a pattern, offscreen
     const patternCanvas = document.createElement("canvas");
     const patternContext = patternCanvas.getContext("2d");
@@ -139,7 +137,7 @@ export class Viewport {
       minZoom = this.view.viewSize.width / (this.page.viewSize.width * 0.2);
     }
 
-    // TODO smoother zooming
+    // TODO(P3) smoother zooming
     // Zoom in/out
     let newZoom = Math.min(
       Math.max(maxZoom, this.view.zoom + e.deltaY * 0.1),

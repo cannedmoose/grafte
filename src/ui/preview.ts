@@ -19,7 +19,7 @@ export class Preview {
     this.viewport = viewport;
 
     this.view.on("updated", this.onViewUpdated.bind(this));
-    // TODO confirm we need these callbacks
+    // TODO(P3) confirm we need these callbacks
     //this.viewport.on("changed", this.resize.bind(this));
     this.viewport.on("updated", () => { this.view.markDirty(); })
 
@@ -94,7 +94,7 @@ export class Preview {
     if (this.page.bounds.contains(e.point)) {
       this.viewport.center = e.point;
     } else {
-      // TODO find closest edge to stick to
+      // TODO(P2) find closest edge to stick to
       this.viewport.center = e.point;
     }
     e.stop();

@@ -47,7 +47,7 @@ export function selectTool(history): paper.Tool {
         new paper.Size(0, 0)
       );
       selectionRectangle.removeOnUp();
-      // TODO
+      // TODO(P2) Implement guides so selection rect doesnt appear in layers
       //selectionRectangle.guide = true;
 
       selectionRectangle.strokeColor = new paper.Color("red");

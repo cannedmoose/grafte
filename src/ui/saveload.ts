@@ -126,7 +126,7 @@ export class SaveLoad extends PaneerNode {
           });
         } else if (file.type == "image/png" || file.type == "image/jpeg") {
           let l = new paper.Raster(URL.createObjectURL(file));
-          // Todo resize paper.project
+          // Todo(P3) resize paper.project
           l.smoothing = false;
         } else {
           console.log(file.type);

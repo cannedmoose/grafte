@@ -16,7 +16,7 @@ export function rectangleTool(history): paper.Tool {
       path = new paper.Path.Rectangle(event.downPoint, event.point);
     } else {
       // HACKEY HACKEY HACKEY
-      // Todo find a better way to figure out square points
+      // TODO(P3) find a better way to figure out square points
       let l = (event.downPoint.getDistance(event.point) * Math.sqrt(2)) / 2;
       var x = event.point
         .subtract(event.downPoint)

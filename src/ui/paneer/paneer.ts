@@ -6,7 +6,7 @@ export type NodeDirection = "Horizontal" | "Vertical";
 export type Paneer = PaneerNode | PaneerLeaf | PaneerDOM;
 
 const PANEER_ID_ATTRIB = "data-paneer-id";
-// TODO THIS SHOULD BE PER ROOT NODE
+// TODO(P1) THIS SHOULD BE PER ROOT NODE
 let NodeMap: Map<string, Paneer> = new Map();
 
 function elementToPaneer(element: Element | null): Paneer | undefined {
@@ -23,7 +23,7 @@ function elementToPaneer(element: Element | null): Paneer | undefined {
 interface Pane {
   element: HTMLElement;
 
-  // Todo currently passing leaf so we can hook into resize to set styles
+  // TODO(P3) currently passing leaf so we can hook into resize to set styles
   // consider doing this another way
   resize?(paneer: PaneerLeaf): void;
 }
@@ -63,7 +63,7 @@ class PaneerDOM implements Pane {
     }
   }
 
-  // TODO maybe move sizing back into node... doesn't really have anything to do with DOM
+  // TODO(P1) maybe move sizing back into node... doesn't really have anything to do with DOM
   get sizing(): string {
     return this._sizing;
   }
@@ -118,6 +118,7 @@ export class PaneerNode extends PaneerDOM {
     this.resize();
   }
 
+  // TODO(P1) Remove child, for layers.
   append(child : Paneer) {
     this.appendAll([child]);
   }

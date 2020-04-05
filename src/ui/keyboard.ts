@@ -72,7 +72,7 @@ export class KeyboardHandler {
           [...shortcut.keys].filter(x => this.pressedKeys.has(x))
         );
         if (intersection.size == shortcut.keys.size) {
-          // TODO should keep some internal state so we can have self remove/adding shortcuts without fucking up this iteration
+          // TODO(P2) should keep some internal state so we can have self remove/adding shortcuts without fucking up this iteration
           shortcut.fn(event);
           break;
         }

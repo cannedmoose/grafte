@@ -63,7 +63,7 @@ export class ToolBelt extends PaneerNode {
     this.tools[0].tool.activate();
     this.refresh();
 
-    // TODO figure out what we want to do with keyboard shortcuts...
+    // TODO(P1) figure out what we want to do with keyboard shortcuts...
     // Maybe define in tool?
   }
 

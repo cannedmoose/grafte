@@ -4,7 +4,7 @@ import { canvas, div, queryOrThrow } from "./utils";
 // TODO CLEANUP!!!
 
 export class Viewport {
-  dom: HTMLDivElement;
+  element: HTMLDivElement;
   mainCanvas: HTMLCanvasElement;
   backgroundCanvas: HTMLCanvasElement;
 
@@ -19,7 +19,7 @@ export class Viewport {
     this.mainCanvas = canvas({ id: "canvas" });
     this.backgroundCanvas = canvas({ id: "backgroundcanvas" });
 
-    this.dom = div({ id: "drawingArea" }, [this.backgroundCanvas, this.mainCanvas]);
+    this.element = div({ id: "drawingArea" }, [this.backgroundCanvas, this.mainCanvas]);
 
     // TODO setup manually..
     paper.setup(this.mainCanvas);

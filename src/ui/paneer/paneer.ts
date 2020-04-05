@@ -19,10 +19,16 @@ function elementToPaneer(element: Element | null): Paneer | undefined {
   return NodeMap.get(id);
 }
 
+interface Pane {
+  element: HTMLElement;
+
+  resize?(): void;
+}
+
 /**
  * Dom interface for Paneer, creates dom element and links it to a paneer node.
  */
-class PaneerDOM {
+class PaneerDOM implements Pane {
   _type = "DOM";
 
   private _element: HTMLElement;
@@ -54,18 +60,17 @@ class PaneerDOM {
     }
   }
 
-  // TODO mayeb move sizing back into node... doesn't really have anything to do with DOM
+  // TODO maybe move sizing back into node... doesn't really have anything to do with DOM
   get sizing(): string {
     return this._sizing;
   }
+  
   set sizing(sizing: string) {
     this._sizing = sizing;
-    window.requestAnimationFrame(() => this.parent?.setStyles());
+    window.requestAnimationFrame(() => this.parent?.resize());
   }
 
-  setStyles() { };
-
-
+  resize() { }
 }
 
 export class PaneerNode extends PaneerDOM {
@@ -99,7 +104,7 @@ export class PaneerNode extends PaneerDOM {
       }
     );
 
-    this.setStyles();
+    this.resize();
   }
 
   get children(): Paneer[] {
@@ -122,10 +127,10 @@ export class PaneerNode extends PaneerDOM {
 
   set direction(direction: NodeDirection) {
     this._direction = direction;
-    this.setStyles();
+    this.resize();
   }
 
-  setStyles() {
+  resize() {
     this.element.style.display = "grid";
     this.element.style.height = "100%";
 
@@ -145,7 +150,6 @@ export class PaneerNode extends PaneerDOM {
     // Line children up
     this.children.forEach(
       (child, index) => {
-        child.setStyles();
         if (this.direction == "Horizontal") {
           child.element.style.gridColumnStart = `line${index}`;
           child.element.style.gridColumnEnd = `line${index + 1}`;
@@ -161,23 +165,28 @@ export class PaneerNode extends PaneerDOM {
         }
       }
     )
+
+    this.children.forEach(child => { child.resize(); })
   }
 }
 
 export class PaneerLeaf extends PaneerDOM {
   _type = "Leaf";
   // This node in the DOM
-  element: HTMLElement;
+  pane: Pane;
 
-  constructor(element: HTMLElement, sizing: string = "1fr") {
+  constructor(pane: Pane, sizing: string = "1fr") {
     super(sizing);
-    this.element.appendChild(element);
+    this.pane = pane;
+    this.element.appendChild(pane.element);
   }
 
-  setStyles() {
+  resize() {
     this.element.style.height = "100%";
     this.element.style.overflow = "hidden";
     this.element.style.border = "2px inset black"
+    if (this.pane.resize)
+      this.pane.resize();
   }
 }
 
@@ -189,7 +198,7 @@ class PaneerHandle extends PaneerLeaf {
   dragState: DragState;
 
   constructor() {
-    super(document.createElement("div"), "4px");
+    super({ element: document.createElement("div") }, "4px");
     this.mouseover = false;
     this.dragState = { state: "null" };
 
@@ -250,7 +259,7 @@ class PaneerHandle extends PaneerLeaf {
         next.sizing = `${nextSize}fr`;
       }
 
-      this.dragState = {...this.dragState, lastPoint: currentPoint};
+      this.dragState = { ...this.dragState, lastPoint: currentPoint };
     });
 
     this.element.addEventListener("mouseup", () => {
@@ -262,15 +271,14 @@ class PaneerHandle extends PaneerLeaf {
     this.element.style.height = "100%";
     this.element.style.overflow = "hidden";
     if (this.mouseover) {
-      this.element.style.backgroundColor = "#0099ff";
+      this.element.style.border = "2px solid #0099ff";
       if (this.parent?.direction == "Horizontal") {
         this.element.style.cursor = "col-resize";
       } else {
         this.element.style.cursor = "row-resize";
       }
     } else {
-      this.element.style.backgroundColor = "";
-
+      this.element.style.border = "2px inset black"
     }
   }
 }

@@ -112,15 +112,15 @@ window.onload = function () {
     true,
     [
       new PaneerNode("Vertical", "10%", true, [
-        new PaneerLeaf(preview.dom, "1fr"),
-        new PaneerLeaf(toolBelt.el, "1fr"),
-        new PaneerLeaf(createToolOptions(history), "1fr")
+        new PaneerLeaf(preview, "1fr"),
+        new PaneerLeaf({element:toolBelt.el}, "1fr"),
+        new PaneerLeaf({element: createToolOptions(history)}, "1fr")
       ]),
-      new PaneerLeaf(viewport.dom, "auto"),
+      new PaneerLeaf(viewport, "auto"),
       new PaneerNode("Vertical", "10%", true, [
-        new PaneerLeaf(layersContainer, "1fr"),
-        new PaneerLeaf(createSaveMenu(viewport.page), "1fr"),
-        new PaneerLeaf(createLoadMenu(viewport.page), "1fr")
+        new PaneerLeaf({element: layersContainer}, "1fr"),
+        new PaneerLeaf({element: createSaveMenu(viewport.page)}, "1fr"),
+        new PaneerLeaf({element: createLoadMenu(viewport.page)}, "1fr")
       ])
     ]
   );

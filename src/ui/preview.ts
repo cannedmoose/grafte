@@ -1,27 +1,23 @@
 import * as paper from "paper";
 import { canvas } from "./utils/dom";
+import { Viewport } from "./viewport";
 
 export class Preview {
   element: HTMLCanvasElement;
   view: paper.CanvasView;
-  page: paper.View;
-  project: paper.Project;
-  viewport: paper.View;
+  viewport: Viewport;
 
 
-  constructor(project: paper.Project, viewport: paper.View, page: paper.View) {
+  constructor(project: paper.Project, viewport: Viewport) {
     this.element = canvas({});
     this.view = new paper.CanvasView(project, this.element);
-    this.page = page;
-    this.project = project;
 
     this.view.drawSelection = false;
     this.viewport = viewport;
 
     this.view.on("updated", this.onViewUpdated.bind(this));
-    // TODO(P3) confirm we need these callbacks
-    //this.viewport.on("changed", this.resize.bind(this));
-    this.viewport.on("updated", () => { this.view.markDirty(); })
+    this.viewport.view.on("changed", this.resize.bind(this));
+    this.viewport.view.on("updated", () => { this.view.markDirty(); })
 
     this.view.on("mousedown", this.moveviewport.bind(this));
     this.view.on("mousedrag", this.moveviewport.bind(this));
@@ -32,8 +28,8 @@ export class Preview {
     this.view.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
       ctx.save();
       ctx.lineWidth = 1;
-      let tl = matrix.transform(this.page.bounds.topLeft);
-      let br = matrix.transform(this.page.bounds.bottomRight);
+      let tl = matrix.transform(this.viewport.page.bounds.topLeft);
+      let br = matrix.transform(this.viewport.page.bounds.bottomRight);
 
       ctx.fillStyle = "#999999";
       let region = new Path2D();
@@ -45,8 +41,8 @@ export class Preview {
 
       ctx.save();
 
-      tl = matrix.transform(this.project.view.bounds.topLeft);
-      br = matrix.transform(this.project.view.bounds.bottomRight);
+      tl = matrix.transform(this.viewport.project.view.bounds.topLeft);
+      br = matrix.transform(this.viewport.project.view.bounds.bottomRight);
       ctx.strokeStyle = "#009dec";
       ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
       ctx.restore();
@@ -60,10 +56,10 @@ export class Preview {
       this.view.viewSize = new paper.Size(previewRect.width, previewRect.height);
 
       // Zoom out to show document
-      const minX = this.page.bounds.topLeft.x;
-      const minY = this.page.bounds.topLeft.y;
-      const maxX = this.page.bounds.bottomRight.x;
-      const maxY = this.page.bounds.bottomRight.y;
+      const minX = this.viewport.page.bounds.topLeft.x;
+      const minY = this.viewport.page.bounds.topLeft.y;
+      const maxX = this.viewport.page.bounds.bottomRight.x;
+      const maxY = this.viewport.page.bounds.bottomRight.y;
 
       // Always center on the document
       this.view.center = new paper.Point(
@@ -91,11 +87,11 @@ export class Preview {
   }
 
   moveviewport(e: paper.MouseEvent) {
-    if (this.page.bounds.contains(e.point)) {
-      this.viewport.center = e.point;
+    if (this.viewport.page.bounds.contains(e.point)) {
+      this.viewport.view.center = e.point;
     } else {
       // TODO(P2) find closest edge to stick to
-      this.viewport.center = e.point;
+      this.viewport.view.center = e.point;
     }
     e.stop();
   }

@@ -18,16 +18,13 @@ import { SaveLoad } from "./ui/saveload";
  */
 
 window.onload = function () {
-  const paneerDiv = queryOrThrow("#menus");
-
   // Set up main viewport
   const viewport = new Viewport();
+  // Set up preview
+  const preview = new Preview(paper.project, viewport);
 
-  // Set up preview paper.project
-  // TODO(P1) pass in viewport instead
-  const preview = new Preview(paper.project, viewport.view, viewport.page);
-  viewport.view.on("changed", () => preview.resize());
-
+  // Project setup.
+  new paper.Layer();
   paper.project.currentStyle.strokeWidth = 1;
   paper.project.currentStyle.strokeColor = new paper.Color("black");
   paper.project.currentStyle.strokeCap = "round";
@@ -39,8 +36,6 @@ window.onload = function () {
 
   // Add keyboard event listener and default keyboard events
   const keyboardHandler = new KeyboardHandler(window);
-  const toolBelt = new ToolBelt(history, keyboardHandler);
-
   keyboardHandler.addShortcut("backspace", e => {
     e.preventDefault();
     paper.project.selectedItems.forEach(item => item.remove());
@@ -57,16 +52,17 @@ window.onload = function () {
     history.redo();
   });
 
+  const toolBelt = new ToolBelt(history, keyboardHandler);
   const layers = new LayerControls();
   viewport.view.on("updated", () => layers.refreshLayers());
 
   const editor = new Editor("1fr");
-
   keyboardHandler.addShortcut("control+enter", e => {
     e.preventDefault();
     editor.execute();
   });
 
+  const paneerDiv = queryOrThrow("#menus");
   const paneer: PaneerNode = new PaneerNode(
     "Horizontal",
     "auto",
@@ -87,11 +83,9 @@ window.onload = function () {
       ])
     ]
   );
-
   paneerDiv.appendChild(paneer.element);
 
   viewport.resize();
   viewport.centerPage();
-  preview.resize();
 };
 

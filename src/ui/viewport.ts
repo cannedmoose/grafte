@@ -28,8 +28,7 @@ export class Viewport {
 
     // TODO(P3) setup manually..
     paper.setup(this.mainCanvas);
-    new paper.Layer();
-
+    this.project = paper.project;
     this.view = paper.project.view;
 
     const pageDom = canvas({

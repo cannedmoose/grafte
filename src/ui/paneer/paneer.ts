@@ -225,6 +225,8 @@ class PaneerHandle extends PaneerLeaf {
     super({ element: document.createElement("div") }, "4px");
     this.mouseover = false;
     this.dragState = { state: "null" };
+    this.mousedragging = this.mousedragging.bind(this);
+    this.mouseup = this.mouseup.bind(this);
 
     this.element.addEventListener("mouseenter", () => {
       this.mouseover = true;
@@ -250,44 +252,9 @@ class PaneerHandle extends PaneerLeaf {
         startPoint: new paper.Point(e.screenX, e.screenY),
         lastPoint: new paper.Point(e.screenX, e.screenY)
       };
-    });
 
-    this.element.addEventListener("mousemove", (e: MouseEvent) => {
-      if (this.dragState.state == "null") {
-        return;
-      }
-
-      const previous = elementToPaneer(this.element.previousElementSibling);
-      const next = elementToPaneer(this.element.nextElementSibling);
-
-      if (!previous || !next) {
-        return;
-      }
-
-      const currentPoint = new paper.Point(e.screenX, e.screenY);
-      const delta = currentPoint.subtract(this.dragState.lastPoint);
-
-      const prevRect = previous.element.getBoundingClientRect();
-      const nextRect = next.element.getBoundingClientRect();
-
-      if (this.parent?.direction == "Horizontal") {
-        const prevSize = prevRect.width + delta.x;
-        const nextSize = nextRect.width - delta.x;
-
-        previous.sizing = `${prevSize}fr`;
-        next.sizing = `${nextSize}fr`;
-      } else {
-        const prevSize = prevRect.height + delta.y;
-        const nextSize = nextRect.height - delta.y;
-        previous.sizing = `${prevSize}fr`;
-        next.sizing = `${nextSize}fr`;
-      }
-
-      this.dragState = { ...this.dragState, lastPoint: currentPoint };
-    });
-
-    this.element.addEventListener("mouseup", () => {
-      this.dragState = { state: "null" };
+      window.addEventListener("mousemove", this.mousedragging);
+      window.addEventListener("mouseup", this.mouseup);
     });
   }
 
@@ -309,5 +276,49 @@ class PaneerHandle extends PaneerLeaf {
     } else {
       this.element.style.border = "2px solid white"
     }
+  }
+
+  mousedragging(e: MouseEvent) {
+    if (this.dragState.state == "null") {
+      window.removeEventListener("mousemove", this.mousedragging);
+      window.removeEventListener("mouseup", this.mouseup);
+      return;
+    }
+
+    const previous = elementToPaneer(this.element.previousElementSibling);
+    const next = elementToPaneer(this.element.nextElementSibling);
+
+    if (!previous || !next) {
+      window.removeEventListener("mousemove", this.mousedragging);
+      window.removeEventListener("mouseup", this.mouseup);
+      return;
+    }
+
+    const currentPoint = new paper.Point(e.screenX, e.screenY);
+    const delta = currentPoint.subtract(this.dragState.lastPoint);
+
+    const prevRect = previous.element.getBoundingClientRect();
+    const nextRect = next.element.getBoundingClientRect();
+
+    if (this.parent?.direction == "Horizontal") {
+      const prevSize = prevRect.width + delta.x;
+      const nextSize = nextRect.width - delta.x;
+
+      previous.sizing = `${prevSize}fr`;
+      next.sizing = `${nextSize}fr`;
+    } else {
+      const prevSize = prevRect.height + delta.y;
+      const nextSize = nextRect.height - delta.y;
+      previous.sizing = `${prevSize}fr`;
+      next.sizing = `${nextSize}fr`;
+    }
+
+    this.dragState = { ...this.dragState, lastPoint: currentPoint };
+  }
+
+  mouseup(event: MouseEvent) {
+    this.dragState = { state: "null" };
+    window.removeEventListener("mousemove", this.mousedragging);
+    window.removeEventListener("mouseup", this.mouseup);
   }
 }

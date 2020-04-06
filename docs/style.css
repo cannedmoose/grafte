@@ -6,127 +6,16 @@ body {
   font-size: .8em;
 }
 
-/* Scale canvas with resize attribute to full size */
-
-.expand {
-  width: 100%;
-  height: 100%;
+* {
+  box-sizing: border-box;
 }
 
-div .contract {
-  flex: 0;
-  width: fit-content;
-  height: 0%;
-}
-
-.horizontal {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-}
-
-.vertical {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-}
 
 .selected {
   font-weight: bolder;
 }
 
-/**
-* Menu Styles
-*/
-
 #menus {
-  display: grid;
-
-  grid-template-columns: 150px calc(100vw - 300px) 150px;
-  grid-template-rows: 150px calc(50vh - 150px) calc(50vh - 150px) 150px;
-
-  grid-template-areas:
-    "viewport drawing layers"
-    "tools drawing layers"
-    "toolOptions drawing save"
-    ". drawing load";
-}
-
-.toolArea {
-  grid-area: tools;
-}
-
-.toolOptionsArea {
-  grid-area: toolOptions;
-}
-
-.drawingArea {
-  grid-area: drawing;
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border: 2px inset black;
-  background-color: white;
-  pointer-events: all;
-  position: relative;
-}
-
-.layersArea {
-  grid-area: layers;
-}
-
-.saveArea {
-  grid-area: save;
-}
-
-.loadArea {
-  grid-area: load;
-}
-
-#backgroundcanvas {
-  position: absolute;
-}
-
-#canvas {
-  position: absolute;
-}
-
-.menu {
-  border: 2px inset black;
-  background-color: white;
-  pointer-events: all;
-
-  display: flex;
-  flex-direction: column;
-  cursor: default;
-  overflow: scroll;
-  box-sizing: border-box;
-}
-
-.menucontent {
-  overflow: hidden;
-}
-
-.titlebar {
-  background-color: grey;
-  border-bottom: 1px inset black;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  user-select: none;
-}
-
-.resizehandle {
-  position: absolute;
-  bottom: 0px;
-  right: 0px;
-}
-
-.icon {
-  width: 1em;
+  width: 100vw;
+  height: 100vh;
 }

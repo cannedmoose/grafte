@@ -28,6 +28,7 @@
     "build": "webpack --config webpack.prod.js",
     "watch": "webpack-dev-server --config webpack.dev.js",
     "clean": "rm -rf build/*",
+    "release": "rm -rf docs/* && cp build/* docs/",
     "analyze": "webpack --config webpack.analyze.js --display-modules"
   },
   "keywords": [],

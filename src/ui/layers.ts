@@ -3,7 +3,7 @@ import { div, text, button } from "./utils/dom";
 import { words } from "./utils/words";
 import { PaneerNode, PaneerLeaf, Paneer } from "./paneer/paneer";
 
-const depthColors = ["red", "green", "blue", "pink", "yellowgreen", "cyan"];
+const depthColors = [ "Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
 export class LayerControls extends PaneerNode {
   layersView: PaneerNode;
   constructor() {

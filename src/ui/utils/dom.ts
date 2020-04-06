@@ -51,6 +51,7 @@ export function button(
   el.style.width = "100%";
   el.style.height = "100%";
   el.style.padding = "0px";
+  el.style.border = "none";
   return el;
 }
 

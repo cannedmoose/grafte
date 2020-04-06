@@ -208,7 +208,7 @@ export class PaneerLeaf extends PaneerDOM {
   resize() {
     this.element.style.height = "100%";
     this.element.style.overflow = "hidden";
-    this.element.style.border = "2px inset black"
+    this.element.style.border = "2px outset #999999"
     if (this.pane.resize)
       this.pane.resize(this);
   }
@@ -288,7 +288,12 @@ class PaneerHandle extends PaneerLeaf {
 
     this.element.addEventListener("mouseup", () => {
       this.dragState = { state: "null" };
-    })
+    });
+  }
+
+  resize() {
+    super.resize();
+    this.setStyles();
   }
 
   setStyles() {
@@ -302,7 +307,7 @@ class PaneerHandle extends PaneerLeaf {
         this.element.style.cursor = "row-resize";
       }
     } else {
-      this.element.style.border = "2px inset black"
+      this.element.style.border = "2px solid white"
     }
   }
 }

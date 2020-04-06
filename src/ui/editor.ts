@@ -22,6 +22,6 @@ export class CodeMirrorManager {
   };
 
   constructor(host: HTMLElement) {
-    this.editor = CodeMirror(host, this.config);
+    //this.editor = CodeMirror(host, this.config);
   }
 }

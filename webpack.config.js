@@ -3,8 +3,6 @@ const CopyPlugin = require("copy-webpack-plugin");
 const WriteFilePlugin = require("write-file-webpack-plugin");
 
 module.exports = {
-  mode: "development",
-  devtool: "source-map",
   entry: "./src/main.ts",
   devServer: {
     contentBase: "./build"
@@ -16,16 +14,9 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts$/,
         use: "ts-loader",
         exclude: /node_modules/
-      },
-      {
-        test: /\.css$/,
-        use: [
-          "style-loader",
-          { loader: "css-loader", options: { importLoaders: 1 } }
-        ]
       }
     ]
   },

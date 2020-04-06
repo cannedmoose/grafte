@@ -1,6 +1,7 @@
 import * as paper from "paper";
+import { GrafteHistory } from "./history";
 
-export function rectangleTool(history): paper.Tool {
+export function rectangleTool(history: GrafteHistory): paper.Tool {
   const rectangleTool = new paper.Tool();
   rectangleTool.name = "rectangle";
 

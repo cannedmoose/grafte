@@ -1,11 +1,11 @@
-export function text(data): Node {
+export function text(data: string): Node {
   return document.createTextNode(data);
 }
 
 export function select(
   attribs: { [key: string]: string },
   children: Node[],
-  events: { [key: string]: (event) => void } = {}
+  events: { [key: string]: (event: any) => void } = {}
 ): HTMLSelectElement {
   const el = document.createElement("select");
   elHelper(el, attribs, children, events);
@@ -24,7 +24,7 @@ export function option(
 export function div(
   attribs: { [key: string]: string },
   children: Node[],
-  events: { [key: string]: (event) => void } = {}
+  events: { [key: string]: (event: any) => void } = {}
 ): HTMLDivElement {
   const el = document.createElement("div");
   elHelper(el, attribs, children, events);
@@ -33,7 +33,7 @@ export function div(
 
 export function canvas(
   attribs: { [key: string]: string },
-  events: { [key: string]: (event) => void } = {}
+  events: { [key: string]: (event: any) => void } = {}
 ): HTMLCanvasElement {
   const el = document.createElement("canvas");
   elHelper(el, attribs, [], events);
@@ -43,7 +43,7 @@ export function canvas(
 export function button(
   attribs: { [key: string]: string },
   children: Node[],
-  events: { [key: string]: (event) => void } = {}
+  events: { [key: string]: (event: any) => void } = {}
 ): HTMLButtonElement {
   const el = document.createElement("button");
   elHelper(el, attribs, children, events);
@@ -56,7 +56,7 @@ export function button(
 
 export function checkbox(
   attribs: { [key: string]: string },
-  events: { [key: string]: (event) => void } = {}
+  events: { [key: string]: (event: any) => void } = {}
 ): HTMLInputElement {
   const el = document.createElement("input");
   el.setAttribute("type", "checkbox");
@@ -66,7 +66,7 @@ export function checkbox(
 
 export function slider(
   attribs: { [key: string]: string },
-  events: { [key: string]: (event) => void } = {}
+  events: { [key: string]: (event: any) => void } = {}
 ): HTMLInputElement {
   const el = document.createElement("input");
   el.setAttribute("type", "range");
@@ -76,7 +76,7 @@ export function slider(
 
 export function color(
   attribs: { [key: string]: string },
-  events: { [key: string]: (event) => void } = {}
+  events: { [key: string]: (event: any) => void } = {}
 ): HTMLInputElement {
   const el = document.createElement("input");
   el.setAttribute("type", "color");
@@ -92,7 +92,7 @@ function elHelper(
   el: HTMLElement,
   attribs: { [key: string]: string },
   children: Node[],
-  events: { [key: string]: (event) => void } = {}
+  events: { [key: string]: (event: any) => void } = {}
 ): void {
   Object.entries(attribs).forEach(([key, value]) => {
     if (value) el.setAttribute(key, value);

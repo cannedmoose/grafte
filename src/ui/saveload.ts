@@ -106,7 +106,7 @@ export class SaveLoad extends PaneerNode {
       for (var i = 0; i < curFiles.length; i++) {
         const file = curFiles[i];
         if (file.type == "image/svg+xml") {
-          paper.project.importSVG(URL.createObjectURL(file), (item) => {
+          paper.project.importSVG(URL.createObjectURL(file), (item: paper.Item) => {
             this.page.viewSize = item.bounds.size.clone();
           });
         } else if (file.type == "image/png" || file.type == "image/jpeg") {
@@ -132,7 +132,7 @@ export class SaveLoad extends PaneerNode {
   }
 }
 
-function downloadBlob(blob, filename) {
+function downloadBlob(blob: any, filename: string) {
   // Create an object URL for the blob object
   const url = URL.createObjectURL(blob);
 

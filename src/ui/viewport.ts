@@ -42,7 +42,7 @@ export class Viewport {
 
     this.view.on("updated", this.onViewUpdated.bind(this));
     window.addEventListener("wheel", this.onScroll.bind(this));
-    window.onresize = e => this.resize();
+    window.onresize = () => this.resize();
   }
 
   onViewUpdated() {
@@ -67,6 +67,7 @@ export class Viewport {
       this.view.viewSize = new paper.Size(viewportRect.width, viewportRect.height);
 
       const ctx = this.backgroundCanvas.getContext("2d");
+      if (!ctx) return;
       const bgPattern = this.makeBgPattern(ctx);
 
       this.backgroundCanvas.width = viewportRect.width;
@@ -75,18 +76,18 @@ export class Viewport {
       if (!ctx) {
         throw "No background context";
       }
-      ctx.fillStyle = bgPattern;
+      ctx.fillStyle = bgPattern || "white";
       ctx.fillRect(0, 0, viewportRect.width, viewportRect.height);
     });
   }
 
-  makeBgPattern(ctx) {
+  makeBgPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
     // TODO(P3) cache this, it's a memory leak...
     // Create a pattern, offscreen
     const patternCanvas = document.createElement("canvas");
     const patternContext = patternCanvas.getContext("2d");
 
-    if (!patternContext) return;
+    if (!patternContext) return null;
 
     // Give the pattern a width and height of 10
     patternCanvas.width = 10;

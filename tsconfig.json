@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
-    "sourceMap": true,
-    "outDir": "build",
-    "rootDir": "src",
-    "strictNullChecks": true,
-    "downlevelIteration": true
+      "module": "es2015",
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "target": "es6",
+      "noImplicitAny": true,
+      "moduleResolution": "node",
+      "strictNullChecks": true,
+      "sourceMap": true,
+      "rootDir": "src",
+      "outDir": "build"   
   }
 }

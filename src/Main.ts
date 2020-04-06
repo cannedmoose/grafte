@@ -3,7 +3,7 @@ import { LayerControls } from "./ui/layers";
 import { queryOrThrow, button, div, text } from "./ui/utils/dom";
 import { ToolOptions, ToolBelt } from "./ui/tools";
 import { KeyboardHandler } from "./ui/keyboard";
-import { createCodeEditor } from "./ui/editor";
+import { Editor } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
 import { PaneerNode, PaneerLeaf } from "./ui/paneer/paneer";
 import { Preview } from "./ui/preview";
@@ -60,6 +60,13 @@ window.onload = function () {
   const layers = new LayerControls();
   viewport.view.on("updated", () => layers.refreshLayers());
 
+  const editor = new Editor("1fr");
+
+  keyboardHandler.addShortcut("control+enter", e => {
+    e.preventDefault();
+    editor.execute();
+  });
+
   const paneer: PaneerNode = new PaneerNode(
     "Horizontal",
     "auto",
@@ -70,7 +77,10 @@ window.onload = function () {
         new PaneerLeaf(toolBelt, "3fr"),
         new PaneerLeaf(new ToolOptions(history), "1fr")
       ]),
-      new PaneerLeaf(viewport, "auto"),
+      new PaneerNode("Vertical", "auto", true, [
+        new PaneerLeaf(viewport, "5fr"),
+        editor
+      ]),
       new PaneerNode("Vertical", "10%", true, [
         new PaneerLeaf(layers, "2fr"),
         new PaneerLeaf(new SaveLoad(viewport.page), "1fr"),
@@ -83,13 +93,5 @@ window.onload = function () {
   viewport.resize();
   viewport.centerPage();
   preview.resize();
-
-  /*menuDiv.append(
-    createMenu("code", [createCodeEditor()], {
-      title: "Style",
-      minimized: false,
-      class: "codeArea"
-    })
-  );*/
 };
 

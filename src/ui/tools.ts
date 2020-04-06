@@ -56,6 +56,7 @@ export class ToolBelt extends PaneerNode {
 
     this.tools.forEach(tool => {
       this.append(new PaneerLeaf(tool, "1fr"));
+      tool.tool.on("activate", () => this.refresh());
     });
     this.tools[0].tool.activate();
     this.refresh();

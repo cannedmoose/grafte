@@ -28,6 +28,7 @@ export class Viewport {
 
     // TODO(P3) setup manually..
     paper.setup(this.mainCanvas);
+    new paper.Layer();
 
     this.view = paper.project.view;
 

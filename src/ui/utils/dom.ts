@@ -81,6 +81,10 @@ export function color(
   const el = document.createElement("input");
   el.setAttribute("type", "color");
   elHelper(el, attribs, [], events);
+  el.style.width = "100%";
+  el.style.height = "100%";
+  el.style.padding = "0px";
+  el.style.border = "none";
   return el;
 }
 

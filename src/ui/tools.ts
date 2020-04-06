@@ -108,13 +108,7 @@ export class ToolOptions extends PaneerNode {
               },
               change: event => history.commit()
             }
-          ),
-          resize: leaf => {
-            leaf.pane.element.style.width = "100%";
-            leaf.pane.element.style.height = "100%";
-            leaf.pane.element.style.padding = "0px";
-            leaf.pane.element.style.border = "none";
-          }
+          )
         }),
         new PaneerLeaf({
           element: color(
@@ -129,13 +123,7 @@ export class ToolOptions extends PaneerNode {
               },
               change: event => history.commit()
             }
-          ),
-          resize: leaf => {
-            leaf.pane.element.style.width = "100%";
-            leaf.pane.element.style.height = "100%";
-            leaf.pane.element.style.padding = "0px";
-            leaf.pane.element.style.border = "none";
-          }
+          )
         })
       ]),
       new PaneerLeaf({ element: div({}, []) }, "3fr")]

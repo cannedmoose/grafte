@@ -1,11 +1,12 @@
 import * as paper from "paper";
+import { GrafteHistory } from "./history";
 
-export function pencilTool(history): paper.Tool {
+export function pencilTool(history: GrafteHistory): paper.Tool {
   const pencilTool = new paper.Tool();
   pencilTool.name = "freehand";
   
   pencilTool.minDistance = 1;
-  let path;
+  let path: paper.Path | undefined;
 
   pencilTool.onMouseDown = function(event: paper.ToolEvent) {
     paper.project.deselectAll();

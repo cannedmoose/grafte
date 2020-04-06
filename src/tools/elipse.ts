@@ -1,6 +1,7 @@
 import * as paper from "paper";
+import { GrafteHistory } from "./history";
 
-export function elipseTool(history): paper.Tool {
+export function elipseTool(history: GrafteHistory): paper.Tool {
   const elipseTool = new paper.Tool();
   elipseTool.name = "elipse";
 

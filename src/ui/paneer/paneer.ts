@@ -6,7 +6,7 @@ export type NodeDirection = "Horizontal" | "Vertical";
 export type Paneer = PaneerNode | PaneerLeaf | PaneerDOM;
 
 const PANEER_ID_ATTRIB = "data-paneer-id";
-// TODO(P1) THIS SHOULD BE PER ROOT NODE
+// TODO(P3) maybe this shouldn't be global...
 let NodeMap: Map<string, Paneer> = new Map();
 
 function elementToPaneer(element: Element | null): Paneer | undefined {
@@ -33,6 +33,7 @@ interface Pane {
  */
 class PaneerDOM implements Pane {
   _type = "DOM";
+  // TODO(P2) add border here (so we can have sections)
 
   private _element: HTMLElement;
   private _id: string;
@@ -71,6 +72,14 @@ class PaneerDOM implements Pane {
   set sizing(sizing: string) {
     this._sizing = sizing;
     window.requestAnimationFrame(() => this.parent?.resize());
+  }
+
+  delete() {
+    const parent = this.parent;
+    if (parent) {
+      parent.remove(this);
+    }
+    NodeMap.delete(this._id);
   }
 
   resize() { }
@@ -136,6 +145,12 @@ export class PaneerNode extends PaneerDOM {
       }
     );
 
+    this.resize();
+  }
+
+  remove(child: Paneer) {
+    // TODO(P2) handle resize handles
+    this.element.removeChild(child.element);
     this.resize();
   }
 

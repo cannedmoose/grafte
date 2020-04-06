@@ -47,6 +47,10 @@ export function button(
 ): HTMLButtonElement {
   const el = document.createElement("button");
   elHelper(el, attribs, children, events);
+  // TODO(P3) figure out if styling belongs somewhere else
+  el.style.width = "100%";
+  el.style.height = "100%";
+  el.style.padding = "0px";
   return el;
 }
 

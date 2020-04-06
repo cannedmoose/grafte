@@ -57,6 +57,9 @@ window.onload = function () {
     history.redo();
   });
 
+  const layers = new LayerControls();
+  viewport.view.on("updated", () => layers.refreshLayers());
+
   const paneer: PaneerNode = new PaneerNode(
     "Horizontal",
     "auto",
@@ -69,7 +72,7 @@ window.onload = function () {
       ]),
       new PaneerLeaf(viewport, "auto"),
       new PaneerNode("Vertical", "10%", true, [
-        new PaneerLeaf(new LayerControls(), "2fr"),
+        new PaneerLeaf(layers, "2fr"),
         new PaneerLeaf(new SaveLoad(viewport.page), "1fr"),
       ])
     ]

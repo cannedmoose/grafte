@@ -14,12 +14,7 @@ export class SaveLoad extends PaneerNode {
       new PaneerNode("Horizontal", "1fr", false, [
         new PaneerNode("Vertical", "1fr", false, [
           new PaneerLeaf({
-            element: button({}, [text("save")], { click: () => this.save() }),
-            resize: leaf => {
-              leaf.pane.element.style.width = "100%";
-              leaf.pane.element.style.height = "100%";
-              leaf.pane.element.style.padding = "0px";
-            }
+            element: button({}, [text("save")], { click: () => this.save() })
           }),
           new PaneerLeaf({
             element: select({ id: "savemodeselector" }, [
@@ -35,20 +30,10 @@ export class SaveLoad extends PaneerNode {
         ]),
         new PaneerNode("Vertical", "1fr", false, [
           new PaneerLeaf({
-            element: button({}, [text("load")], { click: () => this.load() }),
-            resize: leaf => {
-              leaf.pane.element.style.width = "100%";
-              leaf.pane.element.style.height = "100%";
-              leaf.pane.element.style.padding = "0px";
-            }
+            element: button({}, [text("load")], { click: () => this.load() })
           }),
           new PaneerLeaf({
-            element: button({}, [text("load local")], { click: () => this.loadlocal() }),
-            resize: leaf => {
-              leaf.pane.element.style.width = "100%";
-              leaf.pane.element.style.height = "100%";
-              leaf.pane.element.style.padding = "0px";
-            }
+            element: button({}, [text("load local")], { click: () => this.loadlocal() })
           })
         ])]),
       new PaneerLeaf({

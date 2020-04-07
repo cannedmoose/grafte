@@ -14,7 +14,7 @@ export class Editor extends PaneerLeaf {
   public editor: CodeMirror.Editor;
 
   config: CodeMirror.EditorConfiguration = {
-    tabSize: 1,
+    tabSize: 4,
     lineNumbers: true,
     // TODO(P3) expose paper for code hinting
     mode: {name: "javascript", globalVars: true},

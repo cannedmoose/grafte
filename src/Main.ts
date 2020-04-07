@@ -85,6 +85,34 @@ window.onload = function () {
   );
   paneerDiv.appendChild(paneer.element);
 
+  // TODO(P1) MAKE LESS HACKEY!!!
+  const json = window.localStorage.getItem("project");
+  if (json) {
+    if ((queryOrThrow("#loadclear") as HTMLInputElement).checked) {
+      paper.project.clear();
+    }
+    paper.project.importJSON(json);
+    paper.project.deselectAll();
+  }
+
+  const editorvalue =  window.localStorage.getItem("editor");
+  if (editorvalue) {
+    editor.editor.setValue(editorvalue);
+  }
+    
+  viewport.view.on("updated", () => {
+    const json = paper.project.exportJSON({ asString: true });
+    window.localStorage.setItem("project", json);
+  });
+  editor.editor.on("change", () => {
+    window.localStorage.setItem("editor", editor.editor.getValue());
+  });
+
+  const ctx = {
+    editor, keyboard, toolBelt, viewport
+  }
+  // @ts-ignore
+  window.ctx = ctx;
   viewport.resize();
   viewport.centerPage();
 };

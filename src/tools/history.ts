@@ -1,4 +1,5 @@
 import * as paper from "paper";
+import { Keyboard } from "../ui/keyboard";
 
 export class GrafteHistory {
   history: string[];

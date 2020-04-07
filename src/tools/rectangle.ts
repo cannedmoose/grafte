@@ -1,9 +1,11 @@
 import * as paper from "paper";
 import { GrafteHistory } from "./history";
+import { Keyboard } from "../ui/keyboard";
 
-export function rectangleTool(history: GrafteHistory): paper.Tool {
+export function rectangleTool(history: GrafteHistory, keyboard: Keyboard): paper.Tool {
   const rectangleTool = new paper.Tool();
   rectangleTool.name = "rectangle";
+  keyboard.bind("r", {}, () => rectangleTool.activate());
 
   rectangleTool.onMouseDown = function(event: paper.MouseEvent) {
     paper.project.deselectAll();

@@ -1,9 +1,11 @@
 import * as paper from "paper";
 import { GrafteHistory } from "./history";
+import { Keyboard } from "../ui/keyboard";
 
-export function selectTool(history: GrafteHistory): paper.Tool {
+export function selectTool(history: GrafteHistory, keyboard: Keyboard): paper.Tool {
   const selectTool = new paper.Tool();
   selectTool.name = "select";
+  keyboard.bind("s", {}, () => selectTool.activate());
 
   let selectionRectangle: paper.Shape | undefined;
 
@@ -12,7 +14,7 @@ export function selectTool(history: GrafteHistory): paper.Tool {
    */
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
     var hitResult = paper.project.hitTest(event.point, {
-      tolerance: 5,
+      tolerance: 2,
       fill: true,
       stroke: true
     });

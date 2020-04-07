@@ -8,6 +8,7 @@ import { pencilTool } from "../tools/pencil";
 import { elipseTool } from "../tools/elipse";
 import { rectangleTool } from "../tools/rectangle";
 import { PaneerNode, PaneerLeaf } from "./paneer/paneer";
+import { Keyboard } from "./keyboard";
 
 class Tool {
   element: HTMLElement;
@@ -42,15 +43,15 @@ class Tool {
 export class ToolBelt extends PaneerNode {
   tools: Tool[];
 
-  constructor(history: GrafteHistory) {
+  constructor(history: GrafteHistory, keyboard: Keyboard) {
     super("Vertical", "1fr", false);
     this.tools = [
-      new Tool(this, selectTool(history)),
-      new Tool(this, pointTool(history)),
-      new Tool(this, penTool(history)),
-      new Tool(this, pencilTool(history)),
-      new Tool(this, elipseTool(history)),
-      new Tool(this, rectangleTool(history))
+      new Tool(this, selectTool(history, keyboard)),
+      new Tool(this, pointTool(history, keyboard)),
+      new Tool(this, penTool(history, keyboard)),
+      new Tool(this, pencilTool(history, keyboard)),
+      new Tool(this, elipseTool(history, keyboard)),
+      new Tool(this, rectangleTool(history, keyboard))
     ];
 
     this.tools.forEach(tool => {

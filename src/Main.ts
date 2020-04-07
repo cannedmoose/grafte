@@ -52,7 +52,7 @@ window.onload = function () {
     history.redo();
   });
 
-  const toolBelt = new ToolBelt(history);
+  const toolBelt = new ToolBelt(history, keyboard);
   const layers = new LayerControls();
   viewport.view.on("updated", () => layers.refreshLayers());
 

@@ -1,9 +1,11 @@
 import * as paper from "paper";
 import { GrafteHistory } from "./history";
+import { Keyboard } from "../ui/keyboard";
 
-export function elipseTool(history: GrafteHistory): paper.Tool {
+export function elipseTool(history: GrafteHistory, keyboard: Keyboard): paper.Tool {
   const elipseTool = new paper.Tool();
   elipseTool.name = "elipse";
+  keyboard.bind("e", {}, () => elipseTool.activate());
 
   elipseTool.onMouseDown = function(event: paper.MouseEvent) {
     paper.project.deselectAll();

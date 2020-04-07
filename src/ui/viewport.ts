@@ -25,6 +25,12 @@ export class Viewport {
     this.mainCanvas.style.position = "absolute";
     this.mainCanvas.style.top = "0px";
     this.mainCanvas.style.left = "0px";
+    
+    // TODO P3 (look in to this kinda hackey)
+    this.mainCanvas.setAttribute("tabindex", "0");
+    this.mainCanvas.addEventListener("click", e => {
+      this.mainCanvas.focus();
+    });
 
     // TODO(P3) setup manually..
     paper.setup(this.mainCanvas);
@@ -126,9 +132,11 @@ export class Viewport {
   }
 
   onScroll(e: WheelEvent) {
-    //e.stopPropagation();
-    //e.preventDefault();
-    /*
+    if(e.target != this.mainCanvas) {
+      return;
+    }
+    e.stopPropagation();
+    e.preventDefault();
     let maxZoom, minZoom;
     if (this.view.bounds.width > this.view.bounds.height) {
       maxZoom = this.view.viewSize.height / (this.page.viewSize.height * 2);
@@ -153,7 +161,7 @@ export class Viewport {
 
     let newMouse = this.view.viewToProject(mousePoint);
     let newCenter = this.view.center.add(oldMouse.subtract(newMouse));
-    this.view.center = newCenter;*/
+    this.view.center = newCenter;
   }
 
 }

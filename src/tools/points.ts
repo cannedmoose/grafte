@@ -1,7 +1,8 @@
 import * as paper from "paper";
 import { GrafteHistory } from "./history";
+import { Keyboard } from "../ui/keyboard";
 
-export function pointTool(history: GrafteHistory): paper.Tool {
+export function pointTool(history: GrafteHistory, keyboard: Keyboard): paper.Tool {
   const selectTool = new paper.Tool();
   selectTool.name = "point";
 
@@ -21,7 +22,7 @@ export function pointTool(history: GrafteHistory): paper.Tool {
     numClicks += 1;
     // First look for selected segments/handles
     let hitResult = paper.project.hitTest(event.point, {
-      tolerance: 5,
+      tolerance: 2,
       segments: true,
       handles: true,
       match: (match:paper.HitResult) => match.type == "segment" || match.segment.selected
@@ -41,7 +42,7 @@ export function pointTool(history: GrafteHistory): paper.Tool {
     }
 
     hitResult = paper.project.hitTest(event.point, {
-      tolerance: 5,
+      tolerance: 2,
       fill: true,
       stroke: true
     });

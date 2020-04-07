@@ -1,9 +1,11 @@
 import * as paper from "paper";
 import { GrafteHistory } from "./history";
+import { Keyboard } from "../ui/keyboard";
 
-export function pencilTool(history: GrafteHistory): paper.Tool {
+export function pencilTool(history: GrafteHistory, keyboard: Keyboard): paper.Tool {
   const pencilTool = new paper.Tool();
   pencilTool.name = "freehand";
+  keyboard.bind("f", {}, () => pencilTool.activate());
   
   pencilTool.minDistance = 1;
   let path: paper.Path | undefined;

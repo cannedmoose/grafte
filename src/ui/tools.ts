@@ -7,7 +7,6 @@ import { penTool } from "../tools/pen";
 import { pencilTool } from "../tools/pencil";
 import { elipseTool } from "../tools/elipse";
 import { rectangleTool } from "../tools/rectangle";
-import { KeyboardHandler } from "./keyboard";
 import { PaneerNode, PaneerLeaf } from "./paneer/paneer";
 
 class Tool {
@@ -43,7 +42,7 @@ class Tool {
 export class ToolBelt extends PaneerNode {
   tools: Tool[];
 
-  constructor(history: GrafteHistory, keyboard: KeyboardHandler) {
+  constructor(history: GrafteHistory) {
     super("Vertical", "1fr", false);
     this.tools = [
       new Tool(this, selectTool(history)),

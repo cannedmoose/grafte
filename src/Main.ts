@@ -1,14 +1,14 @@
 import * as paper from "paper";
 import { LayerControls } from "./ui/layers";
-import { queryOrThrow, button, div, text } from "./ui/utils/dom";
+import { queryOrThrow } from "./ui/utils/dom";
 import { ToolOptions, ToolBelt } from "./ui/tools";
-import { KeyboardHandler } from "./ui/keyboard";
 import { Editor } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
 import { PaneerNode, PaneerLeaf } from "./ui/paneer/paneer";
 import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
 import { SaveLoad } from "./ui/saveload";
+import { Keyboard } from "./ui/keyboard";
 
 /**
  * Important concepts:
@@ -33,31 +33,31 @@ window.onload = function () {
 
 
   const history = new GrafteHistory(paper.project);
+  const keyboard = new Keyboard();
 
   // Add keyboard event listener and default keyboard events
-  const keyboardHandler = new KeyboardHandler(window);
-  keyboardHandler.addShortcut("backspace", e => {
+  keyboard.bind("backspace", {}, (e: KeyboardEvent) => {
     e.preventDefault();
     paper.project.selectedItems.forEach(item => item.remove());
     history.commit();
   });
 
-  keyboardHandler.addShortcut("control+z", e => {
+  keyboard.bind("command+z", {}, (e: KeyboardEvent) => {
     e.preventDefault();
     history.undo();
   });
 
-  keyboardHandler.addShortcut("control+shift+z", e => {
+  keyboard.bind("command+shift+z", {}, (e: KeyboardEvent) => {
     e.preventDefault();
     history.redo();
   });
 
-  const toolBelt = new ToolBelt(history, keyboardHandler);
+  const toolBelt = new ToolBelt(history);
   const layers = new LayerControls();
   viewport.view.on("updated", () => layers.refreshLayers());
 
   const editor = new Editor("1fr");
-  keyboardHandler.addShortcut("control+enter", e => {
+  keyboard.bind("ctrl+enter", { global: true }, (e: KeyboardEvent) => {
     e.preventDefault();
     editor.execute();
   });

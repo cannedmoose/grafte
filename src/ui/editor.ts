@@ -2,6 +2,9 @@ import * as paper from "paper";
 import CodeMirror from "codemirror";
 import "codemirror/lib/codemirror.css";
 import "codemirror/addon/display/fullscreen.css";
+import "codemirror/addon/hint/show-hint.js";
+import "codemirror/addon/hint/show-hint.css";
+import "codemirror/addon/hint/javascript-hint.js";
 import "codemirror/theme/neat.css";
 import "codemirror/mode/javascript/javascript.js";
 import { div } from "./utils/dom";
@@ -13,16 +16,22 @@ export class Editor extends PaneerLeaf {
   config: CodeMirror.EditorConfiguration = {
     tabSize: 1,
     lineNumbers: true,
-    mode: "javascript",
+    // TODO(P3) expose paper for code hinting
+    mode: {name: "javascript", globalVars: true},
+    extraKeys: {"Ctrl-Space": "autocomplete"},
     theme: "neat",
-    viewportMargin: Infinity
+    viewportMargin: Infinity,
+    
+    // TODO(P3) maybe enable...
+    //inputStyle: "contenteditable"
   };
 
   constructor(sizing: string) {
     super({element: div({}, [])}, sizing);
-    // TODO ADD STYLES...
     this.editor = CodeMirror(this.pane.element, this.config);
     this.pane.element.style.height = "100%";
+    this.pane.element.style.fontSize = "2em";
+    (this.pane.element.firstElementChild as HTMLElement).style.height = "100%";
     this.editor.refresh();
   }
 

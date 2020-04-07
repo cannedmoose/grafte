@@ -5,6 +5,7 @@
   "main": "build/main.js",
   "dependencies": {
     "codemirror": "^5.52.0",
+    "hotkeys-js": "^3.7.6",
     "uuid": "^7.0.3"
   },
   "devDependencies": {

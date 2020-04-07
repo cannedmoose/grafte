@@ -1,102 +1,56 @@
-/**
- * Class for handling keyboard shortcuts.
- * Shortcut can be registered or unregistered
- * When a shortcut is registered it takes precedence over existing shortcuts that would do the same thing
- * Also want to track what keys are down
- */
+import hotkeys from "hotkeys-js";
 
-type EventHandler = (event: KeyboardEvent) => boolean | void;
-type Shortcut = { fn: EventHandler; keys: Set<string> };
+export interface KeyboardOptions {
+  element?: HTMLElement,
+  keyup?: boolean,
+  keydown?: boolean,
+  splitkey?: string,
+  scope?: string,
+  global?: boolean
+}
 
-export class KeyboardHandler {
-  public pressedKeys: Set<string>;
+export class Keyboard {
+  DEFAULT_SCOPE = "global";
+  EDITOR_SCOPE = "editor";
 
-  downShortcuts: { [key: string]: Shortcut[] };
-  upShortcuts: { [key: string]: Shortcut[] };
-
-  constructor(el: Element| Window) {
-    el.addEventListener("keydown", this.keydown.bind(this));
-    el.addEventListener("keyup", this.keyup.bind(this));
-
-    this.pressedKeys = new Set();
-    this.downShortcuts = {};
-    this.upShortcuts = {};
-  }
-
-  /** adds a shortcut given a string of keys seperated by + */
-  public addShortcut(
-    shortcutString: string,
-    fn: EventHandler,
-    event: "keydown" | "keyup" = "keydown"
-  ) {
-    const keys = new Set(shortcutString.split("+"));
-    const shortcut = { fn, keys };
-    const shortcuts =
-      event == "keydown" ? this.downShortcuts : this.upShortcuts;
-
-    keys.forEach(key => {
-      if (!shortcuts[key]) {
-        shortcuts[key] = [];
+  constructor() {
+    hotkeys.setScope(this.DEFAULT_SCOPE);
+    hotkeys.filter = (event: KeyboardEvent) => {
+      // Reset scope depending on target.
+      var tagName = (event.target as HTMLElement || event.srcElement)?.tagName;
+      if (/^(TEXTAREA)$/.test(tagName)) {
+        hotkeys.setScope(this.EDITOR_SCOPE);
+      } else if (hotkeys.getScope() == this.EDITOR_SCOPE) {
+        hotkeys.setScope(this.DEFAULT_SCOPE);
       }
-      shortcuts[key].push(shortcut);
-    });
-  }
-
-  /** Removes a shortcut, note that the fn reference should be the same as passed to add */
-  public removeShortcut(
-    shortcutString: string,
-    fn: EventHandler,
-    event: "keydown" | "keyup" = "keydown"
-  ) {
-    const keys = new Set(shortcutString.split("+"));
-    const shortcut = { fn, keys };
-    const shortcuts =
-      event == "keydown" ? this.downShortcuts : this.upShortcuts;
-
-    keys.forEach(key => {
-      if (shortcuts[key]) {
-        shortcuts[key] = shortcuts[key].filter(s => shortcut != s);
-      }
-    });
-  }
-
-  private keydown(event: KeyboardEvent) {
-    const key = event.key.toLowerCase();
-    this.pressedKeys.add(key);
-    const shortcuts = this.downShortcuts[key];
-
-    if (shortcuts) {
-      for (let i = shortcuts.length - 1; i >= 0; i--) {
-        let shortcut = shortcuts[i];
-        let intersection = new Set(
-          [...shortcut.keys].filter(x => this.pressedKeys.has(x))
-        );
-        if (intersection.size == shortcut.keys.size) {
-          // TODO(P2) should keep some internal state so we can have self remove/adding shortcuts without fucking up this iteration
-          shortcut.fn(event);
-          break;
-        }
-      }
+      return true;
     }
   }
 
-  private keyup(event: KeyboardEvent) {
-    const key = event.key.toLowerCase();
-    const shortcuts = this.upShortcuts[key];
-    if (shortcuts) {
-      for (let i = shortcuts.length - 1; i >= 0; i++) {
-        const shortcut = shortcuts[i];
-        let intersection = new Set(
-          [...shortcut.keys].filter(x => this.pressedKeys.has(x))
-        );
-        if (intersection.size == shortcut.keys.size) {
-          shortcut.fn(event);
-          break;
-        }
-      }
+
+  bind(keys: string, options: KeyboardOptions, callback: (event: KeyboardEvent, handler: any) => void) {
+    hotkeys(keys, { ...options, scope:options.scope || this.DEFAULT_SCOPE }, callback);
+    if (options.global) {
+      hotkeys(keys, { ...options, scope: "editor" }, callback);
     }
+  }
 
-    this.pressedKeys.delete(key);
+  unbind(keys: string, options?: { scope?: string, global?: boolean }) {
+    hotkeys.unbind(keys, (options && options.scope) ? options.scope : this.DEFAULT_SCOPE);
+    if (options && options.global) {
+      hotkeys.unbind(keys, "editor");
+    }
+  }
 
+  isPressed(key: number):boolean {
+    return hotkeys.isPressed(key);
+  }
+
+  getScope(): string {
+    return hotkeys.getScope();
+  }
+
+  setScope(scope: string) {
+    return hotkeys.setScope(scope);
   }
 }

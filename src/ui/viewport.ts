@@ -25,7 +25,7 @@ export class Viewport {
     this.mainCanvas.style.position = "absolute";
     this.mainCanvas.style.top = "0px";
     this.mainCanvas.style.left = "0px";
-    
+
     // TODO P3 (look in to this kinda hackey)
     this.mainCanvas.setAttribute("tabindex", "0");
     this.mainCanvas.addEventListener("click", e => {
@@ -44,6 +44,7 @@ export class Viewport {
     this.page.viewSize = new paper.Size(600, 400);
     this.page.drawSelection = false;
     this.page.on("changed", () => this.centerPage());
+    this.page.element.style.imageRendering = "pixelated";
 
     this.view.on("updated", this.onViewUpdated.bind(this));
     window.addEventListener("wheel", this.onScroll.bind(this));
@@ -125,8 +126,8 @@ export class Viewport {
       }
 
       this.view.center = new paper.Point(
-        this.page.bounds.width / 2,
-        this.page.bounds.height / 2
+        this.page.bounds.left + this.page.bounds.width / 2,
+        this.page.bounds.top + this.page.bounds.height / 2
       );
     });
   }

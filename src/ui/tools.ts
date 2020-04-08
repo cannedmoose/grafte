@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { div, slider, color, button, text, queryOrThrow } from "./utils/dom";
+import { div, slider, color, button, text, queryOrThrow, img } from "./utils/dom";
 import { GrafteHistory } from "../tools/history";
 import { selectTool } from "../tools/select";
 import { pointTool } from "../tools/points";
@@ -14,10 +14,13 @@ class Tool {
   element: HTMLElement;
   tool: paper.Tool;
 
-  constructor(toolbelt: ToolBelt, tool: paper.Tool) {
+  constructor(toolbelt: ToolBelt, tool: paper.Tool, icon: string) {
+    const image = img({src:icon});
+    image.style.maxWidth = "100%";
+    image.style.maxHeight = "100%";
     this.element = button(
       {},
-      [text(tool.name)],
+      [image],
       {
         click: () => {
           tool.activate();
@@ -46,12 +49,12 @@ export class ToolBelt extends PaneerNode {
   constructor(history: GrafteHistory, keyboard: Keyboard) {
     super("Vertical", "1fr", false);
     this.tools = [
-      new Tool(this, selectTool(history, keyboard)),
-      new Tool(this, pointTool(history, keyboard)),
-      new Tool(this, penTool(history, keyboard)),
-      new Tool(this, pencilTool(history, keyboard)),
-      new Tool(this, elipseTool(history, keyboard)),
-      new Tool(this, rectangleTool(history, keyboard))
+      new Tool(this, selectTool(history, keyboard), "icons/select.png"),
+      new Tool(this, pointTool(history, keyboard), "icons/point.png"),
+      new Tool(this, penTool(history, keyboard), "icons/pen.png"),
+      new Tool(this, pencilTool(history, keyboard), "icons/pencil.png"),
+      new Tool(this, elipseTool(history, keyboard), "icons/elipse.png"),
+      new Tool(this, rectangleTool(history, keyboard), "icons/rectangle.png")
     ];
 
     this.tools.forEach(tool => {

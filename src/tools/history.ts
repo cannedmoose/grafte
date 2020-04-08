@@ -15,6 +15,7 @@ export class GrafteHistory {
   }
 
   commit() {
+    // TODO(P1) store as diff, this is pushing up our memory limits
     this.history = [...this.history.slice(0, this.present + 1)];
     this.history.push(this.project.exportJSON({ asString: true }));
     this.present = this.history.length - 1;

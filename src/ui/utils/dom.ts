@@ -31,6 +31,24 @@ export function div(
   return el;
 }
 
+export function img(
+  attribs: { [key: string]: string },
+  events: { [key: string]: (event: any) => void } = {}
+): HTMLImageElement {
+  const el = document.createElement("img");
+  elHelper(el, attribs, [], events);
+  return el;
+}
+
+export function textArea(
+  attribs: { [key: string]: string },
+  events: { [key: string]: (event: any) => void } = {}
+): HTMLTextAreaElement {
+  const el = document.createElement("textarea");
+  elHelper(el, attribs, [], events);
+  return el;
+}
+
 export function canvas(
   attribs: { [key: string]: string },
   events: { [key: string]: (event: any) => void } = {}

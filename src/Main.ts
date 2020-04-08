@@ -2,7 +2,7 @@ import * as paper from "paper";
 import { LayerControls } from "./ui/layers";
 import { queryOrThrow } from "./ui/utils/dom";
 import { ToolOptions, ToolBelt } from "./ui/tools";
-import { Editor } from "./ui/editor";
+import { Editor, DOMConsole } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
 import { PaneerNode, PaneerLeaf } from "./ui/paneer/paneer";
 import { Preview } from "./ui/preview";
@@ -30,6 +30,7 @@ window.onload = function () {
   paper.project.currentStyle.strokeCap = "round";
   paper.project.currentStyle.strokeJoin = "round";
   paper.settings.handleSize = 6;
+  paper.settings.hitTolerance = 1;
 
 
   const history = new GrafteHistory(paper.project);
@@ -56,10 +57,11 @@ window.onload = function () {
   const layers = new LayerControls();
   viewport.view.on("updated", () => layers.refreshLayers());
 
-  const editor = new Editor("1fr");
+  const editor = new Editor("2fr");
   keyboard.bind("ctrl+enter", { global: true }, (e: KeyboardEvent) => {
     e.preventDefault();
     editor.execute();
+    history.commit();
   });
 
   const paneerDiv = queryOrThrow("#menus");
@@ -75,7 +77,7 @@ window.onload = function () {
       ]),
       new PaneerNode("Vertical", "auto", true, [
         new PaneerLeaf(viewport, "5fr"),
-        editor
+        new PaneerNode("Horizontal", "2fr", true, [editor, new DOMConsole("1fr")])
       ]),
       new PaneerNode("Vertical", "10%", true, [
         new PaneerLeaf(layers, "2fr"),
@@ -101,8 +103,9 @@ window.onload = function () {
   }
     
   viewport.view.on("updated", () => {
-    const json = paper.project.exportJSON({ asString: true });
-    window.localStorage.setItem("project", json);
+    // TODO(P1) Hook into history to only save for undo/redo actions
+    /*const json = paper.project.exportJSON({ asString: true });
+    window.localStorage.setItem("project", json);*/
   });
   editor.editor.on("change", () => {
     window.localStorage.setItem("editor", editor.editor.getValue());
@@ -115,5 +118,12 @@ window.onload = function () {
   window.ctx = ctx;
   viewport.resize();
   viewport.centerPage();
+
+  // TODO(P1) OPACITY ABSOLUTELY KILLS EVERYTHING
+  // how to make it better?
+
+  // TODO(P1) figure out zoom
+  // TODO(P1) allow export at any scale
+
 };
 

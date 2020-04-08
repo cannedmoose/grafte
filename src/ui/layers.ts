@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { div, text, button } from "./utils/dom";
+import { div, text, button, img } from "./utils/dom";
 import { words } from "./utils/words";
 import { PaneerNode, PaneerLeaf, Paneer } from "./paneer/paneer";
 
@@ -37,6 +37,11 @@ export class LayerControls extends PaneerNode {
   }
 
   refreshLayers() {
+    return;
+    // TODO(P1) OPTIMIZE THIS
+    // Should only run on changes that actually affect it.
+    // Should only do necessary updates to dom.
+    
     // Remove existing children
     this.layersView.children.forEach(child => child.delete());
 
@@ -68,7 +73,7 @@ export class LayerControls extends PaneerNode {
     const weight = (item.id == item.project.activeLayer.id)
       || (item.className != "Layer" && item.selected)
       ? "bold" : "regular";
-    const el = div({}, [text(item.name)], {
+    const labelDiv = div({}, [text(item.name)], {
       click: (event:MouseEvent) => {
         if (item.className == "Layer") {
           const layer = item as paper.Layer;
@@ -86,14 +91,20 @@ export class LayerControls extends PaneerNode {
         }
       }
     });
-    el.style.backgroundColor = depthColor;
-    el.style.fontWeight = weight;
-    el.style.cursor = "default";
-    el.style.userSelect = "none";
+    labelDiv.style.backgroundColor = depthColor;
+    labelDiv.style.fontWeight = weight;
+    labelDiv.style.cursor = "default";
+    labelDiv.style.userSelect = "none";
+
+    const viewImg = img({src: item.visible? "icons/eye.png" : "icons/eyeclosed.png"}, {click: () => {
+      item.visible = !item.visible;
+    }});
+    viewImg.style.height = "1em";
 
     return new PaneerNode("Horizontal", "min-content", false, [
       new PaneerLeaf({ element: div({}, []) }, `${8 * depth}px`),
-      new PaneerLeaf({ element: el }, "auto")
+      new PaneerLeaf({ element: labelDiv }, "auto"),
+      new PaneerLeaf({ element: viewImg }, "min-content")
     ]);
   }
 
@@ -133,5 +144,10 @@ export class LayerControls extends PaneerNode {
   addLayer() {
     new paper.Layer();
     this.refreshLayers();
+  }
+
+  resize() {
+    super.resize();
+    this.element.style.overflow = "scroll";
   }
 }

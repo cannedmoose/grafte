@@ -20,29 +20,48 @@ export function pointTool(history: GrafteHistory, keyboard: Keyboard): paper.Too
    */
   selectTool.onMouseDown = function(event: paper.ToolEvent) {
     numClicks += 1;
-    // First look for selected segments/handles
+    // First look for handles from selected segments
     let hitResult = paper.project.hitTest(event.point, {
-      tolerance: 2,
-      segments: true,
+      selected: true,
       handles: true,
-      match: (match:paper.HitResult) => match.type == "segment" || match.segment.selected
+      match: (result: paper.HitResult) => {
+        if (result.type == "handle-in") {
+          return !result.segment.handleIn.isZero();
+        } else {
+          return !result.segment.handleOut.isZero();
+        }
+      }
     });
 
-    if (hitResult) {
-      if (
-        hitResult.type == "handle-in" ||
-        hitResult.type == "handle-out" ||
-        hitResult.type == "segment"
-      ) {
-        dragType = hitResult.type;
-        dragSegment = hitResult.segment as paper.Segment;
-        dragSegment.selected = true;
-        return;
-      }
+    if (hitResult && (hitResult.type == "handle-in" || hitResult.type == "handle-out") ) {
+      dragType = hitResult.type;
+      dragSegment = hitResult.segment as paper.Segment;
+      dragSegment.selected = true;
+      return;
+    }
+
+    // Next look for segments on selected items
+    // TODO make hitTestAll, so we can handle segments in the same spot.
+    hitResult = paper.project.hitTest(event.point, {
+      segments: true,
+      match: (result: paper.HitResult) => result.item.selected
+    });
+
+
+    if (hitResult && hitResult.type == "segment") {
+      // Unselect currently selected segments.
+      paper.project.selectedItems.forEach(item => {
+        item.selected = false;
+        item.selected = true;
+      });
+
+      dragType = hitResult.type;
+      dragSegment = hitResult.segment as paper.Segment;
+      dragSegment.selected = true;
+      return;
     }
 
     hitResult = paper.project.hitTest(event.point, {
-      tolerance: 2,
       fill: true,
       stroke: true
     });
@@ -118,6 +137,7 @@ export function pointTool(history: GrafteHistory, keyboard: Keyboard): paper.Too
       selectionRectangle = undefined;
     } else if (dragSegment && dragType) {
       if(numClicks == 2) {
+        console.log(dragType);
         if (dragType == "segment") {
           dragSegment.remove();
         } else if (dragType == "handle-in") {

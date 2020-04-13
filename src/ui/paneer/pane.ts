@@ -1,6 +1,6 @@
 import * as paper from "paper";
 import { PaneerDOM } from "./paneerdom";
-import { div } from "../utils/dom";
+import { div, text } from "../utils/dom";
 
 // Root node
 export class Pane extends PaneerDOM {
@@ -26,13 +26,13 @@ export class Pane extends PaneerDOM {
     return node;
   }
 
-  addLeaf(child: PaneerDOM, sizing: string): PaneLeaf {
+  addLeaf(sizing: string): PaneLeaf {
     // adds a pane and returns it
     if (this.children.length > 0) {
       // Add resize handle
       this.append(new PaneHandle());
     }
-    const node = new PaneLeaf(child, sizing);
+    const node = new PaneLeaf(sizing);
     this.append(node);
     this.resize();
     return node;
@@ -104,20 +104,102 @@ class PaneNode extends Pane {
   }
 }
 
+// Leaf contains multiple tabs
+// Leaf can be split (either horizontally/vertically) or merged
+// leafs children should be in a tab thingy... so they don't consider theheader part of their space...
+// SHOULD only allow split when there are multiple tabs in editor?
+
 class PaneLeaf extends PaneerDOM {
   _type = "PaneLeaf";
   sizing: string;
+  tabs: PaneerDOM[];
+  selected: number;
 
-  constructor(child: PaneerDOM, sizing: string) {
-    super(div({}, []));
+  constructor(sizing: string) {
+  super(div({}, []));
     this.sizing = sizing;
-    this.append(child);
+    this.append(new Header());
+    this.tabs = [];
+  }
+
+  addTab(tab: PaneerDOM): PaneLeaf {
+    this.tabs.push(tab);
+    if (this.children.length < 2) {
+      this.append(tab);
+    }
+    this.resize();
+    return this;
   }
 
   resize() {
     this.element.style.overflow = "hidden";
     this.element.style.border = "2px groove #999999";
     super.resize();
+  }
+}
+
+class Header extends PaneerDOM {
+  parent: PaneLeaf;
+  tabMap: Map<string, PaneerDOM>;
+
+  constructor() {
+    super(div({}, []));
+    this.tabMap = new Map();
+
+    this.element.style.width = "100%";
+    this.element.style.display = "flex";
+    this.element.style.flexDirection = "row";
+    this.element.style.justifyContent = "space-between";
+    this.element.style.backgroundColor = "#333333";
+
+    this.append(new PaneerDOM(div({}, [])));
+    this.append(new PaneerDOM(div({}, [])));
+
+    this.children[0].element.style.display = "flex";
+    this.children[0].element.style.flexDirection = "row";
+  }
+
+  resize() {
+    this.parent.tabs.forEach(child => {
+      const id = child.id;
+      if (!this.tabMap.has(id)) {
+        const dom = new PaneerDOM(div({}, [], {click: () => {
+          if (this.parent.children.length < 0) {
+            this.parent.append(child);
+            this.parent.resize();
+          } else if(child.id != this.parent.children[1].id) {
+            this.parent.remove(this.parent.children[1]);
+            this.parent.append(child);
+            this.parent.resize();
+          }
+        }}));
+        this.tabMap.set(id, dom);
+        this.children[0].append(dom);
+      }
+
+      const tab = this.tabMap.get(id);
+      if (!tab){
+        return;
+      }
+
+      tab.style.padding = "2px";
+      tab.style.width = "min-content";
+      tab.style.borderLeft = "1px solid #333333";
+      tab.style.borderRight = "1px solid #333333";
+      tab.style.borderTop = "1px solid #333333";
+      tab.style.borderTopRightRadius = "2px";
+      tab.style.borderTopLeftRadius = "2px";
+      tab.style.backgroundColor = "white";
+      tab.style.cursor = "select";
+      tab.style.userSelect = "none";
+
+      tab.element.textContent = child.label;
+
+      if(child.id != this.parent.children[1].id) {
+        tab.style.backgroundColor = "#999999";
+        tab.style.borderBottom = "1px solid black";
+      }
+    });
   }
 }
 

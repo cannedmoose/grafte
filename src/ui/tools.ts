@@ -15,10 +15,10 @@ export class ToolBelt extends PaneerDOM {
   grid: ButtonGrid;
   constructor(history: GrafteHistory, keyboard: Keyboard) {
     super(div({}, []));
-
     this.grid = new ButtonGrid({ aspectRatio: 1, width: "7vmin" });
     this.append(this.grid);
 
+    // TODO work out how to center grid in available space.
     this.grid.add(this.toolOptions(selectTool(history, keyboard), "Select", "icons/select.png"));
     this.grid.add(this.toolOptions(pointTool(history, keyboard), "Point", "icons/point.png"));
     this.grid.add(this.toolOptions(penTool(history, keyboard), "Pen", "icons/pen.png"));

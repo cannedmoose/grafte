@@ -19,6 +19,8 @@ function elementToPaneer(element: Element): PaneerDOM {
 export class PaneerDOM {
   _type = "DOM";
 
+  label = "DOM";
+
   protected _element: HTMLElement;
   protected _id: string;
 
@@ -31,6 +33,14 @@ export class PaneerDOM {
 
   get element(): HTMLElement {
     return this._element;
+  }
+
+  get id(): string {
+    return this._id;
+  }
+
+  get style(): CSSStyleDeclaration  {
+    return this._element.style;
   }
 
   get parent(): PaneerDOM | undefined {

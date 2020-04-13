@@ -5,6 +5,7 @@ import { PaneerDOM } from "./paneer/paneerdom";
 
 const depthColors = [ "Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
 export class LayerControls extends PaneerDOM {
+  label = "Layers";
   //layersView: PaneerNode;
   constructor() {
     super(div({}, []));

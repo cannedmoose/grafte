@@ -4,6 +4,7 @@ import { Viewport } from "./viewport";
 import { PaneerDOM } from "./paneer/paneerdom";
 
 export class Preview extends PaneerDOM{
+  label = "Preview";
   element: HTMLCanvasElement;
   view: paper.CanvasView;
   viewport: Viewport;

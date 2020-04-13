@@ -6,7 +6,7 @@ import { Editor, DOMConsole } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
 import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
-import { SaveLoad } from "./ui/saveload";
+import { Save, Load } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
 import { Pane } from "./ui/paneer/pane";
 
@@ -68,19 +68,20 @@ window.onload = function () {
 
   const panes = new Pane("H");
   const leftPane = panes.addPane("V", "15%");
-  leftPane.addLeaf(preview, "15%");
-  leftPane.addLeaf(toolBelt, "auto");
+  leftPane.addLeaf("15%").addTab(preview);
+  leftPane.addLeaf("auto").addTab(toolBelt);
 
   const middlePane = panes.addPane("V", "auto");
-  middlePane.addLeaf(viewport, "5fr");
-
-  const editorPane = middlePane.addPane("H", "2fr");
-  editorPane.addLeaf(editor, "2fr");
-  editorPane.addLeaf(new DOMConsole(), "1fr");
+  middlePane.addLeaf("5fr").addTab(viewport);
+  middlePane.addLeaf("2fr")
+    .addTab(new DOMConsole())
+    .addTab(editor);
 
   const rightPane = panes.addPane("V", "10%");
-  rightPane.addLeaf(layers, "2fr");
-  rightPane.addLeaf(new SaveLoad(viewport.page), "1fr");
+  rightPane.addLeaf("2fr").addTab(layers);
+  rightPane.addLeaf("1fr")
+    .addTab(new Save(viewport.page))
+    .addTab(new Load(viewport.page));
 
   paneerDiv.appendChild(panes.element);
 

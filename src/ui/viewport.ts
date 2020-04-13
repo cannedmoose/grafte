@@ -3,6 +3,7 @@ import { canvas, div } from "./utils/dom";
 import { PaneerDOM } from "./paneer/paneerdom";
 
 export class Viewport extends PaneerDOM {
+  label = "Canvas";
   element: HTMLDivElement;
   mainCanvas: HTMLCanvasElement;
   backgroundCanvas: HTMLCanvasElement;

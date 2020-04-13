@@ -11,6 +11,7 @@ import { div, textArea } from "./utils/dom";
 import { PaneerDOM } from "./paneer/paneerdom";
 
 export class Editor extends PaneerDOM {
+  label = "Code";
   public editor: CodeMirror.Editor;
 
   config: CodeMirror.EditorConfiguration = {
@@ -40,12 +41,12 @@ export class Editor extends PaneerDOM {
     super.resize();
     // TODO (P1) figure out why this isn't working
     // Without resetting height to 0 shit doesn't work :.
-    (this.element.firstElementChild as HTMLElement).style.height = "0px";
-    window.requestAnimationFrame(() => {
+    //(this.element.firstElementChild as HTMLElement).style.height = "0px";
+    //window.requestAnimationFrame(() => {
       const rrr = this.element.getBoundingClientRect();
       (this.element.firstElementChild as HTMLElement).style.height = `${rrr.height}px`;
       this.editor.refresh();
-    });
+    //});
   }
 
   execute() {
@@ -60,9 +61,11 @@ export class Editor extends PaneerDOM {
 
 
 export class DOMConsole extends PaneerDOM {
+  label = "Console";
+
   constructor() {
-    const el =textArea({readonly: "true"});
-    super(el);
+    super(textArea({readonly: "true"}));
+    const el = this.element as HTMLTextAreaElement; 
     this.element.style.width = "100%";
     this.element.style.height = "100%";
     this.element.style.resize = "none";

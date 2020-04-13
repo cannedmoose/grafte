@@ -1,15 +1,16 @@
 import * as paper from "paper";
 import { canvas } from "./utils/dom";
 import { Viewport } from "./viewport";
+import { PaneerDOM } from "./paneer/paneerdom";
 
-export class Preview {
+export class Preview extends PaneerDOM{
   element: HTMLCanvasElement;
   view: paper.CanvasView;
   viewport: Viewport;
 
 
   constructor(project: paper.Project, viewport: Viewport) {
-    this.element = canvas({});
+    super(canvas({}));
     this.view = new paper.CanvasView(project, this.element);
 
     this.view.drawSelection = false;

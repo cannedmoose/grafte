@@ -1,45 +1,24 @@
 import * as paper from "paper";
 import { button, text, select, option, queryOrThrow, checkbox, div } from "./utils/dom";
-import { PaneerNode, PaneerLeaf } from "./paneer/paneer";
+import { PaneerDOM } from "./paneer/paneerdom";
 
-export class SaveLoad extends PaneerNode {
+export class SaveLoad extends PaneerDOM {
   page: paper.View;
   constructor(page: paper.View) {
-    super("Vertical", "1fr", false);
+    super(div({}, []));
     this.fileUpload = this.fileUpload.bind(this);
 
     this.page = page;
 
-    this.appendAll([
-      new PaneerNode("Horizontal", "1fr", false, [
-        new PaneerNode("Vertical", "1fr", false, [
-          new PaneerLeaf({
-            element: button({}, [text("save")], { click: () => this.save() })
-          }),
-          new PaneerLeaf({
-            element: select({ id: "savemodeselector" }, [
-              option({ value: "png", selected: "true" }, [text("png")]),
-              option({ value: "svg" }, [text("svg")]),
-              option({ value: "json" }, [text("json")]),
-              option({ value: "local" }, [text("local")])
-            ]),
-            resize: leaf => {
-              leaf.pane.element.style.width = "100%";
-            }
-          }),
-        ]),
-        new PaneerNode("Vertical", "1fr", false, [
-          new PaneerLeaf({
-            element: button({}, [text("load")], { click: () => this.load() })
-          }),
-          new PaneerLeaf({
-            element: button({}, [text("load local")], { click: () => this.loadlocal() })
-          })
-        ])]),
-      new PaneerLeaf({
-        element: div({}, [checkbox({ id: "loadclear", checked: "true" }, {}), text("Clear on load")]),
-      })
-    ]);
+    this.element.appendChild(button({}, [text("save")], { click: () => this.save() }));
+    this.element.appendChild(select({ id: "savemodeselector" }, [
+      option({ value: "png", selected: "true" }, [text("png")]),
+      option({ value: "svg" }, [text("svg")]),
+      option({ value: "json" }, [text("json")]),
+      option({ value: "local" }, [text("local")])
+    ]));
+    this.element.appendChild(button({}, [text("load")], { click: () => this.load() }));
+    this.element.appendChild(div({}, [checkbox({ id: "loadclear", checked: "true" }, {}), text("Clear on load")]));
   }
 
   save() {

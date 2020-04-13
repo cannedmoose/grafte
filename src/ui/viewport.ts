@@ -1,7 +1,8 @@
 import * as paper from "paper";
 import { canvas, div } from "./utils/dom";
+import { PaneerDOM } from "./paneer/paneerdom";
 
-export class Viewport {
+export class Viewport extends PaneerDOM {
   element: HTMLDivElement;
   mainCanvas: HTMLCanvasElement;
   backgroundCanvas: HTMLCanvasElement;
@@ -14,10 +15,14 @@ export class Viewport {
 
 
   constructor() {
+    super(div({}, []));
+    this.element.style.overflow = "hidden";
     this.mainCanvas = canvas({});
     this.backgroundCanvas = canvas({});
 
-    this.element = div({}, [this.backgroundCanvas, this.mainCanvas]);
+    this.element.appendChild(this.backgroundCanvas);
+    this.element.appendChild(this.mainCanvas);
+
     this.element.style.pointerEvents = "all";
     this.element.style.position = "relative";
     this.element.style.height = "100%";

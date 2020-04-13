@@ -1,15 +1,15 @@
 import * as paper from "paper";
 import { div, text, button, img } from "./utils/dom";
 import { words } from "./utils/words";
-import { PaneerNode, PaneerLeaf, Paneer } from "./paneer/paneer";
+import { PaneerDOM } from "./paneer/paneerdom";
 
 const depthColors = [ "Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
-export class LayerControls extends PaneerNode {
-  layersView: PaneerNode;
+export class LayerControls extends PaneerDOM {
+  //layersView: PaneerNode;
   constructor() {
-    super("Vertical", "1fr", false);
-
-    this.layersView = new PaneerNode("Vertical", "10fr", false);
+    super(div({}, []));
+    
+    /*this.layersView = new PaneerNode("Vertical", "10fr", false);
 
     this.appendAll([
       new PaneerNode("Horizontal", "1fr", false, [
@@ -31,7 +31,7 @@ export class LayerControls extends PaneerNode {
       ]),
       this.layersView
     ]
-    );
+    );*/
 
     this.refreshLayers();
   }
@@ -43,25 +43,24 @@ export class LayerControls extends PaneerNode {
     // Should only do necessary updates to dom.
     
     // Remove existing children
-    this.layersView.children.forEach(child => child.delete());
+    /*this.layersView.children.forEach(child => child.delete());
 
     const project = paper.project;
 
     for (let i = 0; i < project.layers.length; i++) {
       this.layersView.append(this.viewItem(project.layers[i], 0));
-    }
+    }*/
   }
-
+/*
   viewItem(item: paper.Item, depth: number): Paneer {
-    if (item.children) {
-      const node = new PaneerNode("Vertical", "min-content", false, [this.label(item, depth)]);
+    /*if (item.children) {
+      //const node = new PaneerNode("Vertical", "min-content", false, [this.label(item, depth)]);
       node.appendAll(item.children.map(child => this.viewItem(child, depth + 1)));
       return node;
     } else {
       return this.label(item, depth);
-    }
-  }
-
+    }*/
+  /*}
   label(item: paper.Item, depth: number): Paneer {
     if (!item.name) {
       // Generate random name
@@ -144,7 +143,7 @@ export class LayerControls extends PaneerNode {
   addLayer() {
     new paper.Layer();
     this.refreshLayers();
-  }
+  }*/
 
   resize() {
     super.resize();

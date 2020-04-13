@@ -8,9 +8,9 @@ import "codemirror/addon/hint/javascript-hint.js";
 import "codemirror/theme/neat.css";
 import "codemirror/mode/javascript/javascript.js";
 import { div, textArea } from "./utils/dom";
-import { PaneerLeaf } from "./paneer/paneer";
+import { PaneerDOM } from "./paneer/paneerdom";
 
-export class Editor extends PaneerLeaf {
+export class Editor extends PaneerDOM {
   public editor: CodeMirror.Editor;
 
   config: CodeMirror.EditorConfiguration = {
@@ -27,12 +27,12 @@ export class Editor extends PaneerLeaf {
   };
 
   constructor(sizing: string) {
-    super({element: div({}, [])}, sizing);
-    this.editor = CodeMirror(this.pane.element, this.config);
-    this.pane.element.style.height = "100%";
-    this.pane.element.style.fontSize = "2em";
-    this.pane.element.style.overflow = "scroll";
-    (this.pane.element.firstElementChild as HTMLElement).style.height = "0px";
+    super(div({}, []));
+    this.editor = CodeMirror(this.element, this.config);
+    this.element.style.height = "100%";
+    this.element.style.fontSize = "2em";
+    this.element.style.overflow = "scroll";
+    (this.element.firstElementChild as HTMLElement).style.height = "0px";
     this.editor.refresh();
   }
 
@@ -40,10 +40,10 @@ export class Editor extends PaneerLeaf {
     super.resize();
     // TODO (P1) figure out why this isn't working
     // Without resetting height to 0 shit doesn't work :.
-    (this.pane.element.firstElementChild as HTMLElement).style.height = "0px";
+    (this.element.firstElementChild as HTMLElement).style.height = "0px";
     window.requestAnimationFrame(() => {
       const rrr = this.element.getBoundingClientRect();
-      (this.pane.element.firstElementChild as HTMLElement).style.height = `${rrr.height}px`;
+      (this.element.firstElementChild as HTMLElement).style.height = `${rrr.height}px`;
       this.editor.refresh();
     });
   }
@@ -59,13 +59,13 @@ export class Editor extends PaneerLeaf {
 }
 
 
-export class DOMConsole extends PaneerLeaf {
-  constructor(sizing: string) {
+export class DOMConsole extends PaneerDOM {
+  constructor() {
     const el =textArea({readonly: "true"});
-    super({element: el}, sizing);
-    this.pane.element.style.width = "100%";
-    this.pane.element.style.height = "100%";
-    this.pane.element.style.resize = "none";
+    super(el);
+    this.element.style.width = "100%";
+    this.element.style.height = "100%";
+    this.element.style.resize = "none";
 
     // @ts-ignore
     window.console = {
@@ -77,7 +77,11 @@ export class DOMConsole extends PaneerLeaf {
         el.value += ("> " + JSON.stringify(optionalParams) + "\n");
         el.scrollTop = el.scrollHeight;
       },
-      clear: () => { el.value = ""}
+      clear: () => { el.value = ""},
+      warn:(...optionalParams: any[]) => {
+        el.value += ("> " + JSON.stringify(optionalParams) + "\n");
+        el.scrollTop = el.scrollHeight;
+      },
     }
   }
 }

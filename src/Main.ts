@@ -4,11 +4,11 @@ import { queryOrThrow } from "./ui/utils/dom";
 import { ToolOptions, ToolBelt } from "./ui/tools";
 import { Editor, DOMConsole } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
-import { PaneerNode, PaneerLeaf } from "./ui/paneer/paneer";
 import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
 import { SaveLoad } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
+import { Pane } from "./ui/paneer/pane";
 
 /**
  * Important concepts:
@@ -65,27 +65,24 @@ window.onload = function () {
   });
 
   const paneerDiv = queryOrThrow("#menus");
-  const paneer: PaneerNode = new PaneerNode(
-    "Horizontal",
-    "auto",
-    true,
-    [
-      new PaneerNode("Vertical", "10%", true, [
-        new PaneerLeaf(preview, "1fr"),
-        new PaneerLeaf(toolBelt, "3fr"),
-        new PaneerLeaf(new ToolOptions(history), "1fr")
-      ]),
-      new PaneerNode("Vertical", "auto", true, [
-        new PaneerLeaf(viewport, "5fr"),
-        new PaneerNode("Horizontal", "2fr", true, [editor, new DOMConsole("1fr")])
-      ]),
-      new PaneerNode("Vertical", "10%", true, [
-        new PaneerLeaf(layers, "2fr"),
-        new PaneerLeaf(new SaveLoad(viewport.page), "1fr"),
-      ])
-    ]
-  );
-  paneerDiv.appendChild(paneer.element);
+
+  const panes = new Pane("H");
+  const leftPane = panes.addPane("V", "15%");
+  leftPane.addLeaf(preview, "15%");
+  leftPane.addLeaf(toolBelt, "auto");
+
+  const middlePane = panes.addPane("V", "auto");
+  middlePane.addLeaf(viewport, "5fr");
+
+  const editorPane = middlePane.addPane("H", "2fr");
+  editorPane.addLeaf(editor, "2fr");
+  editorPane.addLeaf(new DOMConsole(), "1fr");
+
+  const rightPane = panes.addPane("V", "10%");
+  rightPane.addLeaf(layers, "2fr");
+  rightPane.addLeaf(new SaveLoad(viewport.page), "1fr");
+
+  paneerDiv.appendChild(panes.element);
 
   // TODO(P1) MAKE LESS HACKEY!!!
   const json = window.localStorage.getItem("project");
@@ -104,8 +101,8 @@ window.onload = function () {
     
   viewport.view.on("updated", () => {
     // TODO(P1) Hook into history to only save for undo/redo actions
-    /*const json = paper.project.exportJSON({ asString: true });
-    window.localStorage.setItem("project", json);*/
+    //const json = paper.project.exportJSON({ asString: true });
+    //window.localStorage.setItem("project", json);
   });
   editor.editor.on("change", () => {
     window.localStorage.setItem("editor", editor.editor.getValue());

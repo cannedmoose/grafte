@@ -8,7 +8,7 @@ export class LayerControls extends PaneerDOM {
   label = "Layers";
   //layersView: PaneerNode;
   constructor() {
-    super(div({}, []));
+    super();
     
     /*this.layersView = new PaneerNode("Vertical", "10fr", false);
 

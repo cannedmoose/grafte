@@ -5,14 +5,21 @@ import { PaneerDOM } from "./paneer/paneerdom";
 
 export class Preview extends PaneerDOM{
   label = "Preview";
-  element: HTMLCanvasElement;
+  canvas: HTMLCanvasElement;
   view: paper.CanvasView;
   viewport: Viewport;
 
 
   constructor(project: paper.Project, viewport: Viewport) {
-    super(canvas({}));
-    this.view = new paper.CanvasView(project, this.element);
+    super();
+    this.canvas = canvas({});
+    this.element.append(this.canvas);
+    this.element.style.position = "absolute";
+    this.element.style.top = "0";
+    this.element.style.bottom = "0";
+    this.element.style.left = "0";
+    this.element.style.right = "0";
+    this.view = new paper.CanvasView(project, this.canvas);
 
     this.view.drawSelection = false;
     this.viewport = viewport;
@@ -36,9 +43,9 @@ export class Preview extends PaneerDOM{
       ctx.fillStyle = "#999999";
       let region = new Path2D();
       region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
-      region.rect(0, 0, this.element.width, this.element.height);
+      region.rect(0, 0, this.canvas.width, this.canvas.height);
       ctx.clip(region, "evenodd");
-      ctx.fillRect(0, 0, this.element.width, this.element.height);
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.restore();
 
       ctx.save();
@@ -53,9 +60,10 @@ export class Preview extends PaneerDOM{
 
   resize() {
     window.requestAnimationFrame(() => {
-      var previewRect = this.element.parentElement?.getBoundingClientRect();
+      var previewRect = this.element.getBoundingClientRect();
       if (!previewRect) return;
       this.view.viewSize = new paper.Size(previewRect.width, previewRect.height);
+      console.log(previewRect);
 
       // Zoom out to show document
       const minX = this.viewport.page.bounds.topLeft.x;

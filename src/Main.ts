@@ -74,23 +74,21 @@ window.onload = function () {
   const middlePane = panes.addPane("V", "auto");
   middlePane.addLeaf("5fr").addTab(viewport);
   middlePane.addLeaf("2fr")
-    .addTab(new DOMConsole())
+    //.addTab(new DOMConsole())
     .addTab(editor);
 
   const rightPane = panes.addPane("V", "10%");
   rightPane.addLeaf("2fr").addTab(layers);
   rightPane.addLeaf("1fr")
     .addTab(new Save(viewport.page))
-    .addTab(new Load(viewport.page));
+    .addTab(new Load(viewport.page))
+    .addTab(new DOMConsole());
 
   paneerDiv.appendChild(panes.element);
 
   // TODO(P1) MAKE LESS HACKEY!!!
   const json = window.localStorage.getItem("project");
   if (json) {
-    if ((queryOrThrow("#loadclear") as HTMLInputElement).checked) {
-      paper.project.clear();
-    }
     paper.project.importJSON(json);
     paper.project.deselectAll();
   }

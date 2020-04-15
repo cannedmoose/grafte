@@ -13,6 +13,7 @@ import { PaneerDOM } from "./paneer/paneerdom";
 export class Editor extends PaneerDOM {
   label = "Code";
   public editor: CodeMirror.Editor;
+  editorDiv: HTMLElement;
 
   config: CodeMirror.EditorConfiguration = {
     tabSize: 4,
@@ -21,32 +22,32 @@ export class Editor extends PaneerDOM {
     mode: {name: "javascript", globalVars: true},
     extraKeys: {"Ctrl-Space": "autocomplete"},
     theme: "neat",
-    //viewportMargin: Infinity,
+    viewportMargin: Infinity,
     
     // TODO(P3) maybe enable...
     //inputStyle: "contenteditable"
   };
 
   constructor(sizing: string) {
-    super(div({}, []));
+    super();
     this.editor = CodeMirror(this.element, this.config);
     this.element.style.height = "100%";
     this.element.style.fontSize = "2em";
-    this.element.style.overflow = "scroll";
-    (this.element.firstElementChild as HTMLElement).style.height = "0px";
+    this.editorDiv = this.element.firstElementChild as HTMLElement;
+
+    this.element.style.position = "absolute";
+    this.element.style.top = "0";
+    this.element.style.bottom = "0";
+    this.element.style.left = "0";
+    this.element.style.right = "0";
+
+    this.editor.setSize("100%","100%");
     this.editor.refresh();
   }
 
   resize() {
     super.resize();
-    // TODO (P1) figure out why this isn't working
-    // Without resetting height to 0 shit doesn't work :.
-    //(this.element.firstElementChild as HTMLElement).style.height = "0px";
-    //window.requestAnimationFrame(() => {
-      const rrr = this.element.getBoundingClientRect();
-      (this.element.firstElementChild as HTMLElement).style.height = `${rrr.height}px`;
-      this.editor.refresh();
-    //});
+    this.editor.refresh();
   }
 
   execute() {

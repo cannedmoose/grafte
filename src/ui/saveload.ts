@@ -7,7 +7,7 @@ export class Save extends PaneerDOM {
 
   page: paper.View;
   constructor(page: paper.View) {
-    super(div({}, []));
+    super();
 
     this.page = page;
 
@@ -104,7 +104,7 @@ export class Load extends PaneerDOM {
   label = "Load";
   page: paper.View;
   constructor(page: paper.View) {
-    super(div({}, []));
+    super();
     this.fileUpload = this.fileUpload.bind(this);
 
     this.element.appendChild(div({}, [checkbox({ id: "loadclear", checked: "true" }, {}), text("Clear on load")]));

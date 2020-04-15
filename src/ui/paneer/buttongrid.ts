@@ -34,7 +34,7 @@ export class ButtonGrid extends PaneerDOM implements Options {
   width: string;
 
   constructor(options: Options) {
-    super(div({}, []));
+    super();
 
     // TODO getter/setter
     this.aspectRatio = options.aspectRatio;

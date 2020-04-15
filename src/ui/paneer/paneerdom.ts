@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { div } from '../utils/dom';
 
 const PANEER_ID_ATTRIB = "data-paneer-id";
 // TODO(P3) maybe this shouldn't be global...
@@ -16,6 +17,12 @@ function elementToPaneer(element: Element): PaneerDOM {
   return node;
 }
 
+/**
+ * What I want:
+ * Strongly typed dom
+ * 
+ */
+
 export class PaneerDOM {
   _type = "DOM";
 
@@ -24,7 +31,10 @@ export class PaneerDOM {
   protected _element: HTMLElement;
   protected _id: string;
 
-  constructor(element: HTMLElement) {
+  constructor(element?: HTMLElement) {
+    if(!element) {
+      element = div({}, []);
+    }
     this._element = element;
     this._id = uuidv4();
     this._element.setAttribute(PANEER_ID_ATTRIB, this._id);
@@ -80,10 +90,12 @@ export class PaneerDOM {
 
   remove(child: PaneerDOM) {
     this.element.removeChild(child.element);
+    return this;
   }
 
   append(child: PaneerDOM) {
     this.element.appendChild(child.element);
+    return this;
   }
 
   get children(): PaneerDOM[] {

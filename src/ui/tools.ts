@@ -12,9 +12,10 @@ import { ButtonGrid } from "./paneer/buttongrid";
 import { PaneerDOM } from "./paneer/paneerdom";
 
 export class ToolBelt extends PaneerDOM {
+  label = "Tools";
   grid: ButtonGrid;
   constructor(history: GrafteHistory, keyboard: Keyboard) {
-    super(div({}, []));
+    super();
     this.grid = new ButtonGrid({ aspectRatio: 1, width: "7vmin" });
     this.append(this.grid);
 
@@ -45,7 +46,7 @@ export class ToolBelt extends PaneerDOM {
 
 export class ToolOptions extends PaneerDOM {
   constructor(history: GrafteHistory) {
-    super(div({}, []));
+    super();
     this.element.append(slider(
       { value: "1", min: "0", max: "50", step: ".01" },
       {

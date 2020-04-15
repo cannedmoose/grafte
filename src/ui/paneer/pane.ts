@@ -8,7 +8,7 @@ export class Pane extends PaneerDOM {
   direction: "V" | "H";
 
   constructor(direction: "V" | "H") {
-    super(div({}, []));
+    super();
 
     // TODO getter/setter (maybs)
     this.direction = direction;
@@ -39,10 +39,10 @@ export class Pane extends PaneerDOM {
   }
 
   resize() {
-    this.element.style.display = "grid";
-    this.element.style.height = "100%";
-    this.element.style.width = "100%";
-    this.element.style.overflow = "hidden";
+    this.style.display = "grid";
+    this.style.height = "100%";
+    this.style.width = "100%";
+    this.style.overflow = "hidden";
 
     // Set up tracks for children
     const tracks = this.children
@@ -56,28 +56,28 @@ export class Pane extends PaneerDOM {
       .concat([`[line${this.children.length}]`]) // Add end line
       .join(" ");
     if (this.direction == "H") {
-      this.element.style.gridTemplateColumns = tracks;
-      this.element.style.gridTemplateRows = "[start] 100% [end]";
+      this.style.gridTemplateColumns = tracks;
+      this.style.gridTemplateRows = "[start] 100% [end]";
     } else {
-      this.element.style.gridTemplateRows = tracks;
-      this.element.style.gridTemplateColumns = "[start] 100% [end]";
+      this.style.gridTemplateRows = tracks;
+      this.style.gridTemplateColumns = "[start] 100% [end]";
     }
 
     // Line children up
     this.children.forEach(
       (child, index) => {
         if (this.direction == "H") {
-          child.element.style.gridColumnStart = `line${index}`;
-          child.element.style.gridColumnEnd = `line${index + 1}`;
+          child.style.gridColumnStart = `line${index}`;
+          child.style.gridColumnEnd = `line${index + 1}`;
 
-          child.element.style.gridRowStart = `start`;
-          child.element.style.gridRowEnd = `end`;
+          child.style.gridRowStart = `start`;
+          child.style.gridRowEnd = `end`;
         } else {
-          child.element.style.gridRowStart = `line${index}`;
-          child.element.style.gridRowEnd = `line${index + 1}`;
+          child.style.gridRowStart = `line${index}`;
+          child.style.gridRowEnd = `line${index + 1}`;
 
-          child.element.style.gridColumnStart = `start`;
-          child.element.style.gridColumnEnd = `end`;
+          child.style.gridColumnStart = `start`;
+          child.style.gridColumnEnd = `end`;
         }
       }
     )
@@ -113,89 +113,119 @@ class PaneLeaf extends PaneerDOM {
   _type = "PaneLeaf";
   sizing: string;
   tabs: PaneerDOM[];
-  selected: number;
+  header: Header;
+  content: PaneerDOM;
+
 
   constructor(sizing: string) {
-  super(div({}, []));
+    super();
     this.sizing = sizing;
-    this.append(new Header());
     this.tabs = [];
+    this.header = new Header();
+
+    const contentContainer = new PaneerDOM();
+    contentContainer.style.width = "100%";
+    contentContainer.style.flex = "1";
+    //contentContainer.style.height = "100%";
+
+    this.content = new PaneerDOM();
+
+    this.append(this.header);
+    this.append(contentContainer.append(this.content));
   }
 
   addTab(tab: PaneerDOM): PaneLeaf {
     this.tabs.push(tab);
-    if (this.children.length < 2) {
-      this.append(tab);
+    if (this.content.children.length < 1) {
+      this.content.append(tab);
     }
     this.resize();
     return this;
   }
 
   resize() {
-    this.element.style.overflow = "hidden";
-    this.element.style.border = "2px groove #999999";
+    this.style.overflow = "hidden";
+    this.style.border = "2px groove #999999";
+
+    this.style.display = "flex";
+    this.style.flexDirection = "column";
+
+    this.content.style.width = "100%";
+    this.content.style.height = "100%";
+    this.content.style.position = "relative";
+
     super.resize();
   }
 }
 
 class Header extends PaneerDOM {
   parent: PaneLeaf;
+  tabs: PaneerDOM;
+  buttons: PaneerDOM;
   tabMap: Map<string, PaneerDOM>;
 
   constructor() {
-    super(div({}, []));
+    super();
     this.tabMap = new Map();
 
-    this.element.style.width = "100%";
-    this.element.style.display = "flex";
-    this.element.style.flexDirection = "row";
-    this.element.style.justifyContent = "space-between";
-    this.element.style.backgroundColor = "#333333";
+    this.style.width = "100%";
+    this.style.display = "flex";
+    this.style.flexDirection = "row";
+    this.style.justifyContent = "space-between";
+    this.style.backgroundColor = "#333333";
 
-    this.append(new PaneerDOM(div({}, [])));
-    this.append(new PaneerDOM(div({}, [])));
+    this.tabs = new PaneerDOM();
+    this.buttons = new PaneerDOM();
 
-    this.children[0].element.style.display = "flex";
-    this.children[0].element.style.flexDirection = "row";
+    this.append(this.tabs);
+    this.append(this.buttons);
+
+    this.tabs.style.display = "flex";
+    this.tabs.style.flexDirection = "row";
+  }
+
+  maybeMakeTab(child: PaneerDOM) {
+    const id = child.id;
+    if (!this.tabMap.has(id)) {
+      const dom = new PaneerDOM(div({}, [], {
+        click: () => {
+          if (this.parent.content.children.length == 0) {
+            this.parent.content.append(child);
+          } else if (id != this.parent.content.children[0].id) {
+            this.parent.content.remove(this.parent.content.children[0]);
+            this.parent.content.append(child);
+          }
+          this.parent.resize();
+        }
+      }));
+      this.tabMap.set(id, dom);
+      this.tabs.append(dom);
+
+      dom.style.padding = "2px";
+      dom.style.width = "min-content";
+      dom.style.borderLeft = "1px solid #333333";
+      dom.style.borderRight = "1px solid #333333";
+      dom.style.borderTop = "1px solid #333333";
+      dom.style.borderTopRightRadius = "2px";
+      dom.style.borderTopLeftRadius = "2px";
+      dom.style.backgroundColor = "white";
+      dom.style.cursor = "select";
+      dom.style.userSelect = "none";
+    }
   }
 
   resize() {
     this.parent.tabs.forEach(child => {
       const id = child.id;
-      if (!this.tabMap.has(id)) {
-        const dom = new PaneerDOM(div({}, [], {click: () => {
-          if (this.parent.children.length < 0) {
-            this.parent.append(child);
-            this.parent.resize();
-          } else if(child.id != this.parent.children[1].id) {
-            this.parent.remove(this.parent.children[1]);
-            this.parent.append(child);
-            this.parent.resize();
-          }
-        }}));
-        this.tabMap.set(id, dom);
-        this.children[0].append(dom);
-      }
-
+      this.maybeMakeTab(child);
       const tab = this.tabMap.get(id);
-      if (!tab){
+
+      if (!tab) {
         return;
       }
 
-      tab.style.padding = "2px";
-      tab.style.width = "min-content";
-      tab.style.borderLeft = "1px solid #333333";
-      tab.style.borderRight = "1px solid #333333";
-      tab.style.borderTop = "1px solid #333333";
-      tab.style.borderTopRightRadius = "2px";
-      tab.style.borderTopLeftRadius = "2px";
-      tab.style.backgroundColor = "white";
-      tab.style.cursor = "select";
-      tab.style.userSelect = "none";
-
       tab.element.textContent = child.label;
-
-      if(child.id != this.parent.children[1].id) {
+      if (child.id != this.parent.content.children[0].id) {
         tab.style.backgroundColor = "#999999";
         tab.style.borderBottom = "1px solid black";
       }
@@ -213,7 +243,7 @@ class PaneHandle extends PaneerDOM {
   sizing: string;
 
   constructor() {
-    super(div({}, []));
+    super();
     this.sizing = "4px";
     this.mouseover = false;
     this.dragState = { state: "null" };
@@ -257,17 +287,17 @@ class PaneHandle extends PaneerDOM {
   }
 
   setStyles() {
-    this.element.style.height = "100%";
-    this.element.style.overflow = "hidden";
+    this.style.height = "100%";
+    this.style.overflow = "hidden";
     if (this.mouseover) {
-      this.element.style.border = "2px solid #0099ff";
+      this.style.border = "2px solid #0099ff";
       if (this.parent?.direction == "H") {
-        this.element.style.cursor = "col-resize";
+        this.style.cursor = "col-resize";
       } else {
-        this.element.style.cursor = "row-resize";
+        this.style.cursor = "row-resize";
       }
     } else {
-      this.element.style.border = "2px solid white"
+      this.style.border = "2px solid white"
     }
   }
 

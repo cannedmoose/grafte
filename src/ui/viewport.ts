@@ -16,7 +16,7 @@ export class Viewport extends PaneerDOM {
 
 
   constructor() {
-    super(div({}, []));
+    super();
     this.element.style.overflow = "hidden";
     this.mainCanvas = canvas({});
     this.backgroundCanvas = canvas({});
@@ -25,12 +25,17 @@ export class Viewport extends PaneerDOM {
     this.element.appendChild(this.mainCanvas);
 
     this.element.style.pointerEvents = "all";
-    this.element.style.position = "relative";
-    this.element.style.height = "100%";
+    this.element.style.position = "absolute";
+    this.element.style.top = "0px";
+    this.element.style.left = "0px";
+    this.element.style.bottom = "0px";
+    this.element.style.right = "0px";
 
     this.mainCanvas.style.position = "absolute";
     this.mainCanvas.style.top = "0px";
     this.mainCanvas.style.left = "0px";
+    this.mainCanvas.style.bottom = "0px";
+    this.mainCanvas.style.right = "0px";
 
     // TODO P3 (look in to this kinda hackey)
     this.mainCanvas.setAttribute("tabindex", "0");

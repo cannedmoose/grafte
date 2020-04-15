@@ -137,7 +137,6 @@ export function pointTool(history: GrafteHistory, keyboard: Keyboard): paper.Too
       selectionRectangle = undefined;
     } else if (dragSegment && dragType) {
       if(numClicks == 2) {
-        console.log(dragType);
         if (dragType == "segment") {
           dragSegment.remove();
         } else if (dragType == "handle-in") {

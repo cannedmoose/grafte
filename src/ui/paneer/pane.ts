@@ -208,7 +208,6 @@ class Header extends PaneerDOM {
       dom.style.borderTop = "1px solid #333333";
       dom.style.borderTopRightRadius = "2px";
       dom.style.borderTopLeftRadius = "2px";
-      dom.style.backgroundColor = "white";
       dom.style.cursor = "select";
       dom.style.userSelect = "none";
     }
@@ -228,6 +227,8 @@ class Header extends PaneerDOM {
       if (child.id != this.parent.content.children[0].id) {
         tab.style.backgroundColor = "#999999";
         tab.style.borderBottom = "1px solid black";
+      } else {
+        tab.style.backgroundColor = "white";
       }
     });
   }

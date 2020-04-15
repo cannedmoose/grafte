@@ -63,7 +63,6 @@ export class Preview extends PaneerDOM{
       var previewRect = this.element.getBoundingClientRect();
       if (!previewRect) return;
       this.view.viewSize = new paper.Size(previewRect.width, previewRect.height);
-      console.log(previewRect);
 
       // Zoom out to show document
       const minX = this.viewport.page.bounds.topLeft.x;

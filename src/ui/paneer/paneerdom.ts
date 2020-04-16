@@ -92,6 +92,8 @@ export class PaneerDOM {
 
   remove(child: PaneerDOM) {
     this.element.removeChild(child.element);
+    // TODO(P1) this should remove children as well
+    // we should hook into DOM life cycle events
     return this;
   }
 

@@ -31,15 +31,8 @@ export class Editor extends PaneerDOM {
   constructor(sizing: string) {
     super();
     this.editor = CodeMirror(this.element, this.config);
-    this.element.style.height = "100%";
     this.element.style.fontSize = "2em";
     this.editorDiv = this.element.firstElementChild as HTMLElement;
-
-    this.element.style.position = "absolute";
-    this.element.style.top = "0";
-    this.element.style.bottom = "0";
-    this.element.style.left = "0";
-    this.element.style.right = "0";
 
     this.editor.setSize("100%","100%");
     this.editor.refresh();
@@ -69,6 +62,7 @@ export class DOMConsole extends PaneerDOM {
     const el = this.element as HTMLTextAreaElement; 
     this.element.style.width = "100%";
     this.element.style.height = "100%";
+    this.element.style.border = "none";
     this.element.style.resize = "none";
 
     // @ts-ignore

@@ -48,8 +48,8 @@ export class ButtonGrid extends PaneerDOM implements Options {
     this.element.style.display = "grid";
 
     // TODO figure out if we want other width/height
-    this.element.style.width = "100%";
-    this.element.style.height = "100%";
+    //this.element.style.width = "100%";
+    //this.element.style.height = "100%";
 
     this.element.style.gridTemplateColumns = `repeat(auto-fill, ${this.width})`;
     this.element.style.gridTemplateRows =

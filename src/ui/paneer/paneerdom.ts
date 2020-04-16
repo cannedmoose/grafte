@@ -26,6 +26,8 @@ function elementToPaneer(element: Element): PaneerDOM {
 export class PaneerDOM {
   _type = "DOM";
 
+  // TODO(P1) move into a sub class.
+  // This is only needed for certain elements
   label = "DOM";
 
   protected _element: HTMLElement;

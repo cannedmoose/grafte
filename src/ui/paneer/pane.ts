@@ -123,15 +123,32 @@ class PaneLeaf extends PaneerDOM {
     this.tabs = [];
     this.header = new Header();
 
+    this.style.overflow = "hidden";
+    this.style.border = "2px groove #999999";
+    this.style.display = "flex";
+    this.style.flexDirection = "column";
+
     const contentContainer = new PaneerDOM();
     contentContainer.style.width = "100%";
     contentContainer.style.flex = "1";
-    //contentContainer.style.height = "100%";
+
+    const contentContainer2 = new PaneerDOM();
+    contentContainer2.style.position = "relative";
+    contentContainer2.style.width = "100%";
+    contentContainer2.style.height = "100%";
 
     this.content = new PaneerDOM();
+    this.content.style.position = "absolute";
+    this.content.style.top = "0";
+    this.content.style.bottom = "0";
+    this.content.style.left = "0";
+    this.content.style.right = "0";
+    this.content.style.overflow = "scroll";
+    //this.content.style.width = "100%";
+    //this.content.style.height = "100%";/** */
 
     this.append(this.header);
-    this.append(contentContainer.append(this.content));
+    this.append(contentContainer.append(contentContainer2.append(this.content)));
   }
 
   addTab(tab: PaneerDOM): PaneLeaf {
@@ -144,16 +161,6 @@ class PaneLeaf extends PaneerDOM {
   }
 
   resize() {
-    this.style.overflow = "hidden";
-    this.style.border = "2px groove #999999";
-
-    this.style.display = "flex";
-    this.style.flexDirection = "column";
-
-    this.content.style.width = "100%";
-    this.content.style.height = "100%";
-    this.content.style.position = "relative";
-
     super.resize();
   }
 }

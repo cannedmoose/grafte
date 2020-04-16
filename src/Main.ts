@@ -24,7 +24,7 @@ window.onload = function () {
   const preview = new Preview(paper.project, viewport);
 
   // Project setup.
-  new paper.Layer();
+  //new paper.Layer();
   paper.project.currentStyle.strokeWidth = 1;
   paper.project.currentStyle.strokeColor = new paper.Color("black");
   paper.project.currentStyle.strokeCap = "round";
@@ -55,7 +55,11 @@ window.onload = function () {
 
   const toolBelt = new ToolBelt(history, keyboard);
   const layers = new LayerControls();
-  viewport.view.on("updated", () => layers.refreshLayers());
+  // TODO figure out when layers should actually be updated...
+  // TODO on changed...
+  viewport.view.on("updated", () => {
+    layers.refreshLayers();
+  });
 
   const editor = new Editor("2fr");
   keyboard.bind("ctrl+enter", { global: true }, (e: KeyboardEvent) => {
@@ -70,19 +74,18 @@ window.onload = function () {
   const leftPane = panes.addPane("V", "15%");
   leftPane.addLeaf("15%").addTab(preview);
   leftPane.addLeaf("auto").addTab(toolBelt);
+  leftPane.addLeaf("auto").addTab(new DOMConsole());
 
   const middlePane = panes.addPane("V", "auto");
   middlePane.addLeaf("5fr").addTab(viewport);
   middlePane.addLeaf("2fr")
-    //.addTab(new DOMConsole())
     .addTab(editor);
 
   const rightPane = panes.addPane("V", "10%");
   rightPane.addLeaf("2fr").addTab(layers);
   rightPane.addLeaf("1fr")
     .addTab(new Save(viewport.page))
-    .addTab(new Load(viewport.page))
-    .addTab(new DOMConsole());
+    .addTab(new Load(viewport.page));
 
   paneerDiv.appendChild(panes.element);
 

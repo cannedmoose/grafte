@@ -17,7 +17,13 @@ export class LayerControls extends PaneerDOM {
     super();
 
     this.buttons = new ButtonGrid({ aspectRatio: 1, width: "2em" });
-    this.buttons.add({ alt: "Add Layer", icon: "icons/plus.svg", onClick: () => { new paper.Layer() } });
+    this.buttons.add({
+      alt: "Add Layer", icon: "icons/plus.svg", onClick: () => {
+        new paper.Layer();
+        this.refreshLayers();
+        // NOTE adding an empty layer doesn't cause view to be updated so we need to do this
+      }
+    });
     this.buttons.add({ alt: "Move Forward", icon: "icons/forward.svg", onClick: () => { this.moveForward() } });
     this.buttons.add({ alt: "Move Back", icon: "icons/back.svg", onClick: () => { this.moveBack() } });
 
@@ -85,14 +91,14 @@ export class LayerControls extends PaneerDOM {
 
       let label = this.labels.get(item.id);
       if (!label) {
-        label = new Label(item, depth);
+        label = new Label(this, item, depth);
         this.labels.set(item.id, label);
       }
       label.depth = depth;
 
       label.resize();
       this.layers.append(label);
-      if (item.children) {
+      if (item.children && label.open) {
         item.children.forEach(child => {
           toVisit.push({ item: child, depth: depth + 1 });
         })
@@ -113,8 +119,6 @@ export class LayerControls extends PaneerDOM {
         this.labels.delete(key);
       }
     });
-
-    this.resize();
   }
 
   resize() {
@@ -123,16 +127,19 @@ export class LayerControls extends PaneerDOM {
 }
 
 class Label extends PaneerDOM {
-  parent: LayerControls;
+  layers: LayerControls;
   item: paper.Item;
   depth: number;
   spacing: PaneerDOM;
   main: PaneerDOM;
   container: PaneerDOM;
   controls: ButtonGrid;
+  clicker: PaneerDOM;
+  open: boolean;
 
-  constructor(item: paper.Item, depth: number) {
+  constructor(layers: LayerControls, item: paper.Item, depth: number) {
     super();
+    this.layers = layers;
     this.item = item;
     this.depth = depth;
 
@@ -150,13 +157,14 @@ class Label extends PaneerDOM {
     this.spacing = new PaneerDOM();
     this.main = new PaneerDOM();
     this.main.style.cursor = "default";
-    this.main.style.width = "auto";
+    this.main.style.width = "100%";
+    this.main.style.paddingLeft = ".2em";
     this.main.style.userSelect = "none";
     this.main.element.addEventListener("click", (event: MouseEvent) => {
       if (item.className == "Layer") {
         const layer = item as paper.Layer;
         layer.activate();
-        this.parent.refreshLayers();
+        this.layers.refreshLayers();
       } else {
         if (item.selected && event.shiftKey) {
           item.selected = false;
@@ -175,6 +183,16 @@ class Label extends PaneerDOM {
         this.item.visible = !this.item.visible;
       }
     });
+
+    this.open = true;
+    this.clicker = new PaneerDOM();
+    this.clicker.element.addEventListener("click", () => {
+      this.open = !this.open;
+      this.layers.refreshLayers();
+    });
+    this.clicker.style.flex = "0";
+    this.clicker.style.userSelect = "none";
+    this.container.append(this.clicker);
 
     this.container.append(this.main);
     this.container.append(this.controls);
@@ -195,6 +213,12 @@ class Label extends PaneerDOM {
     this.main.style.fontWeight = (this.item.id == this.item.project.activeLayer.id)
       || (this.item.className != "Layer" && this.item.selected)
       ? "bold" : "normal";
+
+    if (this.item.children) {
+      this.clicker.element.textContent = this.open ? "◒" : "◑";
+    } else {
+      this.clicker.element.textContent = "";
+    }
 
     super.resize();
   }

@@ -1,6 +1,7 @@
 import * as paper from "paper";
 import { PaneerDOM } from "./paneerdom";
 import { div, text } from "../utils/dom";
+import { ButtonGrid } from "./buttongrid";
 
 // Root node
 export class Pane extends PaneerDOM {
@@ -147,10 +148,8 @@ class PaneLeaf extends PaneerDOM {
     this.append(contentContainer.append(contentContainer2.append(this.content)));
 
     this.element.addEventListener("mouseenter", () => {
-      this.style.border = "2px solid red";
       let el = this.parent;
-
-      while(el && el._type != "DragBoss") {
+      while (el && el._type != "DragBoss") {
         el = el.parent;
       }
 
@@ -158,13 +157,17 @@ class PaneLeaf extends PaneerDOM {
         return;
       }
 
-      (el as DragBoss).dropTarget = this;
+      const boss = (el as DragBoss);
+      if (boss.dragPreview.children.length > 0) {
+        this.style.border = "4px solid #0099ff";
+        boss.dropTarget = this;
+      }
     });
 
     this.element.addEventListener("mouseleave", () => {
       this.style.border = "2px groove #999999";
       let el = this.parent;
-      while(el && el._type != "DragBoss") {
+      while (el && el._type != "DragBoss") {
         el = el.parent;
       }
 
@@ -203,7 +206,7 @@ class PaneLeaf extends PaneerDOM {
 
 class Header extends PaneerDOM {
   tabs: PaneerDOM;
-  buttons: PaneerDOM;
+  buttons: ButtonGrid;
 
   constructor() {
     super();
@@ -215,10 +218,17 @@ class Header extends PaneerDOM {
     this.style.backgroundColor = "#333333";
 
     this.tabs = new PaneerDOM();
-    this.buttons = new PaneerDOM();
+    this.buttons = new ButtonGrid({ aspectRatio: 1, width: "1.4em" });
+    this.buttons.add({ alt: "Horizontal Split", icon: "icons/hsplit.svg", onClick: () => { } });
+    this.buttons.add({ alt: "Vertical Split", icon: "icons/vsplit.svg", onClick: () => { } });
+    this.buttons.add({ alt: "Close", icon: "icons/cross.svg", onClick: () => { } });
+    this.buttons.style.minWidth = "4.2em";
+
+    const buttonContainer = new PaneerDOM().append(this.buttons);
+    buttonContainer.style.flexBasis = "content";
 
     this.append(this.tabs);
-    this.append(this.buttons);
+    this.append(buttonContainer);
 
     this.tabs.style.display = "flex";
     this.tabs.style.flexDirection = "row";
@@ -286,7 +296,7 @@ class LeafTab extends PaneerDOM {
 
     let el = this.parent;
 
-    while(el && el._type != "DragBoss") {
+    while (el && el._type != "DragBoss") {
       el = el.parent;
     }
 
@@ -319,9 +329,9 @@ class LeafTab extends PaneerDOM {
       }
       this.leaf.resize();
     } else if (this.dragState && this.dragState.state == "dragging") {
-        let el = this.parent;
+      let el = this.parent;
 
-      while(el && el._type != "DragBoss") {
+      while (el && el._type != "DragBoss") {
         el = el.parent;
       }
 
@@ -330,7 +340,7 @@ class LeafTab extends PaneerDOM {
       }
 
       const db = el as DragBoss;
-      if(db.dropTarget) {
+      if (db.dropTarget) {
         const leaf = db.dropTarget as PaneLeaf;
         leaf.addTab2(this);
       }
@@ -338,7 +348,7 @@ class LeafTab extends PaneerDOM {
       this.style.position = '';
       this.style.top = '';
       this.style.left = '';
-      
+
     }
 
     this.dragState = undefined;

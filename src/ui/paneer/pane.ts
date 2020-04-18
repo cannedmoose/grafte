@@ -40,10 +40,12 @@ export class Pane extends PaneerDOM {
   }
 
   resize() {
-    this.style.display = "grid";
-    this.style.height = "100%";
-    this.style.width = "100%";
-    this.style.overflow = "hidden";
+    this.style = {
+      display: "grid",
+      height: "100%",
+      width: "100%",
+      overflow: "hidden"
+    }
 
     // Set up tracks for children
     const tracks = this.children
@@ -57,28 +59,36 @@ export class Pane extends PaneerDOM {
       .concat([`[line${this.children.length}]`]) // Add end line
       .join(" ");
     if (this.direction == "H") {
-      this.style.gridTemplateColumns = tracks;
-      this.style.gridTemplateRows = "[start] 100% [end]";
+      this.style = {
+        gridTemplateColumns: tracks,
+        gridTemplateRows: "[start] 100% [end]"
+      };
     } else {
-      this.style.gridTemplateRows = tracks;
-      this.style.gridTemplateColumns = "[start] 100% [end]";
+      this.style = {
+        gridTemplateColumns: "[start] 100% [end]",
+        gridTemplateRows: tracks
+      }
     }
 
     // Line children up
     this.children.forEach(
       (child, index) => {
         if (this.direction == "H") {
-          child.style.gridColumnStart = `line${index}`;
-          child.style.gridColumnEnd = `line${index + 1}`;
+          child.style = {
+            gridColumnStart: `line${index}`,
+            gridColumnEnd: `line${index + 1}`,
 
-          child.style.gridRowStart = `start`;
-          child.style.gridRowEnd = `end`;
+            gridRowStart: `start`,
+            gridRowEnd: `end`
+          }
         } else {
-          child.style.gridRowStart = `line${index}`;
-          child.style.gridRowEnd = `line${index + 1}`;
+          child.style = {
+            gridRowStart: `line${index}`,
+            gridRowEnd: `line${index + 1}`,
 
-          child.style.gridColumnStart = `start`;
-          child.style.gridColumnEnd = `end`;
+            gridColumnStart: `start`,
+            gridColumnEnd: `end`
+          }
         }
       }
     )
@@ -170,13 +180,13 @@ class PaneLeaf extends PaneerDOM {
 
       const boss = (el as DragBoss);
       if (boss.dragPreview.children.length > 0) {
-        this.style.border = "4px solid #0099ff";
+        this.style = { border: "4px solid #0099ff" };
         boss.dropTarget = this;
       }
     });
 
     this.element.addEventListener("mouseleave", () => {
-      this.style.border = "2px groove #999999";
+      this.style = { border: "2px groove #999999" };
       let el: PaneerDOM | undefined = this.parent;
       while (el && el._type != "DragBoss") {
         el = el.parent;
@@ -281,16 +291,17 @@ class LeafTab extends PaneerDOM {
 
     this.leaf = leaf;
     this.pane = pane;
-
-    this.style.padding = "2px";
-    this.style.width = "min-content";
-    this.style.borderLeft = "1px solid #333333";
-    this.style.borderRight = "1px solid #333333";
-    this.style.borderTop = "1px solid #333333";
-    this.style.borderTopRightRadius = "2px";
-    this.style.borderTopLeftRadius = "2px";
-    this.style.cursor = "select";
-    this.style.userSelect = "none";
+    this.style = {
+      padding: "2px",
+      width: "min-content",
+      borderLeft: "1px solid #333333",
+      borderRight: "1px solid #333333",
+      borderTop: "1px solid #333333",
+      borderTopRightRadius: "2px",
+      borderTopLeftRadius: "2px",
+      cursor: "select",
+      userSelect: "none"
+    }
     this.element.textContent = pane.label;
 
     this.element.addEventListener("mousedown", this.mouseDown);
@@ -298,11 +309,9 @@ class LeafTab extends PaneerDOM {
 
   resize() {
     if (this.pane.id == this.leaf.content.children[0].id) {
-      this.style.backgroundColor = "white";
-      this.style.borderBottom = "none";
+      this.style = { backgroundColor: "white", borderBottom: "none" };
     } else {
-      this.style.backgroundColor = "#999999";
-      this.style.borderBottom = "1px solid black";
+      this.style = { backgroundColor: "#999999", borderBottom: "1px solid black" };
     }
   }
 
@@ -329,9 +338,11 @@ class LeafTab extends PaneerDOM {
     }
 
     const boss = el as DragBoss;
-    this.style.position = "absolute";
-    this.style.top = `${event.clientY}px`;
-    this.style.left = `${event.clientX}px`;
+    this.style = {
+      position: "absolute",
+      top: `${event.clientY}px`,
+      left: `${event.clientX}px`
+    }
     boss.dragPreview.append(this);
 
     this.leaf.content.remove(this.pane);
@@ -369,9 +380,7 @@ class LeafTab extends PaneerDOM {
         leaf.addTab2(this);
       }
 
-      this.style.position = '';
-      this.style.top = '';
-      this.style.left = '';
+      this.style = { position: '', top: '', left: '' }
 
     }
 
@@ -437,17 +446,14 @@ class PaneHandle extends PaneerDOM {
   }
 
   setStyles() {
-    this.style.height = "100%";
-    this.style.overflow = "hidden";
+    this.style = { height: "100%", overflow: "hidden" };
     if (this.mouseover) {
-      this.style.border = "2px solid #0099ff";
-      if (this.parent?.direction == "H") {
-        this.style.cursor = "col-resize";
-      } else {
-        this.style.cursor = "row-resize";
-      }
+      this.style = {
+        border: "2px solid #0099ff",
+        cursor: this.parent?.direction == "H" ? "col-resize" : "row-resize"
+      };
     } else {
-      this.style.border = "2px solid white"
+      this.style = { border: "2px solid white" };
     }
   }
 
@@ -517,15 +523,19 @@ export class DragBoss extends PaneerDOM {
     this.rest = new PaneerDOM();
 
     this.rest = new PaneerDOM();
-    this.rest.style.width = "100%";
-    this.rest.style.height = "100%";
-    this.rest.style.position = "absolute";
+    this.rest.style = {
+      width: "100%",
+      height: "100%",
+      position: "absolute"
+    }
     this.append(this.rest);
 
-    this.dragPreview.style.position = "absolute";
-    this.dragPreview.style.width = "100%";
-    this.dragPreview.style.height = "100%";
-    this.dragPreview.style.pointerEvents = "none";
+    this.dragPreview.style = {
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none"
+    }
 
     this.append(this.dragPreview);
   }

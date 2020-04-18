@@ -51,8 +51,17 @@ export class PaneerDOM {
     return this._id;
   }
 
-  get style(): CSSStyleDeclaration  {
+  get style(): Partial<CSSStyleDeclaration>  {
     return this._element.style;
+  }
+
+  set style(styles: Partial<CSSStyleDeclaration>) {
+    for(let key in styles) {
+      const s = styles[key];
+      if (s) {
+        this._element.style[key] = s;
+      }
+    }
   }
 
   get parent(): PaneerDOM | undefined {

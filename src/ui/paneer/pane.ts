@@ -115,6 +115,9 @@ class PaneLeaf extends PaneerDOM {
   sizing: string;
   header: Header;
   content: PaneerDOM;
+  parent: PaneNode;
+
+  // TODO figure out serialization/deserialization
 
 
   constructor(sizing: string) {
@@ -122,33 +125,41 @@ class PaneLeaf extends PaneerDOM {
     this.sizing = sizing;
     this.header = new Header();
 
-    this.style.overflow = "hidden";
-    this.style.border = "2px groove #999999";
-    this.style.display = "flex";
-    this.style.flexDirection = "column";
+    this.style = {
+      overflow: "hidden",
+      border: "2px groove #999999",
+      display: "flex",
+      flexDirection: "column"
+    }
 
     const contentContainer = new PaneerDOM();
-    contentContainer.style.width = "100%";
-    contentContainer.style.flex = "1";
+    contentContainer.style = {
+      flex: "1",
+      width: "100%"
+    }
 
     const contentContainer2 = new PaneerDOM();
-    contentContainer2.style.position = "relative";
-    contentContainer2.style.width = "100%";
-    contentContainer2.style.height = "100%";
+    contentContainer2.style = {
+      position: "relative",
+      width: "100%",
+      height: "100%"
+    }
 
     this.content = new PaneerDOM();
-    this.content.style.position = "absolute";
-    this.content.style.top = "0";
-    this.content.style.bottom = "0";
-    this.content.style.left = "0";
-    this.content.style.right = "0";
-    this.content.style.overflow = "scroll";
+    this.content.style = {
+      position: "absolute",
+      top: "0",
+      bottom: "0",
+      left: "0",
+      right: "0",
+      overflow: "scroll"
+    };
 
     this.append(this.header);
     this.append(contentContainer.append(contentContainer2.append(this.content)));
 
     this.element.addEventListener("mouseenter", () => {
-      let el = this.parent;
+      let el: PaneerDOM | undefined = this.parent;
       while (el && el._type != "DragBoss") {
         el = el.parent;
       }
@@ -166,7 +177,7 @@ class PaneLeaf extends PaneerDOM {
 
     this.element.addEventListener("mouseleave", () => {
       this.style.border = "2px groove #999999";
-      let el = this.parent;
+      let el: PaneerDOM | undefined = this.parent;
       while (el && el._type != "DragBoss") {
         el = el.parent;
       }
@@ -205,33 +216,46 @@ class PaneLeaf extends PaneerDOM {
 }
 
 class Header extends PaneerDOM {
+  parent: PaneLeaf;
   tabs: PaneerDOM;
   buttons: ButtonGrid;
 
   constructor() {
     super();
 
-    this.style.width = "100%";
-    this.style.display = "flex";
-    this.style.flexDirection = "row";
-    this.style.justifyContent = "space-between";
-    this.style.backgroundColor = "#333333";
+    this.style = {
+      width: "100%",
+      display: "flex", flexDirection: "row",
+      justifyContent: "space-between",
+      backgroundColor: "#333333",
+    };
 
     this.tabs = new PaneerDOM();
     this.buttons = new ButtonGrid({ aspectRatio: 1, width: "1.4em" });
-    this.buttons.add({ alt: "Horizontal Split", icon: "icons/hsplit.svg", onClick: () => { } });
-    this.buttons.add({ alt: "Vertical Split", icon: "icons/vsplit.svg", onClick: () => { } });
-    this.buttons.add({ alt: "Close", icon: "icons/cross.svg", onClick: () => { } });
-    this.buttons.style.minWidth = "4.2em";
+    this.buttons.add({
+      alt: "Horizontal Split", icon: "icons/hsplit.svg", onClick: () => {
+      }
+    });
+    this.buttons.add({
+      alt: "Vertical Split", icon: "icons/vsplit.svg", onClick: () => {
+      }
+    });
+    this.buttons.add({
+      alt: "Close", icon: "icons/cross.svg", onClick: () => {
+        // TODO
+        // Figure out how to do remove nicely
+        // ALSO SHOULD FIGURE OUT INSERTION WHIlE WERE AT it...
+      }
+    });
+    this.buttons.style = { minWidth: "4.2em" };
 
     const buttonContainer = new PaneerDOM().append(this.buttons);
-    buttonContainer.style.flexBasis = "content";
+    buttonContainer.style = { flexBasis: "content" };
 
     this.append(this.tabs);
     this.append(buttonContainer);
 
-    this.tabs.style.display = "flex";
-    this.tabs.style.flexDirection = "row";
+    this.tabs.style = { display: "flex", flexDirection: "row" };
   }
 
   addTab(child: LeafTab) {

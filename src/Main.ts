@@ -8,7 +8,7 @@ import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
 import { Save, Load } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
-import { Pane } from "./ui/paneer/pane";
+import { Pane, DragBoss } from "./ui/paneer/pane";
 
 /**
  * Important concepts:
@@ -68,8 +68,6 @@ window.onload = function () {
     history.commit();
   });
 
-  const paneerDiv = queryOrThrow("#menus");
-
   const panes = new Pane("H");
   const leftPane = panes.addPane("V", "15%");
   leftPane.addLeaf("15%").addTab(preview);
@@ -87,7 +85,11 @@ window.onload = function () {
     .addTab(new Save(viewport.page))
     .addTab(new Load(viewport.page));
 
-  paneerDiv.appendChild(panes.element);
+  const dragBoss = new DragBoss();
+  dragBoss.rest.append(panes);
+
+  const paneerDiv = queryOrThrow("#menus");
+  paneerDiv.appendChild(dragBoss.element);
 
   // TODO(P1) MAKE LESS HACKEY!!!
   const json = window.localStorage.getItem("project");

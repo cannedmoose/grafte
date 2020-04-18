@@ -31,7 +31,8 @@ export class Editor extends PaneerDOM {
   constructor(sizing: string) {
     super();
     this.editor = CodeMirror(this.element, this.config);
-    this.element.style.fontSize = "2em";
+    this.style.fontSize = "2em";
+    this.style.height = "100%";
     this.editorDiv = this.element.firstElementChild as HTMLElement;
 
     this.editor.setSize("100%","100%");

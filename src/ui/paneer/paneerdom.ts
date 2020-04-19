@@ -121,6 +121,7 @@ export class PaneerDOM {
           children.push(child);
         }
       }
+
     }
     return children;
   }
@@ -133,3 +134,26 @@ export class PaneerDOM {
     return typestrings.indexOf(this._type) >= 0;
   }
 }
+
+/*
+Relationships we have:
+Parent is this type
+Some ancestor is this type
+all children are this type
+some children are this type and others are another...
+
+
+I think the best way is an interface like:
+FIND THE Nth CHILD that implements this interface
+
+WANT TO AVOID KEEPING REFERENCES TO PANEER NODES THAT ARE IN THE DOM
+DOM IS THE SOURCE OF TRUTH
+
+
+Basically want to go for a typed query selector
+this wont prevent us from adding nodes in a bad way but it will allow us to retrieve shiz from the dom
+
+if we use web components we could just get the instance directly...
+that could be nice, but we still need to check class
+
+*/

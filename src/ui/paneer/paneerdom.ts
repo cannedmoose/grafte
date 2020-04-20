@@ -156,7 +156,7 @@ export class PaneerDOM {
   // Breadth first descendent traversal
   *descendents<T>(filter: (el: any) => el is T, maxDepth: number = Infinity): Generator<T, undefined, undefined> {
     let queue = [];
-    queue.push({el: this.element, depth: 0});
+    queue.push({el: this.element, depth: 1});
 
     let dequed: {el: Element, depth: number} | undefined;
     while (queue.length > 0) {

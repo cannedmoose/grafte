@@ -369,7 +369,7 @@ export class LeafTab extends PaneerDOM {
       if (boss && boss.dropTarget && isPaneLeaf(boss.dropTarget)) {
         boss.dropTarget.addTab(this);
       } else {
-        // TODO HANDLE CASE WHERE WE ARE NOT OVER A DROP TARGET
+        // TODO HANDLE CASE WHERE WE ARE NOT OVER A DROP TARGET properly
       }
       this.style = {
         position: '', top: '', left: '',
@@ -402,7 +402,6 @@ class PaneHandle extends PaneerDOM {
   _type = "PaneHandle";
   mouseover: boolean;
   dragState: DragState;
-  parent: Pane;
   sizing: string;
 
   constructor() {
@@ -428,15 +427,15 @@ class PaneHandle extends PaneerDOM {
 
     this.element.addEventListener("mousedown", (e: MouseEvent) => {
       // Convert to pixel sizing.
-      [...this.parent.descendents(isSizable, 1)].forEach(child => {
+      [...this.ancestor(isAny).descendents(isSizable, 1)].forEach(child => {
         const rect = child.element.getBoundingClientRect();
-        const pixelSize = this.parent.direction == "H" ? rect.width : rect.height;
+        const pixelSize = this.ancestor(isAny).direction == "H" ? rect.width : rect.height;
         if (isSizable(child)) {
           child.sizing = `${pixelSize}fr`;
         }
       })
 
-      this.parent.resize();
+      this.ancestor(isAny).resize();
 
       this.dragState = {
         state: "dragging",
@@ -458,7 +457,7 @@ class PaneHandle extends PaneerDOM {
     if (this.mouseover) {
       this.style = {
         border: "2px solid #0099ff",
-        cursor: this.parent?.direction == "H" ? "col-resize" : "row-resize"
+        cursor: this.ancestor(isAny)?.direction == "H" ? "col-resize" : "row-resize"
       };
     } else {
       this.style = { border: "2px solid white" };
@@ -472,14 +471,11 @@ class PaneHandle extends PaneerDOM {
       return;
     }
 
-    const previous = this.previous;
-    const next = this.next;
+    const previous = this.previous(isSizable);
+    const next = this.next(isSizable);
 
-    if (!previous
-      || !next
-      || !isSizable(next)
-      || !isSizable(previous)) {
-      console.warn("Improper pane nodes.", next, previous);
+    if (!previous || !next) {
+      console.log("Improper pane nodes.", next, previous);
       window.removeEventListener("mousemove", this.mousedragging);
       window.removeEventListener("mouseup", this.mouseup);
       return;
@@ -491,7 +487,7 @@ class PaneHandle extends PaneerDOM {
     const prevRect = previous.element.getBoundingClientRect();
     const nextRect = next.element.getBoundingClientRect();
 
-    if (this.parent?.direction == "H") {
+    if (this.ancestor(isAny).direction == "H") {
       const prevSize = prevRect.width + delta.x;
       const nextSize = nextRect.width - delta.x;
 
@@ -504,7 +500,7 @@ class PaneHandle extends PaneerDOM {
       next.sizing = `${nextSize}fr`;
     }
 
-    this.parent.resize();
+    this.ancestor(isAny).resize();
 
     this.dragState = { ...this.dragState, lastPoint: currentPoint };
   }

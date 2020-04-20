@@ -68,26 +68,6 @@ export class PaneerDOM {
     }
   }
 
-  // Todo make previous sibling with filter
-  get previous(): PaneerDOM | undefined {
-    if (this._element.previousElementSibling) {
-      return elementToPaneer(this._element.previousElementSibling);
-    }
-    else {
-      return undefined;
-    }
-  }
-
-  // TODO make next sibling with filter
-  get next(): PaneerDOM | undefined {
-    if (this._element.nextElementSibling) {
-      return elementToPaneer(this._element.nextElementSibling);
-    }
-    else {
-      return undefined;
-    }
-  }
-
   // TODO figure out lifecycle, when to remove from nodemap
   remove(child: PaneerDOM) {
     try {
@@ -100,6 +80,42 @@ export class PaneerDOM {
   append(child: PaneerDOM) {
     this.element.appendChild(child.element);
     return this;
+  }
+
+  next<T>(filter: (el: any) => el is T): T | undefined {
+    let el = this._element.nextElementSibling;
+    if (el) {
+      const pan = elementToPaneer(el);
+      if (filter(pan)) return pan;
+    }
+  }
+
+  previous<T>(filter: (el: any) => el is T): T | undefined {
+    let el = this._element.previousElementSibling;
+    if (el) {
+      const pan = elementToPaneer(el);
+      if (filter(pan)) return pan;
+    }
+  }
+
+  *nextSiblings<T>(filter: (el: any) => el is T): Generator<T, undefined, undefined> {
+    let el = this._element.nextElementSibling;
+    while (el) {
+      const pan = elementToPaneer(el);
+      if (filter(pan)) yield pan;
+      el = el.nextElementSibling;
+    }
+    return;
+  }
+
+  *previousSiblings<T>(filter: (el: any) => el is T): Generator<T, undefined, undefined> {
+    let el = this._element.previousElementSibling;
+    while (el) {
+      const pan = elementToPaneer(el);
+      if (filter(pan)) yield pan;
+      el = el.nextElementSibling;
+    }
+    return;
   }
 
   resize() {

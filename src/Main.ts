@@ -8,7 +8,7 @@ import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
 import { Save, Load } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
-import { Pane, DragBoss } from "./ui/paneer/pane";
+import { Pane, DragBoss, LeafTab } from "./ui/paneer/pane";
 
 /**
  * Important concepts:
@@ -70,20 +70,21 @@ window.onload = function () {
 
   const panes = new Pane("H");
   const leftPane = panes.addPane("V", "15%");
-  leftPane.addLeaf("15%").addTab(preview);
-  leftPane.addLeaf("auto").addTab(toolBelt);
-  leftPane.addLeaf("auto").addTab(new DOMConsole());
+  leftPane.addLeaf("15%").addTab(new LeafTab(preview));
+  leftPane.addLeaf("auto").addTab(new LeafTab(toolBelt));
+  leftPane.addLeaf("auto");
 
   const middlePane = panes.addPane("V", "auto");
-  middlePane.addLeaf("5fr").addTab(viewport);
+  middlePane.addLeaf("5fr").addTab(new LeafTab(viewport));
   middlePane.addLeaf("2fr")
-    .addTab(editor);
+    .addTab(new LeafTab(new DOMConsole()))
+    .addTab(new LeafTab(editor));
 
   const rightPane = panes.addPane("V", "10%");
-  rightPane.addLeaf("2fr").addTab(layers);
+  rightPane.addLeaf("2fr").addTab(new LeafTab(layers));
   rightPane.addLeaf("1fr")
-    .addTab(new Save(viewport.page))
-    .addTab(new Load(viewport.page));
+    .addTab(new LeafTab(new Save(viewport.page)))
+    .addTab(new LeafTab(new Load(viewport.page)));
 
   const dragBoss = new DragBoss();
   dragBoss.rest.append(panes);

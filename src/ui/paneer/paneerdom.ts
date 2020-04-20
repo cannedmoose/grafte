@@ -68,16 +68,6 @@ export class PaneerDOM {
     }
   }
 
-  // TODO make private
-  get parent(): PaneerDOM | undefined {
-    if (this._element.parentElement) {
-      return elementToPaneer(this._element.parentElement);
-    }
-    else {
-      return undefined;
-    }
-  }
-
   // Todo make previous sibling with filter
   get previous(): PaneerDOM | undefined {
     if (this._element.previousElementSibling) {
@@ -98,22 +88,6 @@ export class PaneerDOM {
     }
   }
 
-  // TODO get rid of, should use descendants instead
-  get children(): PaneerDOM[] {
-    const children: PaneerDOM[] = [];
-    for (let i = 0; i < this.element.children.length; i++) {
-      const childId = this.element.children[i].getAttribute(PANEER_ID_ATTRIB);
-      if (childId) {
-        const child = NodeMap.get(childId);
-        if (child) {
-          children.push(child);
-        }
-      }
-
-    }
-    return children;
-  }
-
   // TODO figure out lifecycle, when to remove from nodemap
   remove(child: PaneerDOM) {
     try {
@@ -129,7 +103,7 @@ export class PaneerDOM {
   }
 
   resize() {
-    this.children.forEach(child => child.resize());
+    [...this.descendents(isAny, 1)].forEach(child => child.resize());
   }
 
   ancestor<T>(filter: (el: any) => el is T): T | undefined {
@@ -142,12 +116,13 @@ export class PaneerDOM {
 
 
   *ancestors<T>(filter: (el: any) => el is T): Generator<T, undefined, undefined> {
-    let el = this.parent;
+    let el = this.element.parentElement;
     while (el) {
-      if(filter(el)) {
-        yield el;
+      const pan = elementToPaneer(el);
+      if(filter(pan)) {
+        yield pan;
       }
-      el = el.parent;
+      el = el.parentElement;
     }
 
     return undefined;
@@ -174,42 +149,7 @@ export class PaneerDOM {
   }
 }
 
-// Maybe have paneer singleton
-// then paneerdom extends it
-
-// WE WANT TO GET RID OF children if possible
-
-/*
-Relationships we have:
-Parent is this type
-Some ancestor is this type
-all children are this type
-some children are this type and others are another...
-
-
-I think the best way is an interface like:
-FIND THE Nth CHILD that implements this interface
-
-WANT TO AVOID KEEPING REFERENCES TO PANEER NODES THAT ARE IN THE DOM
-DOM IS THE SOURCE OF TRUTH
-
-
-Basically want to go for a typed query selector
-this wont prevent us from adding nodes in a bad way but it will allow us to retrieve shiz from the dom
-
-if we use web components we could just get the instance directly...
-that could be nice, but we still need to check class/interface
-
-HOW DO WE SAY "WE WANT AN ELEMENT THAT FULFILLS THIS INTERFACE"
-
-maybe we should look into haxe
-
-*/
-
-// Do we use events to bubble up?
-// Then we use query selectorish things to bubble down?
-// Or just query selectors both ways
-// Save events for user interaction...
-
-// TYPED QUERY SELECTOR
-// Fuck speed for now?
+// TODO remove isAny should have better typing....
+function isAny(el: any): el is any {
+  return true;
+}

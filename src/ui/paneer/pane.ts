@@ -116,7 +116,7 @@ class PaneNode extends Pane {
 // SHOULD only allow split when there are multiple tabs in editor?
 function isPaneLeaf(node: any): node is PaneLeaf {
   const n = node as PaneLeaf;
-  return (node._type && node._type == "PaneLeaf")
+  return (n && n._type == "PaneLeaf")
 };
 
 // PaneLeaf actually holds tabs...
@@ -336,11 +336,14 @@ export class LeafTab extends PaneerDOM {
     }
 
     boss.dragPreview.append(this);
+    const domRect = this.element.getBoundingClientRect();
 
     this.style = {
       position: "absolute",
-      top: `${event.clientY}px`,
-      left: `${event.clientX}px`
+      top: `${event.clientY - domRect.height / 2}px`,
+      left: `${event.clientX - domRect.width / 2}px`,
+      border: '2px solid #0099ff',
+      backgroundColor: "white"
     }
   }
 
@@ -364,13 +367,18 @@ export class LeafTab extends PaneerDOM {
     } else if (this.dragState && this.dragState.state == "dragging") {
       const boss = this.ancestor(this.bossCheck);
       if (boss && boss.dropTarget && isPaneLeaf(boss.dropTarget)) {
-        // TODO proper leaf ancestor check.
-        this.pane.parent?.remove(this.pane);
         boss.dropTarget.addTab(this);
       } else {
         // TODO HANDLE CASE WHERE WE ARE NOT OVER A DROP TARGET
       }
-      this.style = { position: '', top: '', left: '' };
+      this.style = {
+        position: '', top: '', left: '',
+        borderLeft: "1px solid #333333",
+        borderRight: "1px solid #333333",
+        borderTop: "1px solid #333333",
+        borderTopRightRadius: "2px",
+        borderTopLeftRadius: "2px"
+      };
     }
 
     this.dragState = undefined;
@@ -386,7 +394,7 @@ interface Sizable {
 }
 
 function isSizable(e: any): e is Sizable {
-  const s =  (e as Sizable);
+  const s = (e as Sizable);
   return s.sizing !== undefined && s.style !== undefined && s.element != undefined;
 }
 
@@ -550,7 +558,7 @@ interface DragBoss2 {
 
 function isDragBoss(el: any): el is DragBoss2 {
   const test = el as DragBoss2;
-  return test.dragPreview ? true : false;
+  return test && test.dragPreview ? true : false;
 }
 
 // drags bubble up to dragboss, bubble down to drag targets.

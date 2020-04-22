@@ -1,6 +1,7 @@
 import * as paper from "paper";
 import { PaneerDOM, isAny } from "./paneerdom";
 import { ButtonGrid } from "./buttongrid";
+import { NewPane } from "../newpane";
 
 
 interface DragCoordinator extends PaneerDOM {
@@ -15,21 +16,21 @@ function isDragCoordinator(el: PaneerDOM): el is DragCoordinator {
   return test && test.dragPreview ? true : false;
 }
 
-interface Tab extends PaneerDOM {
+export interface Tab extends PaneerDOM {
   pane: PaneerDOM;
 }
 
-function isTab(el: PaneerDOM): el is Tab {
+export function isTab(el: PaneerDOM): el is Tab {
   return el && !!(el as Tab).pane;
 }
 
-interface TabContainer extends Sized {
+export interface TabContainer extends Sized {
   tabContent?: PaneerDOM;
-  removeTab(tab: LeafTab): void;
-  addTab(tab: LeafTab): void;
+  removeTab(tab: Tab): void;
+  addTab(tab: Tab): void;
 }
 
-function isTabContainer(el: PaneerDOM): el is TabContainer {
+export function isTabContainer(el: PaneerDOM): el is TabContainer {
   const e = el as TabContainer;
   return e && e.removeTab != null && e.addTab != null;
 }
@@ -378,11 +379,16 @@ class Header extends PaneerDOM {
       }
     });
     this.buttons.add({
+      alt: "New Pane", icon: "icons/plus.svg", onClick: () => {
+        this.newTab();
+      }
+    });
+    this.buttons.add({
       alt: "Close", icon: "icons/cross.svg", onClick: () => {
         this.close();
       }
     });
-    this.buttons.style = { minWidth: "4.2em" };
+    this.buttons.style = { minWidth: `${1.4*4}em` };
 
     const buttonContainer = new PaneerDOM().append(this.buttons);
     buttonContainer.style = { flexBasis: "content" };
@@ -390,7 +396,7 @@ class Header extends PaneerDOM {
     this.append(this.tabContainer);
     this.append(buttonContainer);
 
-    this.tabContainer.style = { display: "flex", flexDirection: "row" };
+    this.tabContainer.style = { display: "flex", flexDirection: "row", maxHeight:"1.5em", overflow: "hidden" };
   }
 
   split(direction: "H" | "V") {
@@ -422,6 +428,15 @@ class Header extends PaneerDOM {
       nn.dextend(directedAncestor);
       directedAncestor = nn;
     }
+  }
+
+  newTab() {
+    const containerAncestor = this.Ancestor(isTabContainer);
+    const pane= new NewPane();
+    containerAncestor.addTab(new LeafTab(pane));
+
+    containerAncestor.tabContent = pane;
+    containerAncestor.resize();
   }
 }
 

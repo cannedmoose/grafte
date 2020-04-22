@@ -121,21 +121,34 @@ export class PaneerDOM {
   resize() {
     [...this.descendents(isAny, 1)].forEach(child => child.resize());
   }
+  
+  Ancestor<T extends PaneerDOM>(filter: (el: PaneerDOM) => el is T): T {
+    const ancestor = this.ancestor(filter);
+    if (!ancestor) throw "BAD ANCESTOR QUERY";
+    return ancestor;
+  }
 
-  ancestor<T>(filter: (el: any) => el is T): T | undefined {
+  Descendent<T extends PaneerDOM>(filter: (el: PaneerDOM) => el is T, maxDepth: number = Infinity): T {
+    const descendent = this.descendent(filter, maxDepth);
+    if (!descendent) throw "BAD DESCENDENT QUERY";
+    return descendent;
+  }
+  
+
+  ancestor<T extends PaneerDOM>(filter: (el: PaneerDOM) => el is T): T | undefined {
     return this.ancestors(filter).next().value;
   }
 
-  descendent<T>(filter: (el: any) => el is T): T | undefined {
-    return this.descendents(filter).next().value;
+  descendent<T extends PaneerDOM>(filter: (el: PaneerDOM) => el is T, maxDepth: number = Infinity): T | undefined {
+    return this.descendents(filter, maxDepth).next().value;
   }
 
 
-  *ancestors<T>(filter: (el: any) => el is T): Generator<T, undefined, undefined> {
+  *ancestors<T extends PaneerDOM>(filter: (el: PaneerDOM) => el is T): Generator<T, undefined, undefined> {
     let el = this.element.parentElement;
     while (el) {
       const pan = elementToPaneer(el);
-      if(filter(pan)) {
+      if(pan && filter(pan)) {
         yield pan;
       }
       el = el.parentElement;
@@ -145,7 +158,7 @@ export class PaneerDOM {
   }
 
   // Breadth first descendent traversal
-  *descendents<T>(filter: (el: any) => el is T, maxDepth: number = Infinity): Generator<T, undefined, undefined> {
+  *descendents<T extends PaneerDOM>(filter: (el: PaneerDOM) => el is T, maxDepth: number = Infinity): Generator<T, undefined, undefined> {
     let queue = [];
     queue.push({el: this.element, depth: 1});
 
@@ -166,6 +179,6 @@ export class PaneerDOM {
 }
 
 // TODO remove isAny should have better typing....
-function isAny(el: any): el is any {
+export function isAny(el: PaneerDOM): el is PaneerDOM {
   return true;
 }

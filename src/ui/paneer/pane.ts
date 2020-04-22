@@ -1,11 +1,9 @@
 import * as paper from "paper";
-import { PaneerDOM } from "./paneerdom";
-import { div, text } from "../utils/dom";
+import { PaneerDOM, isAny } from "./paneerdom";
 import { ButtonGrid } from "./buttongrid";
 
 // Root node
-export class Pane extends PaneerDOM {
-  _type = "PaneRoot";
+export class Pane extends PaneerDOM implements Directed {
   direction: "V" | "H";
 
   constructor(direction: "V" | "H") {
@@ -47,10 +45,10 @@ export class Pane extends PaneerDOM {
 
   resize() {
     // Set up tracks for children
-    const children = [...this.descendents(isSizable, 1)];
+    const children = [...this.descendents(isSized, 1)];
     const tracks = children
       .map((child, index) => {
-        if (isSizable(child)) {
+        if (isSized(child)) {
           return `[line${index}] ${child.sizing}`;
         } else {
           return `[line${index}] auto`;
@@ -96,13 +94,13 @@ export class Pane extends PaneerDOM {
   }
 }
 
-class PaneNode extends Pane {
-  _type = "PaneNode";
+class PaneNode extends Pane implements Sized {
   // 
   // height = width / aspect
   // 
   direction: "V" | "H";
   sizing: string;
+  resizable = true;
 
   constructor(direction: "V" | "H", sizing: string) {
     super(direction);
@@ -110,21 +108,26 @@ class PaneNode extends Pane {
   }
 }
 
-// Leaf contains multiple tabs
-// Leaf can be split (either horizontally/vertically) or merged
-// leafs children should be in a tab thingy... so they don't consider theheader part of their space...
-// SHOULD only allow split when there are multiple tabs in editor?
-function isPaneLeaf(node: any): node is PaneLeaf {
-  const n = node as PaneLeaf;
-  return (n && n._type == "PaneLeaf")
-};
-
 // PaneLeaf actually holds tabs...
-class PaneLeaf extends PaneerDOM {
-  _type = "PaneLeaf";
+class PaneLeaf extends PaneerDOM implements Sized {
   sizing: string;
+  resizable = true;
   header: Header;
   content: PaneerDOM;
+
+  get tabContent(): PaneerDOM | undefined {
+    return this.content.descendent(isAny);
+  }
+
+  set tabContent(dom: PaneerDOM | undefined) {
+    const content = this.content.descendent(isAny);
+    if (content) {
+      this.content.remove(content);
+    }
+    if (dom) {
+      this.content.append(dom);
+    }
+  }
 
   constructor(sizing: string) {
     super();
@@ -165,7 +168,7 @@ class PaneLeaf extends PaneerDOM {
     this.append(contentContainer.append(contentContainer2.append(this.content)));
 
     this.element.addEventListener("mouseenter", () => {
-      const boss = this.ancestor(isDragBoss);
+      const boss = this.ancestor(isDragCoordinator);
       if (boss && boss.dragPreview.descendent(isAny)) {
         this.style = { border: "4px solid #0099ff" };
         boss.dropTarget = this;
@@ -178,21 +181,8 @@ class PaneLeaf extends PaneerDOM {
     })
   }
 
-  get tabContent(): PaneerDOM | undefined {
-    return this.content.descendent(isAny);
-  }
-
-  set tabContent(dom: PaneerDOM | undefined) {
-    if (this.content.descendent(isAny)) {
-      this.content.remove(this.content.descendent(isAny));
-    }
-    if (dom) {
-      this.content.append(dom);
-    }
-  }
-
-  addTab(tab: LeafTab): PaneLeaf {
-    this.header.addTab(tab);
+  addTab(tab: Tab): PaneLeaf {
+    this.header.tabContainer.append(tab);
     if (!this.tabContent) {
       this.tabContent = tab.pane;
     }
@@ -200,10 +190,10 @@ class PaneLeaf extends PaneerDOM {
     return this;
   }
 
-  removeTab(tab: LeafTab) {
-    this.header.removeTab(tab);
+  removeTab(tab: Tab) {
+    this.header.tabContainer.remove(tab);
     if (this.tabContent && this.tabContent.id == tab.pane.id) {
-      this.tabContent = this.descendent(isLeafTab)?.pane;
+      this.tabContent = this.descendent(isTab)?.pane;
     }
   }
 }
@@ -249,30 +239,9 @@ class Header extends PaneerDOM {
 
     this.tabContainer.style = { display: "flex", flexDirection: "row" };
   }
-
-  addTab(child: LeafTab) {
-    this.tabContainer.append(child);
-  }
-
-  removeTab(child: LeafTab) {
-    this.tabContainer.remove(child);
-  }
-
-  resize() {
-    super.resize();
-  }
-}
-
-function isAny(el: any): el is any {
-  return true;
-}
-
-function isLeafTab(el: any): el is LeafTab {
-  return (el as LeafTab)._type == "LeafTab";
 }
 
 export class LeafTab extends PaneerDOM {
-  _type = "LeafTab";
   pane: PaneerDOM;
   dragState?: DragState;
 
@@ -301,7 +270,7 @@ export class LeafTab extends PaneerDOM {
   }
 
   resize() {
-    const leaf = this.ancestor(isPaneLeaf);
+    const leaf = this.ancestor(isTabContainer);
     if (leaf && this.pane == leaf.tabContent) {
       this.style = { backgroundColor: "white", borderBottom: "none" };
     } else {
@@ -321,8 +290,8 @@ export class LeafTab extends PaneerDOM {
       lastPoint: new paper.Point(event.screenX, event.screenY)
     };
 
-    const boss = this.ancestor(this.bossCheck);
-    const leaf = this.ancestor(isPaneLeaf);
+    const boss = this.ancestor(isDragCoordinator);
+    const leaf = this.ancestor(isTabContainer);
 
     if (!boss) {
       return;
@@ -347,16 +316,12 @@ export class LeafTab extends PaneerDOM {
     }
   }
 
-  bossCheck(el: PaneerDOM): el is DragBoss {
-    return el._type == "DragBoss";
-  }
-
   mouseUp(event: MouseEvent) {
     window.removeEventListener("mousemove", this.mouseMove);
     window.removeEventListener("mouseup", this.mouseUp);
 
     if (!this.dragState || this.dragState.state != "dragging") {
-      const leaf = this.ancestor(isPaneLeaf);
+      const leaf = this.ancestor(isTabContainer);
 
       if (!leaf) {
         return;
@@ -365,8 +330,8 @@ export class LeafTab extends PaneerDOM {
       leaf.tabContent = this.pane;
       leaf.resize();
     } else if (this.dragState && this.dragState.state == "dragging") {
-      const boss = this.ancestor(this.bossCheck);
-      if (boss && boss.dropTarget && isPaneLeaf(boss.dropTarget)) {
+      const boss = this.ancestor(isDragCoordinator);
+      if (boss && boss.dropTarget && isTabContainer(boss.dropTarget)) {
         boss.dropTarget.addTab(this);
       } else {
         // TODO HANDLE CASE WHERE WE ARE NOT OVER A DROP TARGET properly
@@ -387,55 +352,48 @@ export class LeafTab extends PaneerDOM {
 
 type DragState = { state: "null" } | { state: "dragging", startPoint: paper.Point, lastPoint: paper.Point };
 
-interface Sizable {
-  sizing: string;
-  style: Partial<CSSStyleDeclaration>;
-  element: HTMLElement;
-}
-
-function isSizable(e: any): e is Sizable {
-  const s = (e as Sizable);
-  return s.sizing !== undefined && s.style !== undefined && s.element != undefined;
-}
-
-class PaneHandle extends PaneerDOM {
-  _type = "PaneHandle";
+class PaneHandle extends PaneerDOM implements Sized {
   mouseover: boolean;
   dragState: DragState;
-  sizing: string;
+  sizing = "4px";
+  resizable = false;
 
   constructor() {
     super();
-    this.sizing = "4px";
-    this.mouseover = false;
     this.dragState = { state: "null" };
+
     this.mousedragging = this.mousedragging.bind(this);
     this.mouseup = this.mouseup.bind(this);
+
+    this.style = { height: "100%", overflow: "hidden" };
 
     this.element.ondragstart = function () {
       return false;
     };
 
     this.element.addEventListener("mouseenter", () => {
-      this.mouseover = true;
-      this.setStyles();
+      this.style = {
+        border: "2px solid #0099ff",
+        cursor: this.Ancestor(isDirected).direction == "H" ? "col-resize" : "row-resize"
+      };
     });
+
     this.element.addEventListener("mouseleave", () => {
-      this.mouseover = false
-      this.setStyles();
+      this.style = { border: "2px solid white" };
     });
 
     this.element.addEventListener("mousedown", (e: MouseEvent) => {
       // Convert to pixel sizing.
-      [...this.ancestor(isAny).descendents(isSizable, 1)].forEach(child => {
+      const directedAncestor = this.Ancestor(isDirected);
+      [...directedAncestor.descendents(isSized, 1)].forEach(child => {
         const rect = child.element.getBoundingClientRect();
-        const pixelSize = this.ancestor(isAny).direction == "H" ? rect.width : rect.height;
-        if (isSizable(child)) {
+        const pixelSize = directedAncestor.direction == "H" ? rect.width : rect.height;
+        if (child.resizable) {
           child.sizing = `${pixelSize}fr`;
         }
       })
 
-      this.ancestor(isAny).resize();
+      directedAncestor.resize();
 
       this.dragState = {
         state: "dragging",
@@ -448,22 +406,6 @@ class PaneHandle extends PaneerDOM {
     });
   }
 
-  resize() {
-    this.setStyles();
-  }
-
-  setStyles() {
-    this.style = { height: "100%", overflow: "hidden" };
-    if (this.mouseover) {
-      this.style = {
-        border: "2px solid #0099ff",
-        cursor: this.ancestor(isAny)?.direction == "H" ? "col-resize" : "row-resize"
-      };
-    } else {
-      this.style = { border: "2px solid white" };
-    }
-  }
-
   mousedragging(e: MouseEvent) {
     if (this.dragState.state == "null") {
       window.removeEventListener("mousemove", this.mousedragging);
@@ -471,8 +413,8 @@ class PaneHandle extends PaneerDOM {
       return;
     }
 
-    const previous = this.previous(isSizable);
-    const next = this.next(isSizable);
+    const previous = this.previous(isSized);
+    const next = this.next(isSized);
 
     if (!previous || !next) {
       console.log("Improper pane nodes.", next, previous);
@@ -481,13 +423,16 @@ class PaneHandle extends PaneerDOM {
       return;
     }
 
+
     const currentPoint = new paper.Point(e.screenX, e.screenY);
     const delta = currentPoint.subtract(this.dragState.lastPoint);
+
+    const directedAncestor = this.Ancestor(isDirected);
 
     const prevRect = previous.element.getBoundingClientRect();
     const nextRect = next.element.getBoundingClientRect();
 
-    if (this.ancestor(isAny).direction == "H") {
+    if (directedAncestor.direction == "H") {
       const prevSize = prevRect.width + delta.x;
       const nextSize = nextRect.width - delta.x;
 
@@ -500,7 +445,7 @@ class PaneHandle extends PaneerDOM {
       next.sizing = `${nextSize}fr`;
     }
 
-    this.ancestor(isAny).resize();
+    directedAncestor.resize();
 
     this.dragState = { ...this.dragState, lastPoint: currentPoint };
   }
@@ -513,8 +458,6 @@ class PaneHandle extends PaneerDOM {
 }
 
 export class DragBoss extends PaneerDOM {
-  _type = "DragBoss";
-
   dragPreview: PaneerDOM;
   rest: PaneerDOM;
 
@@ -545,16 +488,52 @@ export class DragBoss extends PaneerDOM {
   }
 }
 
-interface DragBoss2 {
+interface DragCoordinator extends PaneerDOM {
   // IS THERE A WAY TO RESTRICT TO ONE CHILD?
   // DO WE LET elements put their own preview on?
   dragPreview: PaneerDOM;
   dropTarget?: PaneerDOM;
 }
 
-function isDragBoss(el: any): el is DragBoss2 {
-  const test = el as DragBoss2;
+function isDragCoordinator(el: PaneerDOM): el is DragCoordinator {
+  const test = el as DragCoordinator;
   return test && test.dragPreview ? true : false;
 }
 
-// drags bubble up to dragboss, bubble down to drag targets.
+interface Tab extends PaneerDOM {
+  pane: PaneerDOM;
+}
+
+function isTab(el: PaneerDOM): el is Tab {
+  return el && !!(el as Tab).pane;
+}
+
+interface TabContainer extends PaneerDOM {
+  tabContent?: PaneerDOM;
+  removeTab(tab: LeafTab): void;
+  addTab(tab: LeafTab): void;
+}
+
+function isTabContainer(el: PaneerDOM): el is TabContainer {
+  const e = el as TabContainer;
+  return e && e.removeTab != null && e.addTab != null;
+}
+
+
+interface Sized extends PaneerDOM {
+  sizing: string;
+  resizable: boolean;
+}
+
+function isSized(e: PaneerDOM): e is Sized {
+  const s = (e as Sized);
+  return s.sizing !== undefined && s.resizable != undefined;
+}
+
+interface Directed extends PaneerDOM {
+  direction: "H" | "V";
+}
+
+function isDirected(e: PaneerDOM): e is Directed {
+  return e && !!(e as Directed).direction;
+}

@@ -82,6 +82,16 @@ export class PaneerDOM {
     return this;
   }
 
+  replace(newChild: PaneerDOM) {
+    this.element.replaceWith(newChild.element);
+    return this;
+  }
+
+  insert(sibling: PaneerDOM) {
+    this.element.insertAdjacentElement("afterend", sibling.element);
+    return this;
+  }
+
   next<T>(filter: (el: any) => el is T): T | undefined {
     let el = this._element.nextElementSibling;
     if (el) {

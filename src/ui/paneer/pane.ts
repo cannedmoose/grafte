@@ -2,6 +2,60 @@ import * as paper from "paper";
 import { PaneerDOM, isAny } from "./paneerdom";
 import { ButtonGrid } from "./buttongrid";
 
+
+interface DragCoordinator extends PaneerDOM {
+  // IS THERE A WAY TO RESTRICT TO ONE CHILD?
+  // DO WE LET elements put their own preview on?
+  dragPreview: PaneerDOM;
+  dropTarget?: PaneerDOM;
+}
+
+function isDragCoordinator(el: PaneerDOM): el is DragCoordinator {
+  const test = el as DragCoordinator;
+  return test && test.dragPreview ? true : false;
+}
+
+interface Tab extends PaneerDOM {
+  pane: PaneerDOM;
+}
+
+function isTab(el: PaneerDOM): el is Tab {
+  return el && !!(el as Tab).pane;
+}
+
+interface TabContainer extends Sized {
+  tabContent?: PaneerDOM;
+  removeTab(tab: LeafTab): void;
+  addTab(tab: LeafTab): void;
+}
+
+function isTabContainer(el: PaneerDOM): el is TabContainer {
+  const e = el as TabContainer;
+  return e && e.removeTab != null && e.addTab != null;
+}
+
+
+interface Sized extends PaneerDOM {
+  sizing: string;
+  resizable: boolean;
+}
+
+function isSized(e: PaneerDOM): e is Sized {
+  const s = (e as Sized);
+  return s.sizing !== undefined && s.resizable != undefined;
+}
+
+interface Directed extends PaneerDOM {
+  direction: "H" | "V";
+  extend(child: Sized, after?: PaneerDOM): void;
+  dextend(child: PaneerDOM): void;
+  frSize(): void;
+}
+
+function isDirected(e: PaneerDOM): e is Directed {
+  return e && !!(e as Directed).direction && !!(e as Directed).extend;
+}
+
 // Root node
 export class Pane extends PaneerDOM implements Directed {
   direction: "V" | "H";
@@ -19,28 +73,61 @@ export class Pane extends PaneerDOM implements Directed {
     }
   }
 
-  addPane(direction: "V" | "H", sizing: string): PaneNode {
+  extend(child: Sized, after?: PaneerDOM) {
     // adds a pane and returns it
-    if (this.descendent(isAny)) {
+    const needsHandle = !!this.descendent(isAny);
+    if (needsHandle && !after) {
       // Add resize handle
       this.append(new PaneHandle());
     }
-    const node = new PaneNode(direction, sizing);
-    this.append(node);
+
+    if (after) {
+      after.insert(child);
+    } else {
+      this.append(child);
+    }
+
+    if (needsHandle && after) {
+      // Add resize handle
+      after.insert(new PaneHandle());
+    }
     this.resize();
+  }
+
+  dextend(child: PaneerDOM) {
+    const next = child.next(isSized);
+    const prev = child.previous(isSized);
+
+    if (next) {
+      this.remove(next);
+    } else if (prev) {
+      this.remove(prev);
+    }
+
+    this.remove(child);
+    this.resize();
+  }
+
+  addPane(direction: "V" | "H", sizing: string): PaneNode {
+    const node = new PaneNode(direction, sizing);
+    this.extend(node);
     return node;
   }
 
   addLeaf(sizing: string): PaneLeaf {
-    // adds a pane and returns it
-    if (this.descendent(isAny)) {
-      // Add resize handle
-      this.append(new PaneHandle());
-    }
     const node = new PaneLeaf(sizing);
-    this.append(node);
-    this.resize();
+    this.extend(node);
     return node;
+  }
+
+  frSize() {
+    [...this.descendents(isSized, 1)].forEach(child => {
+      const rect = child.element.getBoundingClientRect();
+      const pixelSize = this.direction == "H" ? rect.width : rect.height;
+      if (child.resizable) {
+        child.sizing = `${pixelSize}fr`;
+      }
+    })
   }
 
   resize() {
@@ -108,26 +195,12 @@ class PaneNode extends Pane implements Sized {
   }
 }
 
-// PaneLeaf actually holds tabs...
-class PaneLeaf extends PaneerDOM implements Sized {
+// TODO Paneleaf has most of the logic maybe take this out to another class
+class PaneLeaf extends PaneerDOM implements Sized, TabContainer {
   sizing: string;
   resizable = true;
   header: Header;
   content: PaneerDOM;
-
-  get tabContent(): PaneerDOM | undefined {
-    return this.content.descendent(isAny);
-  }
-
-  set tabContent(dom: PaneerDOM | undefined) {
-    const content = this.content.descendent(isAny);
-    if (content) {
-      this.content.remove(content);
-    }
-    if (dom) {
-      this.content.append(dom);
-    }
-  }
 
   constructor(sizing: string) {
     super();
@@ -181,6 +254,20 @@ class PaneLeaf extends PaneerDOM implements Sized {
     })
   }
 
+  get tabContent(): PaneerDOM | undefined {
+    return this.content.descendent(isAny);
+  }
+
+  set tabContent(dom: PaneerDOM | undefined) {
+    const content = this.content.descendent(isAny);
+    if (content) {
+      this.content.remove(content);
+    }
+    if (dom) {
+      this.content.append(dom);
+    }
+  }
+
   addTab(tab: Tab): PaneLeaf {
     this.header.tabContainer.append(tab);
     if (!this.tabContent) {
@@ -212,21 +299,23 @@ class Header extends PaneerDOM {
       backgroundColor: "#333333",
     };
 
+    this.split = this.split.bind(this);
+
     this.tabContainer = new PaneerDOM();
     this.buttons = new ButtonGrid({ aspectRatio: 1, width: "1.4em" });
     this.buttons.add({
       alt: "Horizontal Split", icon: "icons/hsplit.svg", onClick: () => {
+        this.split("H");
       }
     });
     this.buttons.add({
       alt: "Vertical Split", icon: "icons/vsplit.svg", onClick: () => {
+        this.split("V");
       }
     });
     this.buttons.add({
       alt: "Close", icon: "icons/cross.svg", onClick: () => {
-        // TODO
-        // Figure out how to do remove nicely
-        // ALSO SHOULD FIGURE OUT INSERTION WHIlE WERE AT it...
+        this.close();
       }
     });
     this.buttons.style = { minWidth: "4.2em" };
@@ -239,9 +328,42 @@ class Header extends PaneerDOM {
 
     this.tabContainer.style = { display: "flex", flexDirection: "row" };
   }
+
+  split(direction: "H" | "V") {
+    const directedAncestor = this.Ancestor(isDirected);
+    directedAncestor.frSize();
+    const containerAncestor = this.Ancestor(isTabContainer);
+    const bounds = containerAncestor.element.getBoundingClientRect();
+    const splitSize = direction == "H"? `${bounds.width/2}fr` : `${bounds.height/2}fr`; 
+    if (directedAncestor.direction == direction) {
+      directedAncestor.extend(new PaneLeaf(splitSize), containerAncestor);
+      containerAncestor.sizing = splitSize;
+    } else {
+      const node = new PaneNode(direction, containerAncestor.sizing);
+      containerAncestor.replace(node);
+      node.extend(containerAncestor);
+      node.extend(new PaneLeaf(splitSize));
+      containerAncestor.sizing = splitSize;
+      directedAncestor.resize();
+    }
+  }
+
+  close() {
+    let directedAncestor = this.Ancestor(isDirected);
+    const containerAncestor = this.Ancestor(isTabContainer);
+
+    directedAncestor.dextend(containerAncestor);
+    while (!directedAncestor.descendent(isSized)) {
+      const nn = directedAncestor.Ancestor(isDirected);
+      nn.dextend(directedAncestor);
+      directedAncestor = nn;
+    }
+
+    // TODO remove tabs properly
+  }
 }
 
-export class LeafTab extends PaneerDOM {
+export class LeafTab extends PaneerDOM implements Tab {
   pane: PaneerDOM;
   dragState?: DragState;
 
@@ -385,16 +507,7 @@ class PaneHandle extends PaneerDOM implements Sized {
     this.element.addEventListener("mousedown", (e: MouseEvent) => {
       // Convert to pixel sizing.
       const directedAncestor = this.Ancestor(isDirected);
-      [...directedAncestor.descendents(isSized, 1)].forEach(child => {
-        const rect = child.element.getBoundingClientRect();
-        const pixelSize = directedAncestor.direction == "H" ? rect.width : rect.height;
-        if (child.resizable) {
-          child.sizing = `${pixelSize}fr`;
-        }
-      })
-
-      directedAncestor.resize();
-
+      directedAncestor.frSize();
       this.dragState = {
         state: "dragging",
         startPoint: new paper.Point(e.screenX, e.screenY),
@@ -457,7 +570,7 @@ class PaneHandle extends PaneerDOM implements Sized {
   }
 }
 
-export class DragBoss extends PaneerDOM {
+export class DragBoss extends PaneerDOM implements DragCoordinator {
   dragPreview: PaneerDOM;
   rest: PaneerDOM;
 
@@ -486,54 +599,4 @@ export class DragBoss extends PaneerDOM {
 
     this.append(this.dragPreview);
   }
-}
-
-interface DragCoordinator extends PaneerDOM {
-  // IS THERE A WAY TO RESTRICT TO ONE CHILD?
-  // DO WE LET elements put their own preview on?
-  dragPreview: PaneerDOM;
-  dropTarget?: PaneerDOM;
-}
-
-function isDragCoordinator(el: PaneerDOM): el is DragCoordinator {
-  const test = el as DragCoordinator;
-  return test && test.dragPreview ? true : false;
-}
-
-interface Tab extends PaneerDOM {
-  pane: PaneerDOM;
-}
-
-function isTab(el: PaneerDOM): el is Tab {
-  return el && !!(el as Tab).pane;
-}
-
-interface TabContainer extends PaneerDOM {
-  tabContent?: PaneerDOM;
-  removeTab(tab: LeafTab): void;
-  addTab(tab: LeafTab): void;
-}
-
-function isTabContainer(el: PaneerDOM): el is TabContainer {
-  const e = el as TabContainer;
-  return e && e.removeTab != null && e.addTab != null;
-}
-
-
-interface Sized extends PaneerDOM {
-  sizing: string;
-  resizable: boolean;
-}
-
-function isSized(e: PaneerDOM): e is Sized {
-  const s = (e as Sized);
-  return s.sizing !== undefined && s.resizable != undefined;
-}
-
-interface Directed extends PaneerDOM {
-  direction: "H" | "V";
-}
-
-function isDirected(e: PaneerDOM): e is Directed {
-  return e && !!(e as Directed).direction;
 }

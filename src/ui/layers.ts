@@ -1,11 +1,12 @@
 import * as paper from "paper";
-import { div, text, button, img } from "./utils/dom";
 import { words } from "./utils/words";
 import { PaneerDOM } from "./paneer/paneerdom";
 import { ButtonGrid } from "./paneer/buttongrid";
+import { Serializable } from "./paneer/pane";
+import { Viewport } from "./viewport";
 
 const depthColors = ["Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
-export class LayerControls extends PaneerDOM {
+export class LayerControls extends PaneerDOM implements Serializable {
   label = "Layers";
 
   buttons: ButtonGrid;
@@ -13,7 +14,7 @@ export class LayerControls extends PaneerDOM {
 
   labels: Map<number, Label>;
 
-  constructor() {
+  constructor(viewport: Viewport) {
     super();
 
     this.buttons = new ButtonGrid({ aspectRatio: 1, width: "2em" });
@@ -41,6 +42,8 @@ export class LayerControls extends PaneerDOM {
     this.refreshLayers = this.refreshLayers.bind(this);
 
     this.refreshLayers();
+    
+    viewport.view.on("updated", this.refreshLayers);
   }
 
   moveForward() {
@@ -123,6 +126,17 @@ export class LayerControls extends PaneerDOM {
 
   resize() {
     super.resize();
+  }
+
+  serialize() {
+    return {
+      type: "layers"
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): LayerControls {
+    //@ts-ignore
+    return new LayerControls(window.ctx.viewport);
   }
 }
 

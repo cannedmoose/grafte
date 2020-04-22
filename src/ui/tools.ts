@@ -24,7 +24,7 @@ export class ToolBelt extends PaneerDOM {
     this.grid.add(this.toolOptions(pointTool(history, keyboard), "Point", "icons/point.png"));
     this.grid.add(this.toolOptions(penTool(history, keyboard), "Pen", "icons/pen.png"));
     this.grid.add(this.toolOptions(pencilTool(history, keyboard), "Pencil", "icons/pencil.png"));
-    this.grid.add(this.toolOptions(elipseTool(history, keyboard), "Elipse","icons/elipse.png"));
+    this.grid.add(this.toolOptions(elipseTool(history, keyboard), "Elipse", "icons/elipse.png"));
     this.grid.add(this.toolOptions(rectangleTool(history, keyboard), "Rectangle", "icons/rectangle.png"));
 
     this.append(new ToolOptions(history));
@@ -41,6 +41,19 @@ export class ToolBelt extends PaneerDOM {
 
   refresh() {
     //this.tools.forEach(tool => tool.refresh());
+  }
+
+  serialize() {
+    return {
+      type: "toolbelt"
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): ToolBelt {
+    // TODO fix this
+    // @ts-ignore
+    const ctx: any = window.ctx;
+    return new ToolBelt(ctx.history, ctx.keyboard);
   }
 }
 

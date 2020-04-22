@@ -56,8 +56,17 @@ function isDirected(e: PaneerDOM): e is Directed {
   return e && !!(e as Directed).direction && !!(e as Directed).extend;
 }
 
+export interface Serializable extends PaneerDOM {
+  serialize(): { type: string };
+}
+
+export function isSerializable(e: PaneerDOM): e is Serializable {
+  return e && !!(e as Serializable).serialize;
+}
+
 // Root node
-export class Pane extends PaneerDOM implements Directed {
+export class Pane extends PaneerDOM implements Directed, Serializable {
+  // TODO(P2) handle all children being deleted...
   direction: "V" | "H";
 
   constructor(direction: "V" | "H") {
@@ -179,9 +188,25 @@ export class Pane extends PaneerDOM implements Directed {
     )
     super.resize();
   }
+
+  serialize() {
+    return {
+      type: "pane",
+      direction: this.direction,
+      children: [...this.descendents(isSerializable, 1)].map(child => child.serialize())
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Pane {
+    const node = new Pane(raw.direction);
+    raw.children
+      .map(deserializer)
+      .forEach((pane: Sized) => node.extend(pane));
+    return node;
+  }
 }
 
-class PaneNode extends Pane implements Sized {
+export class PaneNode extends Pane implements Sized {
   // 
   // height = width / aspect
   // 
@@ -193,10 +218,26 @@ class PaneNode extends Pane implements Sized {
     super(direction);
     this.sizing = sizing;
   }
+
+  serialize() {
+    return {
+      ...super.serialize(),
+      type: "node",
+      sizing: this.sizing
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): PaneNode {
+    const node = new PaneNode(raw.direction, raw.sizing);
+    raw.children
+      .map(deserializer)
+      .forEach((pane: Sized) => node.extend(pane));
+    return node;
+  }
 }
 
 // TODO Paneleaf has most of the logic maybe take this out to another class
-class PaneLeaf extends PaneerDOM implements Sized, TabContainer {
+export class PaneLeaf extends PaneerDOM implements Sized, TabContainer, Serializable {
   sizing: string;
   resizable = true;
   header: Header;
@@ -283,6 +324,29 @@ class PaneLeaf extends PaneerDOM implements Sized, TabContainer {
       this.tabContent = this.descendent(isTab)?.pane;
     }
   }
+
+  serialize() {
+    const panes =
+      [...this.header.tabContainer.descendents(isTab)]
+        .map(tab => tab.pane)
+        .filter(isSerializable)
+        .map(s => s.serialize());
+    return {
+      type: "leaf",
+      sizing: this.sizing,
+      panes
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): PaneLeaf {
+    const leaf = new PaneLeaf(raw.sizing);
+    raw.panes
+      .map(deserializer)
+      .forEach((pane: PaneerDOM) => {
+        leaf.addTab(new LeafTab(pane))
+      });
+    return leaf;
+  }
 }
 
 class Header extends PaneerDOM {
@@ -334,7 +398,7 @@ class Header extends PaneerDOM {
     directedAncestor.frSize();
     const containerAncestor = this.Ancestor(isTabContainer);
     const bounds = containerAncestor.element.getBoundingClientRect();
-    const splitSize = direction == "H"? `${bounds.width/2}fr` : `${bounds.height/2}fr`; 
+    const splitSize = direction == "H" ? `${bounds.width / 2}fr` : `${bounds.height / 2}fr`;
     if (directedAncestor.direction == direction) {
       directedAncestor.extend(new PaneLeaf(splitSize), containerAncestor);
       containerAncestor.sizing = splitSize;
@@ -358,8 +422,6 @@ class Header extends PaneerDOM {
       nn.dextend(directedAncestor);
       directedAncestor = nn;
     }
-
-    // TODO remove tabs properly
   }
 }
 

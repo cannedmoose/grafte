@@ -59,6 +59,19 @@ export class Save extends PaneerDOM {
         break;
     }
   }
+
+  serialize() {
+    return {
+      type: "save"
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Save {
+    // TODO fix this
+    // @ts-ignore
+    const ctx:any = window.ctx;
+    return new Save(ctx.viewport.page);
+  }
 }
 
 function downloadBlob(blob: any, filename: string) {
@@ -159,5 +172,18 @@ export class Load extends PaneerDOM {
       paper.project.importJSON(json);
       paper.project.deselectAll();
     }
+  }
+
+  serialize() {
+    return {
+      type: "load"
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Load {
+    // TODO fix this
+    // @ts-ignore
+    const ctx:any = window.ctx;
+    return new Load(ctx.viewport.page);
   }
 }

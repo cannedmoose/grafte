@@ -7,10 +7,13 @@ import "codemirror/addon/hint/show-hint.css";
 import "codemirror/addon/hint/javascript-hint.js";
 import "codemirror/theme/neat.css";
 import "codemirror/mode/javascript/javascript.js";
-import { div, textArea } from "./utils/dom";
+import { textArea } from "./utils/dom";
 import { PaneerDOM } from "./paneer/paneerdom";
+import { Serializable } from "./paneer/pane";
+import { Keyboard } from "./keyboard";
+import { GrafteHistory } from "../tools/history";
 
-export class Editor extends PaneerDOM {
+export class Editor extends PaneerDOM implements Serializable {
   label = "Code";
   public editor: CodeMirror.Editor;
   editorDiv: HTMLElement;
@@ -28,12 +31,18 @@ export class Editor extends PaneerDOM {
     //inputStyle: "contenteditable"
   };
 
-  constructor(sizing: string) {
+  constructor(keyboard: Keyboard, history: GrafteHistory) {
     super();
     this.editor = CodeMirror(this.element, this.config);
     this.style.fontSize = "2em";
     this.style.height = "100%";
     this.editorDiv = this.element.firstElementChild as HTMLElement;
+
+    keyboard.bind("ctrl+enter", { global: true }, (e: KeyboardEvent) => {
+      e.preventDefault();
+      this.execute();
+      history.commit();
+    });
 
     this.editor.setSize("100%","100%");
     this.editor.refresh();
@@ -52,10 +61,25 @@ export class Editor extends PaneerDOM {
       console.log(e.name, e.message);
     }
   }
+
+  serialize() {
+    return {
+      type: "editor",
+      value: this.editor.getValue(),
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Editor {
+    //@ts-ignore
+    const ctx: any = window.ctx;
+    const node = new Editor(ctx.keyboard, ctx.history);
+    node.editor.setValue(raw.value);
+    return node;
+  }
 }
 
 
-export class DOMConsole extends PaneerDOM {
+export class DOMConsole extends PaneerDOM implements Serializable {
   label = "Console";
 
   constructor() {
@@ -82,5 +106,15 @@ export class DOMConsole extends PaneerDOM {
         el.scrollTop = el.scrollHeight;
       },
     }
+  }
+
+  serialize() {
+    return {
+      type: "domconsole"
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): DOMConsole {
+    return new DOMConsole();
   }
 }

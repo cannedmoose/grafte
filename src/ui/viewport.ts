@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { canvas, div } from "./utils/dom";
+import { canvas } from "./utils/dom";
 import { PaneerDOM } from "./paneer/paneerdom";
 
 export class Viewport extends PaneerDOM {
@@ -174,6 +174,18 @@ export class Viewport extends PaneerDOM {
     let newMouse = this.view.viewToProject(mousePoint);
     let newCenter = this.view.center.add(oldMouse.subtract(newMouse));
     this.view.center = newCenter;
+  }
+
+  serialize() {
+    return {
+      type: "viewport"
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Viewport {
+    // @ts-ignore
+    const ctx:any = window.ctx;
+    return ctx.viewport;
   }
 
 }

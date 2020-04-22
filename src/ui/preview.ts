@@ -2,8 +2,9 @@ import * as paper from "paper";
 import { canvas } from "./utils/dom";
 import { Viewport } from "./viewport";
 import { PaneerDOM } from "./paneer/paneerdom";
+import { Serializable } from "./paneer/pane";
 
-export class Preview extends PaneerDOM{
+export class Preview extends PaneerDOM implements Serializable {
   label = "Preview";
   canvas: HTMLCanvasElement;
   view: paper.CanvasView;
@@ -103,5 +104,18 @@ export class Preview extends PaneerDOM{
       this.viewport.view.center = e.point;
     }
     e.stop();
+  }
+
+  serialize() {
+    return {
+      type: "preview"
+    };
+  }
+
+  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Preview {
+    // TODO fix this
+    // @ts-ignore
+    const ctx:any = window.ctx;
+    return new Preview(paper.project, ctx.viewport);
   }
 }

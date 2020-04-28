@@ -9,6 +9,7 @@ export class Preview extends PaneerDOM implements Serializable {
   canvas: HTMLCanvasElement;
   view: paper.CanvasView;
   viewport: Viewport;
+  resizing: boolean;
 
 
   constructor(project: paper.Project, viewport: Viewport) {
@@ -60,40 +61,47 @@ export class Preview extends PaneerDOM implements Serializable {
   }
 
   resize() {
-    window.requestAnimationFrame(() => {
-      var previewRect = this.element.getBoundingClientRect();
-      if (!previewRect) return;
-      this.view.viewSize = new paper.Size(previewRect.width, previewRect.height);
+    if (!this.resizing) {
+      window.requestAnimationFrame(this.doResize.bind(this));
+      this.resizing = true;
+    }
+  }
 
-      // Zoom out to show document
-      const minX = this.viewport.page.bounds.topLeft.x;
-      const minY = this.viewport.page.bounds.topLeft.y;
-      const maxX = this.viewport.page.bounds.bottomRight.x;
-      const maxY = this.viewport.page.bounds.bottomRight.y;
+  doResize() {
+    var previewRect = this.element.getBoundingClientRect();
+    if (!previewRect) return;
+    this.view.viewSize = new paper.Size(previewRect.width, previewRect.height);
 
-      // Always center on the document
-      this.view.center = new paper.Point(
-        minX + (maxX - minX) / 2,
-        minY + (maxY - minY) / 2
-      );
-      var scaleFactorX = previewRect.width / (2 *
-        Math.max(
-          this.view.center.x - minX,
-          maxX - this.view.center.x,
-        ) *
-        1.2);
-      var scaleFactorY = previewRect.height / (2 *
-        Math.max(
-          this.view.center.y - minY,
-          maxY - this.view.center.y
-        ) *
-        1.2);
-      const scale = Math.min(scaleFactorX, scaleFactorY);
+    // Zoom out to show document
+    const minX = this.viewport.page.bounds.topLeft.x;
+    const minY = this.viewport.page.bounds.topLeft.y;
+    const maxX = this.viewport.page.bounds.bottomRight.x;
+    const maxY = this.viewport.page.bounds.bottomRight.y;
 
-      this.view.scaling = new paper.Point(
-        scale, scale
-      );
-    });
+    // Always center on the document
+    this.view.center = new paper.Point(
+      minX + (maxX - minX) / 2,
+      minY + (maxY - minY) / 2
+    );
+    var scaleFactorX = previewRect.width / (2 *
+      Math.max(
+        this.view.center.x - minX,
+        maxX - this.view.center.x,
+      ) *
+      1.2);
+    var scaleFactorY = previewRect.height / (2 *
+      Math.max(
+        this.view.center.y - minY,
+        maxY - this.view.center.y
+      ) *
+      1.2);
+    const scale = Math.min(scaleFactorX, scaleFactorY);
+
+    this.view.scaling = new paper.Point(
+      scale, scale
+    );
+
+    this.resizing = false;
   }
 
   moveviewport(e: paper.MouseEvent) {
@@ -115,7 +123,7 @@ export class Preview extends PaneerDOM implements Serializable {
   static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Preview {
     // TODO fix this
     // @ts-ignore
-    const ctx:any = window.ctx;
+    const ctx: any = window.ctx;
     return new Preview(paper.project, ctx.viewport);
   }
 }

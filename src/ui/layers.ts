@@ -4,6 +4,7 @@ import { PaneerDOM } from "./paneer/paneerdom";
 import { ButtonGrid } from "./paneer/buttongrid";
 import { Serializable } from "./paneer/pane";
 import { Viewport } from "./viewport";
+import { Change, ChangeFlag } from "../changeflags";
 
 const depthColors = ["Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
 export class LayerControls extends PaneerDOM implements Serializable {
@@ -13,15 +14,17 @@ export class LayerControls extends PaneerDOM implements Serializable {
   layers: PaneerDOM;
 
   labels: Map<number, Label>;
+  refreshing: boolean;
 
   constructor(viewport: Viewport) {
     super();
+
+    this.refreshing = false;
 
     this.buttons = new ButtonGrid({ aspectRatio: 1, width: "2em" });
     this.buttons.add({
       alt: "Add Layer", icon: "icons/plus.svg", onClick: () => {
         new paper.Layer();
-        this.refreshLayers();
         // NOTE adding an empty layer doesn't cause view to be updated so we need to do this
       }
     });
@@ -41,9 +44,18 @@ export class LayerControls extends PaneerDOM implements Serializable {
 
     this.refreshLayers = this.refreshLayers.bind(this);
 
-    this.refreshLayers();
-    
-    viewport.view.on("updated", this.refreshLayers);
+    viewport.project.on("changed", (e: any) => {
+      if (e.flags && e.flags & (ChangeFlag.CHILDREN | ChangeFlag.SELECTION)) {
+        this.requestRefresh();
+      }
+    });
+  }
+
+  requestRefresh() {
+    if (!this.refreshing) {
+      window.requestAnimationFrame(this.refreshLayers);
+      this.refreshing = true;
+    }
   }
 
   moveForward() {
@@ -79,7 +91,8 @@ export class LayerControls extends PaneerDOM implements Serializable {
     });
   }
 
-  refreshLayers() {
+  refreshLayers(d: number) {
+    console.log("REFRESH Layers", d);
     const seenIds: Set<number> = new Set();
     const project = paper.project;
 
@@ -122,6 +135,8 @@ export class LayerControls extends PaneerDOM implements Serializable {
         this.labels.delete(key);
       }
     });
+
+    this.refreshing = false;
   }
 
   resize() {
@@ -178,7 +193,6 @@ class Label extends PaneerDOM {
       if (item.className == "Layer") {
         const layer = item as paper.Layer;
         layer.activate();
-        this.layers.refreshLayers();
       } else {
         if (item.selected && event.shiftKey) {
           item.selected = false;
@@ -202,7 +216,7 @@ class Label extends PaneerDOM {
     this.clicker = new PaneerDOM();
     this.clicker.element.addEventListener("click", () => {
       this.open = !this.open;
-      this.layers.refreshLayers();
+      this.layers.requestRefresh();
     });
     this.clicker.style.flex = "0";
     this.clicker.style.userSelect = "none";

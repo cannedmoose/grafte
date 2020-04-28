@@ -14,6 +14,8 @@ export class Viewport extends PaneerDOM {
   project: paper.Project;
   viewport: paper.View;
 
+  resizing: boolean;
+
 
   constructor() {
     super();
@@ -59,7 +61,10 @@ export class Viewport extends PaneerDOM {
 
     this.view.on("updated", this.onViewUpdated.bind(this));
     window.addEventListener("wheel", this.onScroll.bind(this));
+    // TODO remove this?
     window.onresize = () => this.resize();
+
+    this.resizing = false;
   }
 
   onViewUpdated() {
@@ -78,24 +83,30 @@ export class Viewport extends PaneerDOM {
   }
 
   resize() {
-    window.requestAnimationFrame(() => {
-      var viewportRect = this.view.element.parentElement?.getBoundingClientRect();
-      if (!viewportRect) return;
-      this.view.viewSize = new paper.Size(viewportRect.width, viewportRect.height);
+    if (!this.resizing) {
+      window.requestAnimationFrame(this.doResize.bind(this));
+      this.resizing = true;
+    }
+  }
 
-      const ctx = this.backgroundCanvas.getContext("2d");
-      if (!ctx) return;
-      const bgPattern = this.makeBgPattern(ctx);
+  doResize() {
+    let viewportRect = this.view.element.parentElement?.getBoundingClientRect();
+    if (!viewportRect) return;
+    this.view.viewSize = new paper.Size(viewportRect.width, viewportRect.height);
 
-      this.backgroundCanvas.width = viewportRect.width;
-      this.backgroundCanvas.height = viewportRect.height;
+    const ctx = this.backgroundCanvas.getContext("2d");
+    if (!ctx) return;
+    const bgPattern = this.makeBgPattern(ctx);
 
-      if (!ctx) {
-        throw "No background context";
-      }
-      ctx.fillStyle = bgPattern || "white";
-      ctx.fillRect(0, 0, viewportRect.width, viewportRect.height);
-    });
+    this.backgroundCanvas.width = viewportRect.width;
+    this.backgroundCanvas.height = viewportRect.height;
+
+    if (!ctx) {
+      throw "No background context";
+    }
+    ctx.fillStyle = bgPattern || "white";
+    ctx.fillRect(0, 0, viewportRect.width, viewportRect.height);
+    this.resizing = false;
   }
 
   makeBgPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
@@ -144,7 +155,7 @@ export class Viewport extends PaneerDOM {
   }
 
   onScroll(e: WheelEvent) {
-    if(e.target != this.mainCanvas) {
+    if (e.target != this.mainCanvas) {
       return;
     }
     e.stopPropagation();
@@ -184,7 +195,7 @@ export class Viewport extends PaneerDOM {
 
   static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Viewport {
     // @ts-ignore
-    const ctx:any = window.ctx;
+    const ctx: any = window.ctx;
     return ctx.viewport;
   }
 

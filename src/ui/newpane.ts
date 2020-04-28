@@ -45,7 +45,7 @@ export class NewPane extends PaneerDOM {
         pane = new LayerControls(ctx.viewport);
         break;
       case "preview":
-        pane = new Preview(ctx.viewport.view.project, ctx.viewport);
+        pane = new Preview(ctx.viewport.project, ctx.viewport);
         break;
       case "save":
         pane = new Save(ctx.viewport.page);

@@ -84,7 +84,7 @@ export function checkbox(
 }
 
 export function slider(
-  attribs: { [key: string]: string },
+  attribs: { [key: string]: string | number },
   events: { [key: string]: (event: any) => void } = {}
 ): HTMLInputElement {
   const el = document.createElement("input");
@@ -105,12 +105,12 @@ export function color(
 
 function elHelper(
   el: HTMLElement,
-  attribs: { [key: string]: string },
+  attribs: { [key: string]: string | number },
   children: Node[],
   events: { [key: string]: (event: any) => void } = {}
 ): void {
   Object.entries(attribs).forEach(([key, value]) => {
-    if (value) el.setAttribute(key, value);
+    if (value) el.setAttribute(key, String(value));
   });
 
   Object.entries(events).forEach(([key, value]) =>

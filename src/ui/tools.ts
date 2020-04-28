@@ -10,6 +10,7 @@ import { rectangleTool } from "../tools/rectangle";
 import { Keyboard } from "./keyboard";
 import { ButtonGrid } from "./paneer/buttongrid";
 import { PaneerDOM } from "./paneer/paneerdom";
+import { Slider } from "./components/slider";
 
 export class ToolBelt extends PaneerDOM {
   label = "Tools";
@@ -60,19 +61,21 @@ export class ToolBelt extends PaneerDOM {
 export class ToolOptions extends PaneerDOM {
   constructor(history: GrafteHistory) {
     super();
-    this.element.append(slider(
-      { value: "1", min: "0", max: "50", step: ".01" },
-      {
-        input: event => {
-          paper.project.currentStyle.strokeWidth = event.target.value;
-          paper.project.selectedItems.forEach(child => {
-            child.strokeWidth = paper.project.currentStyle.strokeWidth;
-          });
-          paper.project.view.requestUpdate();
-        },
-        change: event => history.commit()
+
+    this.append(new Slider({
+      label: "Stroke Width",
+      min: 0,
+      max: 50,
+      value: 1,
+      step: .01,
+      onChange: (value) => {
+        paper.project.currentStyle.strokeWidth = value;
+        paper.project.selectedItems.forEach(child => {
+          child.strokeWidth = paper.project.currentStyle.strokeWidth;
+        });
+        paper.project.view.requestUpdate();
       }
-    ));
+    }));
     this.element.append(color(
       { value: "#000000" },
       {

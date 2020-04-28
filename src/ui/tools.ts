@@ -1,5 +1,4 @@
 import * as paper from "paper";
-import { div, slider, color, button, text, queryOrThrow, img } from "./utils/dom";
 import { GrafteHistory } from "../tools/history";
 import { selectTool } from "../tools/select";
 import { pointTool } from "../tools/points";
@@ -11,13 +10,14 @@ import { Keyboard } from "./keyboard";
 import { ButtonGrid } from "./paneer/buttongrid";
 import { PaneerDOM } from "./paneer/paneerdom";
 import { Slider } from "./components/slider";
+import { ColorPicker } from "./components/colorpicker";
 
 export class ToolBelt extends PaneerDOM {
   label = "Tools";
   grid: ButtonGrid;
   constructor(history: GrafteHistory, keyboard: Keyboard) {
     super();
-    this.grid = new ButtonGrid({ aspectRatio: 1, width: "7vmin" });
+    this.grid = new ButtonGrid({ aspectRatio: 1, width: "5vmin" });
     this.append(this.grid);
 
     // TODO work out how to center grid in available space.
@@ -62,6 +62,8 @@ export class ToolOptions extends PaneerDOM {
   constructor(history: GrafteHistory) {
     super();
 
+    this.style.margin = "0em .5em";
+
     this.append(new Slider({
       label: "Stroke Width",
       min: 0,
@@ -76,33 +78,28 @@ export class ToolOptions extends PaneerDOM {
         paper.project.view.requestUpdate();
       }
     }));
-    this.element.append(color(
-      { value: "#000000" },
-      {
-        input: event => {
-          paper.project.currentStyle.strokeColor = event.target.value;
-          paper.project.selectedItems.forEach(child => {
-            child.strokeColor = paper.project.currentStyle.strokeColor;
-          });
-          paper.project.view.requestUpdate();
-        },
-        change: event => history.commit()
-      }
-    ));
+    this.append(new ColorPicker({
+      value: paper.project.currentStyle.strokeColor || undefined,
+      label: "Stroke",
+      onChange: (val: paper.Color) => {
+        paper.project.currentStyle.strokeColor = val;
+        paper.project.selectedItems.forEach(child => {
+          child.strokeColor = paper.project.currentStyle.strokeColor;
+        });
+        paper.project.view.requestUpdate();
+      },
+    }));
 
-    this.element.append(
-      color(
-        { value: "#FFFFFF" },
-        {
-          input: event => {
-            paper.project.currentStyle.fillColor = event.target.value;
-            paper.project.selectedItems.forEach(child => {
-              child.fillColor = paper.project.currentStyle.fillColor;
-            });
-            paper.project.view.requestUpdate();
-          },
-          change: event => history.commit()
-        }
-      ));
+    this.append(new ColorPicker({
+      value: paper.project.currentStyle.strokeColor || undefined,
+      label: "Fill",
+      onChange: (val: paper.Color) => {
+        paper.project.currentStyle.fillColor = val;
+        paper.project.selectedItems.forEach(child => {
+          child.fillColor = paper.project.currentStyle.fillColor;
+        });
+        paper.project.view.requestUpdate();
+      },
+    }));
   }
 }

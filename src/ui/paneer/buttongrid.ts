@@ -21,7 +21,7 @@ class Button extends PaneerDOM {
     i.style.height = "100%";
     const el = button({ alt: b.alt }, [i], { click: b.onClick });
     el.style.padding = "0px";
-    el.style.border = "1px solid black";
+    el.style.borderRadius = "5px";
     super(el);
   }
 }

@@ -65,11 +65,6 @@ export function button(
 ): HTMLButtonElement {
   const el = document.createElement("button");
   elHelper(el, attribs, children, events);
-  // TODO(P3) figure out if styling belongs somewhere else
-  //el.style.width = "100%";
-  //el.style.height = "100%";
-  //el.style.padding = "0px";
-  //el.style.border = "none";
   return el;
 }
 
@@ -89,6 +84,25 @@ export function slider(
 ): HTMLInputElement {
   const el = document.createElement("input");
   el.setAttribute("type", "range");
+  elHelper(el, attribs, [], events);
+  return el;
+}
+
+export function number(
+  attribs: { [key: string]: string | number },
+  events: { [key: string]: (event: any) => void } = {}
+): HTMLInputElement {
+  const el = document.createElement("input");
+  el.setAttribute("type", "number");
+  elHelper(el, attribs, [], events);
+  return el;
+}
+
+export function textInput(
+  attribs: { [key: string]: string | number },
+  events: { [key: string]: (event: any) => void } = {}
+): HTMLInputElement {
+  const el = document.createElement("input");
   elHelper(el, attribs, [], events);
   return el;
 }

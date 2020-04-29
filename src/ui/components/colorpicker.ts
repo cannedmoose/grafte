@@ -2,6 +2,7 @@ import * as paper from "paper";
 import { PaneerDOM, isAny } from "../paneer/paneerdom";
 import { slider, text, div, textInput } from "../utils/dom";
 import { ToolOptions } from "../tools";
+import { PaneerAppend } from "../paneer/newPaneer";
 
 export interface Palete {
   colors: paper.Color[];
@@ -17,16 +18,15 @@ export interface ColorPickerOptions {
 // TODO add number input when wide enough...
 
 export class ColorPicker extends PaneerDOM {
-  lab: HTMLDivElement;
-  picker: HTMLDivElement;
+  picker: HTMLInputElement;
   textual: HTMLInputElement;
 
-  value: paper.Color;
+  _value: paper.Color;
 
   constructor(options: ColorPickerOptions) {
     super();
 
-    this.value = options.value === undefined ? paper.Color.random() : options.value;
+    this._value = options.value === undefined ? paper.Color.random() : options.value.clone();
 
     this.style = {
       display: "flex",
@@ -38,29 +38,50 @@ export class ColorPicker extends PaneerDOM {
       marginBottom: ".5em"
     };
 
-    this.lab = div({}, [text(options.label || "")]);
-    this.lab.style.height = "min-content";
+    PaneerAppend(this.element)/*html*/`
+    <div ${{ height: "min-conent" }}>
+      ${options.label || ""}
+    </div>
+    <div ${{ flexGrow: "100" }}>
+    </div>
+    <div ${{ display: "flex", flexDirection: "row" }}>
+      <input
+        type="color"
+        ${{padding: "0px",
+        width: "2em",
+        minWidth: "2em",
+        height: "2em",
+        minHeight: "2em", margin: ".1em"}}
+        ${el => {
+        this.picker = el as HTMLInputElement;
+        el.addEventListener("input", () => {
+          this._value.set(this.picker.value);
+          this.textual.value = this.picker.value;
+        })
+      }} />
+      <input 
+        type="text"value="${this.value.toCSS(true)}"
+        ${{
+        width: "6em",
+        minWidth: "6em",
+        border: "none",
+        borderRadius: ".3em",
+        backgroundColor: "#AAAAAA",
+        paddingLeft: ".5em",
+        marginLeft: ".5em"
+      }}
+      ${el => {
+        this.textual = el as HTMLInputElement;
+        el.addEventListener("input", () => {
+          this._value.set(this.textual.value);
+          this.picker.value = this.textual.value;
+        })
+      }}/>
 
-    this.textual = textInput({}, {
-      input: () => {
-        const c = new paper.Color(this.textual.value);
-        if (c) {
-          this.value = c;
-          this.picker.Descendent(isAny).style.backgroundColor= this.value.toCSS(true);
-        }
-      }
-    });
-    this.textual.style.width="6em";
-    this.textual.style.minWidth="6em";
-    this.textual.style.border = "none";
-    this.textual.style.borderRadius = ".3em";
-    this.textual.style.backgroundColor = "#AAAAAA";
-    this.textual.style.paddingLeft = ".5em";
-    this.textual.style.marginLeft = ".5em";
-    this.textual.value = this.value.toCSS(true);
+    </div>
+    `
 
-    this.picker = new PaneerDOM();
-    this.picker.style = {
+    /*this.picker.style = {
       width: "2em",
       minWidth: "2em",
       height: "2em",
@@ -71,23 +92,16 @@ export class ColorPicker extends PaneerDOM {
       margin: ".1em"
     }
     this.picker.element.addEventListener("click", () => alert("PICK"));
+    */
+  }
 
-    this.picker.append(new PaneerDOM());
-    this.picker.Descendent(isAny).style = {
-      backgroundColor: this.value.toCSS(true),
-      width: "100%",
-      height: "100%"
-    };
+  get value(): paper.Color {
+    return this._value;
+  }
 
-    const spacer = div({}, [])
-    spacer.style.flexGrow = "100";
-
-    const container = div({}, [this.picker.element, this.textual]);
-    container.style.display = "flex";
-    container.style.flexDirection = "row";
-
-    this.element.append(this.lab);
-    this.element.append(spacer);
-    this.element.append(container);
+  set value(newValue: paper.Color) {
+    this._value = newValue;
+    this.picker.value = newValue.toCSS(true);
+    this.textual.value = newValue.toCSS(true);
   }
 }

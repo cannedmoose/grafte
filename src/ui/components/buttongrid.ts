@@ -1,5 +1,5 @@
-import { PaneerDOM } from "./paneerdom";
-import { div, button, img } from "../utils/dom";
+import { PaneerDOM } from "../paneer/paneerdom";
+import { PaneerAppend } from "../paneer/newPaneer";
 
 interface Options {
   aspectRatio: number;
@@ -13,16 +13,20 @@ export interface ButtonOptions {
   onClick: () => void
 }
 
-// TODO need to figure out selection...
+// TODO(P1) FIX THIS
 class Button extends PaneerDOM {
+  button: HTMLElement;
   constructor(b: ButtonOptions) {
-    const i = img({ src: b.icon });
-    i.style.width = "100%";
-    i.style.height = "100%";
-    const el = button({ alt: b.alt }, [i], { click: b.onClick });
-    el.style.padding = "0px";
-    el.style.borderRadius = "5px";
-    super(el);
+    super();
+    PaneerAppend(this.element)/*html*/`
+    <button
+      alt=${b.alt}
+      ${el => { this.button = el }}
+      ${{ padding: "0px", margin: "0px", width: "100%", height: "100%", border: "1px solid black" }}>
+      <img src="${b.icon}" ${{ width: "100%", height: "100%" }}/>
+    </button>
+    `
+    this.button.addEventListener("click", b.onClick)
   }
 }
 
@@ -45,17 +49,12 @@ export class ButtonGrid extends PaneerDOM implements Options {
 
   resize() {
     // Redo based on column/row sizing
-    this.element.style.display = "grid";
-
-    // TODO figure out if we want other width/height
-    //this.element.style.width = "100%";
-    //this.element.style.height = "100%";
+    this.element.style.display = "grid";;
 
     this.element.style.gridTemplateColumns = `repeat(auto-fill, ${this.width})`;
     this.element.style.gridTemplateRows =
       `repeat(auto-fill, calc(${this.width} / ${this.aspectRatio}))`;
 
-    // TODO should resize be called chained (EG always make sure we resize child before parent.)
     super.resize();
   }
 

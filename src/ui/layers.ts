@@ -1,8 +1,8 @@
 import * as paper from "paper";
 import { words } from "./utils/words";
 import { PaneerDOM } from "./paneer/paneerdom";
-import { ButtonGrid } from "./paneer/buttongrid";
-import { Serializable } from "./paneer/pane";
+import { ButtonGrid } from "./components/buttongrid";
+import { Serializable } from "./components/pane";
 import { Viewport } from "./viewport";
 import { Change, ChangeFlag } from "../changeflags";
 

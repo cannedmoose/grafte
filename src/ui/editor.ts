@@ -9,7 +9,7 @@ import "codemirror/theme/neat.css";
 import "codemirror/mode/javascript/javascript.js";
 import { textArea } from "./utils/dom";
 import { PaneerDOM } from "./paneer/paneerdom";
-import { Serializable } from "./paneer/pane";
+import { Serializable } from "./components/pane";
 import { Keyboard } from "./keyboard";
 import { GrafteHistory } from "../tools/history";
 

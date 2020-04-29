@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { PaneerDOM, isAny } from "./paneerdom";
+import { PaneerDOM, isAny } from "../paneer/paneerdom";
 import { ButtonGrid } from "./buttongrid";
 import { NewPane } from "../newpane";
 

@@ -2,7 +2,7 @@ import * as paper from "paper";
 import { canvas } from "./utils/dom";
 import { Viewport } from "./viewport";
 import { PaneerDOM } from "./paneer/paneerdom";
-import { Serializable } from "./paneer/pane";
+import { Serializable } from "./components/pane";
 
 export class Preview extends PaneerDOM implements Serializable {
   label = "Preview";

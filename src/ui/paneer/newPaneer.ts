@@ -1,7 +1,7 @@
 
 
 // TODO accept HTMLElement/PaneerDOM as well :)
-type RefCallback = ((t: HTMLElement) => void) | Partial<CSSStyleDeclaration> | string;
+type RefCallback = ((t: HTMLElement) => void) | Partial<CSSStyleDeclaration> | string | number;
 
 export function WrappedPaneer(strings: TemplateStringsArray, ...params: RefCallback[]): HTMLElement {
   // Note this should maybe be randomized
@@ -14,7 +14,7 @@ export function WrappedPaneer(strings: TemplateStringsArray, ...params: RefCallb
     .reduce((prev: string, current: string, index: number) => {
       const paramIndex = index - 1;
       const param = params[paramIndex]
-      if (typeof param == "string") {
+      if (typeof param == "string" || typeof param == "number") {
         return `${prev}${param}${current}`
       } else {
         const ref = `${REF}${index}`;

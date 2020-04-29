@@ -5,7 +5,7 @@ import { Editor, DOMConsole } from "./editor";
 import { LayerControls } from "./layers";
 import { Preview } from "./preview";
 import { Save, Load } from "./saveload";
-import { isTab, isTabContainer, LeafTab } from "./paneer/pane";
+import { isTab, isTabContainer, LeafTab } from "./components/pane";
 
 export class NewPane extends PaneerDOM {
   label = "New Pane";

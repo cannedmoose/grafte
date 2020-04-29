@@ -7,7 +7,7 @@ import { pencilTool } from "../tools/pencil";
 import { elipseTool } from "../tools/elipse";
 import { rectangleTool } from "../tools/rectangle";
 import { Keyboard } from "./keyboard";
-import { ButtonGrid } from "./paneer/buttongrid";
+import { ButtonGrid } from "./components/buttongrid";
 import { PaneerDOM } from "./paneer/paneerdom";
 import { Slider } from "./components/slider";
 import { ColorPicker } from "./components/colorpicker";

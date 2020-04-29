@@ -8,7 +8,7 @@ import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
 import { Save, Load } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
-import { Pane, DragBoss, LeafTab, PaneNode, PaneLeaf, isSerializable } from "./ui/paneer/pane";
+import { Pane, DragBoss, LeafTab, PaneNode, PaneLeaf, isSerializable } from "./ui/components/pane";
 import { Deserializer } from "./ui/paneer/deserializer";
 
 /**

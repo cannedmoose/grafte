@@ -1,7 +1,5 @@
 import * as paper from "paper";
-import { PaneerDOM, isAny } from "../paneer/paneerdom";
-import { slider, text, div, textInput } from "../utils/dom";
-import { ToolOptions } from "../tools";
+import { PaneerDOM } from "../paneer/paneerdom";
 import { PaneerAppend } from "../paneer/newPaneer";
 
 export interface Palete {
@@ -40,6 +38,7 @@ export class ColorPicker extends PaneerDOM {
       marginBottom: ".5em"
     };
 
+    // TODO figure out formatting
     PaneerAppend(this.element)/*html*/`
     <div ${{ height: "min-conent" }}>
       ${options.label || ""}
@@ -49,11 +48,13 @@ export class ColorPicker extends PaneerDOM {
     <div ${{ display: "flex", flexDirection: "row" }}>
       <input
         type="color"
-        ${{padding: "0px",
+        ${{
+        padding: "0px",
         width: "2em",
         minWidth: "2em",
         height: "2em",
-        minHeight: "2em", margin: ".1em"}}
+        minHeight: "2em", margin: ".1em"
+      }}
         ${el => {
         this.picker = el as HTMLInputElement;
         el.addEventListener("input", () => {

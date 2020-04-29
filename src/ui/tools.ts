@@ -82,6 +82,7 @@ export class ToolOptions extends PaneerDOM {
       value: paper.project.currentStyle.strokeColor || undefined,
       label: "Stroke",
       onChange: (val: paper.Color) => {
+        //console.log(val.toCSS(true));
         paper.project.currentStyle.strokeColor = val;
         paper.project.selectedItems.forEach(child => {
           child.strokeColor = paper.project.currentStyle.strokeColor;

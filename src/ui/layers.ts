@@ -92,7 +92,6 @@ export class LayerControls extends PaneerDOM implements Serializable {
   }
 
   refreshLayers(d: number) {
-    console.log("REFRESH Layers", d);
     const seenIds: Set<number> = new Set();
     const project = paper.project;
 

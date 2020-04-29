@@ -20,6 +20,7 @@ export interface ColorPickerOptions {
 export class ColorPicker extends PaneerDOM {
   picker: HTMLInputElement;
   textual: HTMLInputElement;
+  onChange: (value: paper.Color) => void;
 
   _value: paper.Color;
 
@@ -27,6 +28,7 @@ export class ColorPicker extends PaneerDOM {
     super();
 
     this._value = options.value === undefined ? paper.Color.random() : options.value.clone();
+    this.onChange = options.onChange;
 
     this.style = {
       display: "flex",
@@ -57,9 +59,10 @@ export class ColorPicker extends PaneerDOM {
         el.addEventListener("input", () => {
           this._value.set(this.picker.value);
           this.textual.value = this.picker.value;
+          this.onChange(this.value);
         })
       }} />
-      <input 
+      <input
         type="text"value="${this.value.toCSS(true)}"
         ${{
         width: "6em",
@@ -75,33 +78,22 @@ export class ColorPicker extends PaneerDOM {
         el.addEventListener("input", () => {
           this._value.set(this.textual.value);
           this.picker.value = this.textual.value;
+          this.onChange(this.value);
         })
       }}/>
 
     </div>
     `
-
-    /*this.picker.style = {
-      width: "2em",
-      minWidth: "2em",
-      height: "2em",
-      minHeight: "2em",
-      border: "1px solid black",
-      borderRadius: ".2em",
-      padding: ".1em",
-      margin: ".1em"
-    }
-    this.picker.element.addEventListener("click", () => alert("PICK"));
-    */
   }
 
   get value(): paper.Color {
-    return this._value;
+    return this._value.clone();
   }
 
   set value(newValue: paper.Color) {
     this._value = newValue;
     this.picker.value = newValue.toCSS(true);
     this.textual.value = newValue.toCSS(true);
+    this.onChange(this.value);
   }
 }

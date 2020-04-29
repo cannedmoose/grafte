@@ -18,7 +18,7 @@ export interface ColorPickerOptions {
 
 export class ColorPicker extends PaneerDOM {
   lab: HTMLDivElement;
-  picker: PaneerDOM;
+  picker: HTMLDivElement;
   textual: HTMLInputElement;
 
   value: paper.Color;

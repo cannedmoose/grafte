@@ -18,7 +18,7 @@ export class Keyboard {
     hotkeys.filter = (event: KeyboardEvent) => {
       // Reset scope depending on target.
       var tagName = (event.target as HTMLElement || event.srcElement)?.tagName;
-      if (/^(TEXTAREA)$/.test(tagName)) {
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tagName)) {
         hotkeys.setScope(this.EDITOR_SCOPE);
       } else if (hotkeys.getScope() == this.EDITOR_SCOPE) {
         hotkeys.setScope(this.DEFAULT_SCOPE);

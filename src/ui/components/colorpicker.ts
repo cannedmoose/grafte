@@ -53,7 +53,9 @@ export class ColorPicker extends PaneerDOM {
         width: "2em",
         minWidth: "2em",
         height: "2em",
-        minHeight: "2em", margin: ".1em"
+        minHeight: "2em",
+        margin: ".1em",
+        border: "1px solid black"
       }}
         ${el => {
         this.picker = el as HTMLInputElement;

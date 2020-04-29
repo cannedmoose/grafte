@@ -13,7 +13,7 @@ export interface ButtonOptions {
   onClick: () => void
 }
 
-// TODO(P1) FIX THIS
+// TODO(P1) we need to figure out a way to have button active/inactive...
 class Button extends PaneerDOM {
   button: HTMLElement;
   constructor(b: ButtonOptions) {

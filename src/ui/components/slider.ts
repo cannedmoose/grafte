@@ -40,13 +40,14 @@ export class Slider extends PaneerDOM {
     <div>
       ${options.label || ""}
     </div>
+    <div ${{ flexGrow: "100" }}></div>
     <div ${{display : "flex", flexDirection: "row"}}>
       <input
         type="range"
         min="${this.min}"
         max="${this.max}"
         step="${this.step}"
-        ${{ width: "100%", minWidth: "4em" }}
+        ${{ width: "6em", minWidth: "4em" }}
         ${el => {
           this.slider = el as HTMLInputElement;
         }}/>
@@ -56,7 +57,7 @@ export class Slider extends PaneerDOM {
         max="${this.max}"
         step="${this.step}"
         ${{
-          width: "5em",
+          width: "4.5em",
           border: "none",
           borderRadius: ".3em",
           backgroundColor: "#AAAAAA",

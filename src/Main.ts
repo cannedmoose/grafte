@@ -8,9 +8,10 @@ import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
 import { Save, Load } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
-import { Pane, PaneNode, PaneLeaf, isSerializable } from "./ui/components/pane";
+import { Pane, PaneNode } from "./ui/components/panes/pane";
 import { Deserializer } from "./ui/paneer/deserializer";
-import { Paneer, attach, PaneerAppend } from "./ui/paneer/newPaneer";
+import { attach, PaneerAppend } from "./ui/paneer/newPaneer";
+import { PaneLeaf } from "./ui/components/panes/paneleaf";
 
 /**
  * Important concepts:
@@ -114,27 +115,6 @@ window.onload = function () {
     </div>
   </div>
   `
-
-  /*
-  const panes = new Pane("H");
-  const leftPane = panes.addPane("V", "15%");
-  // Set up preview
-  leftPane.addLeaf("15%").addTab(new LeafTab());
-  leftPane.addLeaf("auto").addTab(new LeafTab(new ToolBelt(history, keyboard)));
-  leftPane.addLeaf("auto");
-
-  const middlePane = panes.addPane("V", "auto");
-  middlePane.addLeaf("5fr").addTab(new LeafTab(viewport));
-  middlePane.addLeaf("2fr")
-    .addTab(new LeafTab(new DOMConsole()))
-    .addTab(new LeafTab(new Editor(keyboard, history)));
-
-  const rightPane = panes.addPane("V", "10%");
-  rightPane.addLeaf("2fr").addTab(new LeafTab(new LayerControls(viewport)));
-  rightPane.addLeaf("1fr")
-    .addTab(new LeafTab(new Save(viewport.page)))
-    .addTab(new LeafTab(new Load(viewport.page)));
-  //}*/
 
   window.addEventListener("beforeunload", (e: Event) => {
     //window.localStorage

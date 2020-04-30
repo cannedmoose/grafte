@@ -1,22 +1,6 @@
 import * as paper from "paper";
-import { v4 as uuidv4 } from 'uuid';
-import { PaneerDOM, isAny } from "../paneer/paneerdom";
-import { ButtonGrid } from "./buttongrid";
-import { NewPane } from "../newpane";
-import { PPaneer, Paneer, attach, style, isPaneer, isAttached, AttachedPaneer, PaneerAppend } from "../paneer/newPaneer";
-
-
-interface DragCoordinator extends PaneerDOM {
-  // IS THERE A WAY TO RESTRICT TO ONE CHILD?
-  // DO WE LET elements put their own preview on?
-  dragPreview: PaneerDOM;
-  dropTarget?: PaneerDOM;
-}
-
-function isDragCoordinator(el: PaneerDOM): el is DragCoordinator {
-  const test = el as DragCoordinator;
-  return test && test.dragPreview ? true : false;
-}
+import { PaneerDOM } from "../../paneer/paneerdom";
+import { PPaneer, Paneer, style, isPaneer, isAttached, AttachedPaneer } from "../../paneer/newPaneer";
 
 export interface NewTab extends PPaneer {
   tab: true;
@@ -41,15 +25,7 @@ function isDirected(e: any): e is Directed {
   return e && e.directed;
 }
 
-export interface Serializable extends PaneerDOM {
-  serialize(): { type: string };
-}
-
-export function isSerializable(e: PaneerDOM): e is Serializable {
-  return e && !!(e as Serializable).serialize;
-}
-
-interface FlexSized extends PPaneer {
+export interface FlexSized extends PPaneer {
   flexsized: true;
 
   size: string;
@@ -72,29 +48,23 @@ function isFixSized(el: any): el is FixedSized & AttachedPaneer {
 function isSized(el: any): el is (FlexSized | FixedSized) & AttachedPaneer {
   return isFixSized(el) || (isFlexSized(el));
 }
-
-// Root node
+/**
+ * Root node for panes.
+ */
 export class Pane extends PPaneer implements Directed {
   directed: true = true;
   direction: "V" | "H";
   addHandles: boolean;
 
   constructor(direction: "V" | "H", addHandles: boolean = true) {
+    // TODO(P1) add an overlay for drag/drop and menus.
     super();
-
     this.direction = direction;
     this.addHandles = addHandles;
-
-    // TODO
-    // HMMM WHAT IF WE ALREADY HAVE CHILDREN
-    // should probably take an optional element?
-    // SOOOOO WE SHOULD have an adopt that takes the element from provided el...
-    /*html*/`
-    <div ${/*attach(new Pane("H"))*/""}></div>
-    `
   }
 
   attached(el: HTMLElement) {
+    // TODO(P3) handle non-sized children nicely
     // Set Styles
     style(el,
       {
@@ -104,10 +74,7 @@ export class Pane extends PPaneer implements Directed {
         overflow: "hidden"
       });
 
-    // TODO if we have children they should all be flexsizable...
-    // make sure they are..
-
-    // Add Handles
+    // Add handles to children.
     if (this.addHandles) {
       this.children(isFlexSized).forEach(child => {
         child.insertAdjacant(new PaneHandle());
@@ -143,7 +110,7 @@ export class Pane extends PPaneer implements Directed {
     super.append(child);
   }
 
-  removeChild(child: FlexSized) {
+  removeChild(child: FlexSized | FixedSized) {
     if (!isAttached(child)) return;
     if (child.Ancestor(isPaneer).id === this.id) return;
 
@@ -220,6 +187,9 @@ export class Pane extends PPaneer implements Directed {
   }
 }
 
+/**
+ * A Non leaf, non root pane.
+ */
 export class PaneNode extends Pane implements FlexSized {
   flexsized: true = true;
 
@@ -232,171 +202,10 @@ export class PaneNode extends Pane implements FlexSized {
   }
 }
 
-export class PaneLeaf extends PPaneer implements FlexSized {
-  flexsized: true = true;
-
-  size: string;
-
-  tabLabels: AttachedPaneer;
-  content: AttachedPaneer;
-
-  tabs: NewTab[];
-  selectedIndex: number;
-
-  constructor(size: string) {
-    super();
-    this.size = size;
-  }
-
-  attached(el: HTMLElement) {
-    this.tabs = this.children(isTab);
-    this.clear();
-
-    this.style = {
-      overflow: "hidden",
-      border: "2px groove #999999",
-      display: "flex",
-      flexDirection: "column"
-    };
-
-    PaneerAppend(el)/*html*/`
-    <div ${{
-      width: "100%",
-      height: "1.5em",
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      backgroundColor: "#333333"
-    }}>
-      <div
-        ${el => { this.tabLabels = new AttachedPaneer(el) }}
-        ${{ display: "flex", flexDirection: "row", maxHeight: "1.5em", overflow: "hidden" }}></div>
-      <div></div>
-    </div>
-    
-    <div ${{ flex: "1", width: "100%" }}>
-      <div ${{ position: "relative", width: "100%", height: "100%" }}>
-        <div 
-          ${el => { this.content = new AttachedPaneer(el) }}
-          ${{ position: "absolute", top: "0", bottom: "0", left: "0", right: "0", overflow: "hidden" }}></div>
-      </div>
-    </div>
-    `
-    // TODO should remove these on detach...
-    // also actually reimplemnt dragondrop
-    el.addEventListener("mouseenter", () => {
-      //const boss = this.ancestor(isDragCoordinator);
-      //if (boss && boss.dragPreview.descendent(isAny)) {
-        this.style = { border: "4px solid #0099ff" };
-        //boss.dropTarget = this;
-      //}
-    });
-
-    el.addEventListener("mouseleave", () => {
-      this.style = { border: "2px groove #999999" };
-      // Let next element reset drop target.
-    });
-
-    this.currentTab = this.tabs.find(() => true);
-  }
-
-  get currentTab(): NewTab | undefined {
-    return this.content.child(isTab);
-  }
-
-  set currentTab(tab: NewTab | undefined) {
-    if (this.currentTab) {
-      this.currentTab.remove();
-    }
-
-    let existed = true;
-
-    if (isAttached(tab)) {
-      if (this.tabs.indexOf(tab) === -1) {
-        this.tabs.push(tab);
-        existed = false;
-      }
-
-      this.content.append(tab);
-      if (tab.resize) tab.resize();
-    }
-
-    if (existed) {
-      this.updateSelection();
-    } else {
-      this.updateLabels();
-    }
-  }
-
-  addTab(tab: NewTab) {
-    if(!isAttached(tab) || !isAttached(this)) return;
-
-    this.tabs.push(tab);
-    if (!this.currentTab) this.currentTab = tab;
-    this.updateLabels();
-  }
-
-  removeTab(tab: NewTab) {
-    if(!isAttached(tab) || !isAttached(this)) return;
-
-    const tabsLength = this.tabs.length;
-    this.tabs = this.tabs.filter( t => t!== tab);
-
-    if (this.currentTab == tab) {
-      this.currentTab = this.tabs.find(() => true);
-    } 
-
-    if (tabsLength !== this.tabs.length) {
-      this.updateLabels();
-    }
-  }
-
-  updateLabels() {
-    this.tabLabels.clear();
-    const current = this.currentTab;
-
-    this.tabs.forEach(tab => {
-      const selectStyles = current == tab ? 
-        {backgroundColor: "white", borderBottom: "none" } :
-        { backgroundColor: "#999999", borderBottom: "1px solid black" };
-      this.tabLabels.append(Paneer/*html*/`
-        <div ${{
-          padding: "2px",
-          width: "min-content",
-          borderLeft: "1px solid #333333",
-          borderRight: "1px solid #333333",
-          borderTop: "1px solid #333333",
-          borderTopRightRadius: "2px",
-          borderTopLeftRadius: "2px",
-          cursor: "select",
-          userSelect: "none",
-          ...selectStyles
-        }}
-        ${
-          el => {
-            el.addEventListener("mousedown", () => {
-              this.currentTab = tab;
-            });
-          }
-        }
-        >${tab.label}</div>
-      `);
-    })
-  }
-
-  updateSelection() {
-    this.updateLabels();
-  }
-
-  resize() {
-    if (this.currentTab?.resize) {
-      this.currentTab.resize();
-    }
-  }
-}
-
 type DragState = { state: "null" } | { state: "dragging", startPoint: paper.Point, lastPoint: paper.Point };
-
+/**
+ * A Handle for dragging a pane.
+ */
 class PaneHandle extends AttachedPaneer implements FixedSized {
   fixedsized:true = true;
   mouseover: boolean;

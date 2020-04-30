@@ -2,9 +2,9 @@ import * as paper from "paper";
 import { words } from "./utils/words";
 import { PaneerDOM } from "./paneer/paneerdom";
 import { ButtonGrid } from "./components/buttongrid";
-import { Serializable, NewTab } from "./components/pane";
+import { NewTab } from "./components/panes/pane";
 import { Viewport } from "./viewport";
-import { Change, ChangeFlag } from "../changeflags";
+import { ChangeFlag } from "../changeflags";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
 
 const depthColors = ["Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
@@ -155,6 +155,7 @@ export class LayerControls extends AttachedPaneer implements NewTab {
   }
 }
 
+// TODO (P1) convert to PPaneer
 class Label extends PaneerDOM {
   layers: LayerControls;
   item: paper.Item;
@@ -223,7 +224,7 @@ class Label extends PaneerDOM {
     this.container.append(this.clicker);
 
     this.container.append(this.main);
-    this.container.append(this.controls);
+    this.container.element.append(this.controls.element);
 
     this.append(this.spacing);
     this.append(this.container);

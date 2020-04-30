@@ -1,20 +1,20 @@
-import { PaneerDOM } from "./paneer/paneerdom";
 import { text, option, select, button } from "./utils/dom";
 import { ToolBelt } from "./tools";
 import { Editor, DOMConsole } from "./editor";
 import { LayerControls } from "./layers";
 import { Preview } from "./preview";
 import { Save, Load } from "./saveload";
-import { isTab } from "./components/pane";
+import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
 
-export class NewPane extends PaneerDOM {
+// TODO (P1) fix this
+export class NewPane extends AttachedPaneer {
   tab: true = true;
   label = "New Pane";
 
   selector: HTMLSelectElement;
 
   constructor() {
-    super();
+    super(Paneer/*html*/`<div></div>`);
 
     this.selector = select({},
       ["toolbelt", "editor", "domconsole", "layers", "preview", "save", "load", "viewport"].map(s =>

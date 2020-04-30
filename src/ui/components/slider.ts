@@ -1,5 +1,4 @@
-import { PaneerDOM } from "../paneer/paneerdom";
-import { PaneerAppend } from "../paneer/newPaneer";
+import { PaneerAppend, AttachedPaneer, Paneer } from "../paneer/newPaneer";
 
 export interface SliderOptions {
   min?: number;
@@ -16,7 +15,7 @@ export interface SliderOptions {
 // TODO HANFLE NO VALUE
 // HANDLE MULTIPLE VALUE
 
-export class Slider extends PaneerDOM {
+export class Slider extends AttachedPaneer {
   min: number;
   max: number;
   step: number;
@@ -25,7 +24,7 @@ export class Slider extends PaneerDOM {
   number: HTMLInputElement;
 
   constructor(options: SliderOptions) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
 
     this.style = {
       display: "flex",

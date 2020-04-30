@@ -192,6 +192,8 @@ export class PPaneer {
 
   remove() {
     if (!isAttached(this)) return;
+    // TODO(P1) figure out a proper lifecycle
+    // should remove from nodemap at some point so we dont have dangling references.
     this.element.remove();
   }
 

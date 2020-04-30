@@ -1,8 +1,7 @@
 import * as paper from "paper";
 import { canvas } from "./utils/dom";
-import { PaneerDOM } from "./paneer/paneerdom";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
-import { NewTab } from "./components/pane";
+import { NewTab } from "./components/panes/pane";
 
 export class Viewport extends AttachedPaneer implements NewTab {
   tab: true = true;

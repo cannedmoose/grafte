@@ -8,12 +8,11 @@ import { elipseTool } from "../tools/elipse";
 import { rectangleTool } from "../tools/rectangle";
 import { Keyboard } from "./keyboard";
 import { ButtonGrid } from "./components/buttongrid";
-import { PaneerDOM } from "./paneer/paneerdom";
 import { Slider } from "./components/slider";
 import { ColorPicker } from "./components/colorpicker";
 import { ChangeFlag } from "../changeflags";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
-import { NewTab } from "./components/pane";
+import { NewTab } from "./components/panes/pane";
 
 export class ToolBelt extends AttachedPaneer implements NewTab {
   tab: true = true;
@@ -22,7 +21,7 @@ export class ToolBelt extends AttachedPaneer implements NewTab {
   constructor(history: GrafteHistory, keyboard: Keyboard) {
     super(Paneer/*html*/`<div></div>`);
     this.grid = new ButtonGrid({ aspectRatio: 1, width: "5vmin" });
-    this.append(this.grid.element);
+    this.append(this.grid);
 
     // TODO work out how to center grid in available space.
     this.grid.add(this.toolOptions(selectTool(history, keyboard), "Select", "icons/select.png"));
@@ -32,8 +31,8 @@ export class ToolBelt extends AttachedPaneer implements NewTab {
     this.grid.add(this.toolOptions(elipseTool(history, keyboard), "Elipse", "icons/elipse.png"));
     this.grid.add(this.toolOptions(rectangleTool(history, keyboard), "Rectangle", "icons/rectangle.png"));
 
-    this.append(new ToolOptions(history).element);
-    this.append(new SelectionOptions(history, paper.project).element);
+    this.append(new ToolOptions(history));
+    this.append(new SelectionOptions(history, paper.project));
 
     // TODO(P1) figure out what we want to do with keyboard shortcuts...
     // Maybe define in tool?
@@ -63,9 +62,9 @@ export class ToolBelt extends AttachedPaneer implements NewTab {
   }
 }
 
-export class ToolOptions extends PaneerDOM {
+export class ToolOptions extends AttachedPaneer {
   constructor(history: GrafteHistory) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
 
     this.style.margin = "0em .5em";
 
@@ -98,13 +97,13 @@ export class ToolOptions extends PaneerDOM {
 }
 
 
-export class SelectionOptions extends PaneerDOM {
+export class SelectionOptions extends AttachedPaneer {
   strokeWidth: Slider;
   strokeColor: ColorPicker;
   fillColor: ColorPicker;
 
   constructor(history: GrafteHistory, project: paper.Project) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
 
     this.style.margin = "0em .5em";
     this.strokeWidth = new Slider({

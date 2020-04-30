@@ -1,5 +1,4 @@
-import { PaneerDOM } from "../paneer/paneerdom";
-import { PaneerAppend } from "../paneer/newPaneer";
+import { PaneerAppend, AttachedPaneer, Paneer } from "../paneer/newPaneer";
 
 interface Options {
   aspectRatio: number;
@@ -13,11 +12,11 @@ export interface ButtonOptions {
   onClick: () => void
 }
 
-// TODO(P1) we need to figure out a way to have button active/inactive...
-class Button extends PaneerDOM {
+// TODO(P2) Total rewrite
+class Button extends AttachedPaneer {
   button: HTMLElement;
   constructor(b: ButtonOptions) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
     PaneerAppend(this.element)/*html*/`
     <button
       alt="${b.alt}"
@@ -30,7 +29,7 @@ class Button extends PaneerDOM {
   }
 }
 
-export class ButtonGrid extends PaneerDOM implements Options {
+export class ButtonGrid extends AttachedPaneer implements Options {
   // 
   // height = width / aspect
   // 
@@ -38,9 +37,7 @@ export class ButtonGrid extends PaneerDOM implements Options {
   width: string;
 
   constructor(options: Options) {
-    super();
-
-    // TODO getter/setter
+    super(Paneer/*html*/`<div></div>`);
     this.aspectRatio = options.aspectRatio;
     this.width = options.width;
 
@@ -54,8 +51,6 @@ export class ButtonGrid extends PaneerDOM implements Options {
     this.element.style.gridTemplateColumns = `repeat(auto-fill, ${this.width})`;
     this.element.style.gridTemplateRows =
       `repeat(auto-fill, calc(${this.width} / ${this.aspectRatio}))`;
-
-    super.resize();
   }
 
   add(options: ButtonOptions) {

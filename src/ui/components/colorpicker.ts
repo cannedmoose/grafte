@@ -1,6 +1,5 @@
 import * as paper from "paper";
-import { PaneerDOM } from "../paneer/paneerdom";
-import { PaneerAppend } from "../paneer/newPaneer";
+import { PaneerAppend, AttachedPaneer, Paneer } from "../paneer/newPaneer";
 
 export interface Palete {
   colors: paper.Color[];
@@ -13,14 +12,14 @@ export interface ColorPickerOptions {
   label?: string;
 }
 
-// TODO need to handle:
+// TODO(P3) need to handle:
 // - alpha in color picker
 // - text only updates color when valid
 // - short form text updates color (FFF === FFFFFF)
 // - NO color/null value (different from black)
 // - HANDLE MULTIPLE VALUE
 
-export class ColorPicker extends PaneerDOM {
+export class ColorPicker extends AttachedPaneer {
   picker: HTMLInputElement;
   textual: HTMLInputElement;
   onChange: (value: paper.Color) => void;
@@ -28,7 +27,7 @@ export class ColorPicker extends PaneerDOM {
   _value: paper.Color;
 
   constructor(options: ColorPickerOptions) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
 
     this._value = options.value === undefined ? paper.Color.random() : options.value.clone();
     this.onChange = options.onChange;
@@ -43,7 +42,6 @@ export class ColorPicker extends PaneerDOM {
       marginBottom: ".5em"
     };
 
-    // TODO figure out formatting
     PaneerAppend(this.element)/*html*/`
     <div ${{ height: "min-conent" }}>
       ${options.label || ""}

@@ -2,12 +2,14 @@ import * as paper from "paper";
 import { words } from "./utils/words";
 import { PaneerDOM } from "./paneer/paneerdom";
 import { ButtonGrid } from "./components/buttongrid";
-import { Serializable } from "./components/pane";
+import { Serializable, NewTab } from "./components/pane";
 import { Viewport } from "./viewport";
 import { Change, ChangeFlag } from "../changeflags";
+import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
 
 const depthColors = ["Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
-export class LayerControls extends PaneerDOM implements Serializable {
+export class LayerControls extends AttachedPaneer implements NewTab {
+  tab: true = true;
   label = "Layers";
 
   buttons: ButtonGrid;
@@ -17,7 +19,7 @@ export class LayerControls extends PaneerDOM implements Serializable {
   refreshing: boolean;
 
   constructor(viewport: Viewport) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
 
     this.refreshing = false;
 
@@ -35,8 +37,8 @@ export class LayerControls extends PaneerDOM implements Serializable {
 
     this.style.height = "100%";
 
-    this.append(this.buttons);
-    this.append(this.layers);
+    this.append(this.buttons.element);
+    this.append(this.layers.element);
 
     this.layers.style.overflow = "scroll";
 
@@ -139,7 +141,6 @@ export class LayerControls extends PaneerDOM implements Serializable {
   }
 
   resize() {
-    super.resize();
   }
 
   serialize() {

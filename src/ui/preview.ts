@@ -2,9 +2,11 @@ import * as paper from "paper";
 import { canvas } from "./utils/dom";
 import { Viewport } from "./viewport";
 import { PaneerDOM } from "./paneer/paneerdom";
-import { Serializable } from "./components/pane";
+import { Serializable, NewTab } from "./components/pane";
+import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
 
-export class Preview extends PaneerDOM implements Serializable {
+export class Preview extends AttachedPaneer implements NewTab {
+  tab: true = true;
   label = "Preview";
   canvas: HTMLCanvasElement;
   view: paper.CanvasView;
@@ -13,7 +15,7 @@ export class Preview extends PaneerDOM implements Serializable {
 
 
   constructor(project: paper.Project, viewport: Viewport) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
     this.canvas = canvas({});
     this.element.append(this.canvas);
     this.element.style.position = "absolute";

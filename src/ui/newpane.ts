@@ -5,9 +5,10 @@ import { Editor, DOMConsole } from "./editor";
 import { LayerControls } from "./layers";
 import { Preview } from "./preview";
 import { Save, Load } from "./saveload";
-import { isTab, isTabContainer, LeafTab } from "./components/pane";
+import { isTab } from "./components/pane";
 
 export class NewPane extends PaneerDOM {
+  tab: true = true;
   label = "New Pane";
 
   selector: HTMLSelectElement;
@@ -26,7 +27,7 @@ export class NewPane extends PaneerDOM {
   }
 
   create() {
-    let pane: PaneerDOM | null;
+    let pane: any | null;
 
     //@ts-ignore
     const ctx: any = window.ctx;
@@ -60,7 +61,7 @@ export class NewPane extends PaneerDOM {
         pane = null;
     }
 
-    if (pane) {
+    /*if (pane) {
       const container = this.Ancestor(isTabContainer);
       container.addTab(new LeafTab(pane));
       container.tabContent = pane;
@@ -68,7 +69,7 @@ export class NewPane extends PaneerDOM {
         .filter(tab => tab.pane == this)
         .forEach(tab => container.removeTab(tab));
       container.resize();
-    }
+    }*/
 
   }
 }

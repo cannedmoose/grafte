@@ -13,7 +13,12 @@ export interface ColorPickerOptions {
   label?: string;
 }
 
-// TODO add number input when wide enough...
+// TODO need to handle:
+// - alpha in color picker
+// - text only updates color when valid
+// - short form text updates color (FFF === FFFFFF)
+// - NO color/null value (different from black)
+// - HANDLE MULTIPLE VALUE
 
 export class ColorPicker extends PaneerDOM {
   picker: HTMLInputElement;

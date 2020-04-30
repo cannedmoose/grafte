@@ -136,11 +136,11 @@ function elHelper(
   }
 }
 
-export function queryOrThrow(query: string, root?: Element | Document): Element {
+export function queryOrThrow(query: string, root?: Element | Document): HTMLElement {
   if (!root) root = document;
   let el = root.querySelector(query);
   if (!el) {
     throw "No element for query selector " + query;
   }
-  return el;
+  return el as HTMLElement;
 }

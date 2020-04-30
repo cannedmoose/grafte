@@ -8,8 +8,9 @@ import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
 import { Save, Load } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
-import { Pane, DragBoss, LeafTab, PaneNode, PaneLeaf, isSerializable } from "./ui/components/pane";
+import { Pane, PaneNode, PaneLeaf, isSerializable } from "./ui/components/pane";
 import { Deserializer } from "./ui/paneer/deserializer";
+import { Paneer, attach, PaneerAppend } from "./ui/paneer/newPaneer";
 
 /**
  * Important concepts:
@@ -57,15 +58,11 @@ window.onload = function () {
   }
   // @ts-ignore
   window.ctx = ctx;
-
-  const dragBoss = new DragBoss();
-  const paneerDiv = queryOrThrow("#menus");
-  paneerDiv.appendChild(dragBoss.element);
   
   const des = new Deserializer();
-  des.register("pane", Pane.deserialize);
-  des.register("node", PaneNode.deserialize);
-  des.register("leaf", PaneLeaf.deserialize);
+  //des.register("pane", Pane.deserialize);
+  //des.register("node", PaneNode.deserialize);
+  //des.register("leaf", PaneLeaf.deserialize);
   des.register("editor", Editor.deserialize);
   des.register("domconsole", DOMConsole.deserialize);
   des.register("layers", LayerControls.deserialize);
@@ -75,39 +72,72 @@ window.onload = function () {
   des.register("load", Load.deserialize);
   des.register("toolbelt", ToolBelt.deserialize);
 
-  const serialized = window.localStorage.getItem("panes");
+  /*const serialized = window.localStorage.getItem("panes");
   if (serialized) {
     console.log(serialized);
     JSON.parse(serialized);
     const res = des.deserialize(JSON.parse(serialized));
 
     dragBoss.rest.append(res);
-  } else {
-    const panes = new Pane("H");
-    const leftPane = panes.addPane("V", "15%");
-    // Set up preview
-    leftPane.addLeaf("15%").addTab(new LeafTab(new Preview(paper.project, viewport)));
-    leftPane.addLeaf("auto").addTab(new LeafTab(new ToolBelt(history, keyboard)));
-    leftPane.addLeaf("auto");
+  } else {*/
 
-    const middlePane = panes.addPane("V", "auto");
-    middlePane.addLeaf("5fr").addTab(new LeafTab(viewport));
-    middlePane.addLeaf("2fr")
-      .addTab(new LeafTab(new DOMConsole()))
-      .addTab(new LeafTab(new Editor(keyboard, history)));
+  PaneerAppend(queryOrThrow("#menus"))/*html*/`
+  <div ${el => attach(new Pane("H"), el)}>
+    <div ${el => attach(new PaneNode("V", "15%"), el)}>
+      <div ${el => attach(new PaneLeaf("15%"), el)}>
+        ${new Preview(paper.project, viewport)}
+      </div>
+      <div ${el => attach(new PaneLeaf("auto"), el)}>
+        ${new ToolBelt(history, keyboard)}
+      </div>
+      <div ${el => attach(new PaneLeaf("auto"), el)}>
+      </div>
+    </div>
+    <div ${el => attach(new PaneNode("V", "auto"), el)}>
+      <div ${el => attach(new PaneLeaf("5fr"), el)}>
+        ${viewport}
+      </div>
+      <div ${el => attach(new PaneLeaf("2fr"), el)}>
+        ${new DOMConsole()}
+        ${new Editor(keyboard, history)}
+      </div>
+    </div>
+    <div ${el => attach(new PaneNode("V", "10%"), el)}>
+      <div ${el => attach(new PaneLeaf("2fr"), el)}>
+        ${new LayerControls(viewport)}
+      </div>
+      <div ${el => attach(new PaneLeaf("1fr"), el)}>
+        ${new Save(viewport.page)}
+        ${new Load(viewport.page)}
+      </div>
+    </div>
+  </div>
+  `
 
-    const rightPane = panes.addPane("V", "10%");
-    rightPane.addLeaf("2fr").addTab(new LeafTab(new LayerControls(viewport)));
-    rightPane.addLeaf("1fr")
-      .addTab(new LeafTab(new Save(viewport.page)))
-      .addTab(new LeafTab(new Load(viewport.page)));
+  /*
+  const panes = new Pane("H");
+  const leftPane = panes.addPane("V", "15%");
+  // Set up preview
+  leftPane.addLeaf("15%").addTab(new LeafTab());
+  leftPane.addLeaf("auto").addTab(new LeafTab(new ToolBelt(history, keyboard)));
+  leftPane.addLeaf("auto");
 
-    dragBoss.rest.append(panes);
-  }
+  const middlePane = panes.addPane("V", "auto");
+  middlePane.addLeaf("5fr").addTab(new LeafTab(viewport));
+  middlePane.addLeaf("2fr")
+    .addTab(new LeafTab(new DOMConsole()))
+    .addTab(new LeafTab(new Editor(keyboard, history)));
+
+  const rightPane = panes.addPane("V", "10%");
+  rightPane.addLeaf("2fr").addTab(new LeafTab(new LayerControls(viewport)));
+  rightPane.addLeaf("1fr")
+    .addTab(new LeafTab(new Save(viewport.page)))
+    .addTab(new LeafTab(new Load(viewport.page)));
+  //}*/
 
   window.addEventListener("beforeunload", (e: Event) => {
-    window.localStorage
-      .setItem("panes",JSON.stringify(dragBoss.rest.Descendent(isSerializable).serialize()));
+    //window.localStorage
+    //  .setItem("panes",JSON.stringify(dragBoss.rest.Descendent(isSerializable).serialize()));
 
     window.localStorage.setItem("project", paper.project.exportJSON());
   });

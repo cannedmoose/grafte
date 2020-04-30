@@ -1,13 +1,16 @@
 import * as paper from "paper";
 import { button, text, select, option, queryOrThrow, checkbox, div } from "./utils/dom";
 import { PaneerDOM } from "./paneer/paneerdom";
+import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { NewTab } from "./components/pane";
 
-export class Save extends PaneerDOM {
+export class Save extends AttachedPaneer implements NewTab {
+  tab: true = true;
   label = "Save";
 
   page: paper.View;
   constructor(page: paper.View) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
 
     this.page = page;
 
@@ -113,11 +116,12 @@ function downloadBlob(blob: any, filename: string) {
 }
 
 
-export class Load extends PaneerDOM {
+export class Load extends AttachedPaneer implements NewTab {
+  tab: true = true;
   label = "Load";
   page: paper.View;
   constructor(page: paper.View) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
     this.fileUpload = this.fileUpload.bind(this);
 
     this.element.appendChild(div({}, [checkbox({ id: "loadclear", checked: "true" }, {}), text("Clear on load")]));

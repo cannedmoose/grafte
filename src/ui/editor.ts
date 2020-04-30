@@ -9,12 +9,15 @@ import "codemirror/theme/neat.css";
 import "codemirror/mode/javascript/javascript.js";
 import { textArea } from "./utils/dom";
 import { PaneerDOM } from "./paneer/paneerdom";
-import { Serializable } from "./components/pane";
+import { Serializable, NewTab } from "./components/pane";
 import { Keyboard } from "./keyboard";
 import { GrafteHistory } from "../tools/history";
+import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
 
-export class Editor extends PaneerDOM implements Serializable {
+export class Editor extends AttachedPaneer implements NewTab {
+  tab: true = true;
   label = "Code";
+
   public editor: CodeMirror.Editor;
   editorDiv: HTMLElement;
 
@@ -32,7 +35,7 @@ export class Editor extends PaneerDOM implements Serializable {
   };
 
   constructor(keyboard: Keyboard, history: GrafteHistory) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
     this.editor = CodeMirror(this.element, this.config);
     this.style.fontSize = "2em";
     this.style.height = "100%";
@@ -49,7 +52,6 @@ export class Editor extends PaneerDOM implements Serializable {
   }
 
   resize() {
-    super.resize();
     this.editor.refresh();
   }
 
@@ -79,7 +81,8 @@ export class Editor extends PaneerDOM implements Serializable {
 }
 
 
-export class DOMConsole extends PaneerDOM implements Serializable {
+export class DOMConsole extends AttachedPaneer implements NewTab {
+  tab: true = true;
   label = "Console";
 
   constructor() {

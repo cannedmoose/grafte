@@ -20,7 +20,7 @@ class Button extends PaneerDOM {
     super();
     PaneerAppend(this.element)/*html*/`
     <button
-      alt=${b.alt}
+      alt="${b.alt}"
       ${el => { this.button = el }}
       ${{ padding: "0px", margin: "0px", width: "100%", height: "100%", border: "1px solid black" }}>
       <img src="${b.icon}" ${{ width: "100%", height: "100%" }}/>

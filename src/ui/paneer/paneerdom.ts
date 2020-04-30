@@ -79,7 +79,7 @@ export class PaneerDOM {
 
   append(child: PaneerDOM) {
     this.element.appendChild(child.element);
-    return this;
+    return child;
   }
 
   replace(newChild: PaneerDOM) {

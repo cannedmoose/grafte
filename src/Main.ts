@@ -123,7 +123,10 @@ window.onload = function () {
     window.localStorage.setItem("project", paper.project.exportJSON());
   });
 
-  // TODO(P1) MAKE LESS HACKEY!!!
+  // TODO(P2) Dont auto load project from storage
+  // Need to have projects loaded as needed (eg viewport/preview loaded)
+  // that way we can support multiple
+  // Not sure how that plays with tools/layers, they will probs have to be associated too.
   const json = window.localStorage.getItem("project");
   if (json) {
     paper.project.importJSON(json);
@@ -133,11 +136,8 @@ window.onload = function () {
   viewport.resize();
   viewport.centerPage();
 
-  // TODO(P1) OPACITY ABSOLUTELY KILLS EVERYTHING
-  // how to make it better?
-
-  // TODO(P1) figure out zoom
-  // TODO(P1) allow export at any scale
+  // TODO(P3) make zoom smoother
+  // TODO(P3) allow export at any scale
 
 };
 

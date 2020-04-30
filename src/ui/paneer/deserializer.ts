@@ -1,4 +1,4 @@
-// TODO(P1) MAKE NICER
+// TODO(P2) Reimplement
 // HACKEY HACKEY HACK!!!!
 export class Deserializer {
   deserializers: Map<string, ((raw: { type: string }) => any)>;

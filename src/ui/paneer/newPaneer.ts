@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
 
-// TODO PaneerDOM as well :)
 type PaneerRef =
   RefCallback
   | string
@@ -12,12 +11,13 @@ type RefCallback =
   | Element // An element to include in the document
   | AttachedPaneer; // An element to include in the document
 
+// TODO(P1) All of these is functions should cast to the type to prevent spelling mistakes...
 function isElement(el: any): el is Element {
   // NOTE hackey, assume if we have a tagName it's an element.
   return (el && !!el.tagName);
 }
 
-// TODO this should be bottom up!!!!
+// TODO(P2) cleanup, attach helper 
 export function WrappedPaneer(strings: TemplateStringsArray, ...params: PaneerRef[]): HTMLElement {
   // Note this should maybe be randomized
   const REF = "data-ref"
@@ -349,6 +349,7 @@ function elementToPaneer(element: Element): PPaneer | undefined {
   return node;
 }
 
+// TODO(P1) this should be a method of paneer
 export function attach(paneer: PPaneer, el: HTMLElement) {
   if (paneer.element == el) {
     el.setAttribute(PANEER_ID_ATTRIB, paneer.id);

@@ -155,7 +155,7 @@ export class LayerControls extends AttachedPaneer implements NewTab {
   }
 }
 
-// TODO (P1) convert to PPaneer
+// TODO(P1) convert to PPaneer
 class Label extends PaneerDOM {
   layers: LayerControls;
   item: paper.Item;

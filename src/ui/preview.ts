@@ -122,7 +122,7 @@ export class Preview extends AttachedPaneer implements NewTab {
   }
 
   static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Preview {
-    // TODO fix this
+    // TODO(P3) Redo serialization
     // @ts-ignore
     const ctx: any = window.ctx;
     return new Preview(paper.project, ctx.viewport);

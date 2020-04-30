@@ -11,8 +11,8 @@ export interface SliderOptions {
   label?: string;
 }
 
-// TODO add number input when wide enough...
-// TODO HANFLE NO VALUE
+// TODO(P3) add number input when wide enough...
+// HANDLE NO VALUE
 // HANDLE MULTIPLE VALUE
 
 export class Slider extends AttachedPaneer {

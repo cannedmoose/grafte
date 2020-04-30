@@ -69,7 +69,6 @@ export class Save extends AttachedPaneer implements NewTab {
   }
 
   static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Save {
-    // TODO fix this
     // @ts-ignore
     const ctx:any = window.ctx;
     return new Save(ctx.viewport.page);
@@ -157,7 +156,7 @@ export class Load extends AttachedPaneer implements NewTab {
           });
         } else if (file.type == "image/png" || file.type == "image/jpeg") {
           let l = new paper.Raster(URL.createObjectURL(file));
-          // Todo(P3) resize paper.project
+          // TODO(P3) resize paper.project
           l.smoothing = false;
         } else {
           console.log(file.type);
@@ -184,7 +183,6 @@ export class Load extends AttachedPaneer implements NewTab {
   }
 
   static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Load {
-    // TODO fix this
     // @ts-ignore
     const ctx:any = window.ctx;
     return new Load(ctx.viewport.page);

@@ -6,7 +6,7 @@ import { Preview } from "./preview";
 import { Save, Load } from "./saveload";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
 
-// TODO (P1) fix this
+// TODO(P1) fix this
 export class NewPane extends AttachedPaneer {
   tab: true = true;
   label = "New Pane";

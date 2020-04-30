@@ -41,13 +41,13 @@ export class Viewport extends AttachedPaneer implements NewTab {
     this.mainCanvas.style.bottom = "0px";
     this.mainCanvas.style.right = "0px";
 
-    // TODO P3 (look in to this kinda hackey)
+    // TODO(P5) is there a less hackey way to do this?
     this.mainCanvas.setAttribute("tabindex", "0");
     this.mainCanvas.addEventListener("click", e => {
       this.mainCanvas.focus();
     });
 
-    // TODO(P3) setup manually..
+    // TODO(P2) setup manually, needed for multi project support
     paper.setup(this.mainCanvas);
     this.project = paper.project;
     this.view = paper.project.view;
@@ -63,7 +63,7 @@ export class Viewport extends AttachedPaneer implements NewTab {
 
     this.view.on("updated", this.onViewUpdated.bind(this));
     window.addEventListener("wheel", this.onScroll.bind(this));
-    // TODO remove this?
+    // TODO(P3) is this needed, maybe should be on pane.
     window.onresize = () => this.resize();
 
     this.resizing = false;
@@ -113,6 +113,7 @@ export class Viewport extends AttachedPaneer implements NewTab {
 
   makeBgPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
     // TODO(P3) cache this, it's a memory leak...
+    // Should be better when we have background/tool layer back
     // Create a pattern, offscreen
     const patternCanvas = document.createElement("canvas");
     const patternContext = patternCanvas.getContext("2d");

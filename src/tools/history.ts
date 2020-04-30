@@ -15,7 +15,8 @@ export class GrafteHistory {
   }
 
   commit() {
-    // TODO(P1) store as diff, this is pushing up our memory limits
+    // TODO(P3) store as diff, this is pushing up our memory limits
+    // Sketcher did it, look into their impl
     this.history = [...this.history.slice(0, this.present + 1)];
     this.history.push(this.project.exportJSON({ asString: true }));
     this.present = this.history.length - 1;

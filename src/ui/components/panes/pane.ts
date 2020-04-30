@@ -1,5 +1,4 @@
 import * as paper from "paper";
-import { PaneerDOM } from "../../paneer/paneerdom";
 import { PPaneer, Paneer, style, isPaneer, isAttached, AttachedPaneer } from "../../paneer/newPaneer";
 
 export interface NewTab extends PPaneer {
@@ -425,7 +424,6 @@ class PaneHandle extends AttachedPaneer implements FixedSized {
       if (boss && boss.dropTarget && isTabContainer(boss.dropTarget)) {
         boss.dropTarget.addTab(this);
       } else {
-        // TODO HANDLE CASE WHERE WE ARE NOT OVER A DROP TARGET properly
       }
       this.style = {
         position: '', top: '', left: '',

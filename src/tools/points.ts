@@ -41,7 +41,6 @@ export function pointTool(history: GrafteHistory, keyboard: Keyboard): paper.Too
     }
 
     // Next look for segments on selected items
-    // TODO make hitTestAll, so we can handle segments in the same spot.
     hitResult = paper.project.hitTest(event.point, {
       segments: true,
       match: (result: paper.HitResult) => result.item.selected

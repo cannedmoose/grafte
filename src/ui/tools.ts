@@ -23,7 +23,8 @@ export class ToolBelt extends AttachedPaneer implements NewTab {
     this.grid = new ButtonGrid({ aspectRatio: 1, width: "5vmin" });
     this.append(this.grid);
 
-    // TODO work out how to center grid in available space.
+    // TODO(P3) work out how to center grid in available space.
+    // consider this during grid resize
     this.grid.add(this.toolOptions(selectTool(history, keyboard), "Select", "icons/select.png"));
     this.grid.add(this.toolOptions(pointTool(history, keyboard), "Point", "icons/point.png"));
     this.grid.add(this.toolOptions(penTool(history, keyboard), "Pen", "icons/pen.png"));
@@ -34,8 +35,9 @@ export class ToolBelt extends AttachedPaneer implements NewTab {
     this.append(new ToolOptions(history));
     this.append(new SelectionOptions(history, paper.project));
 
-    // TODO(P1) figure out what we want to do with keyboard shortcuts...
-    // Maybe define in tool?
+    // TODO(P2) figure out what we want to do with keyboard shortcuts...
+    // I think we can let the tools refister them.
+
   }
 
   toolOptions(tool: paper.Tool, alt: string, icon: string) {
@@ -55,7 +57,6 @@ export class ToolBelt extends AttachedPaneer implements NewTab {
   }
 
   static deserialize(raw: any, deserializer: (raw: { type: string }) => any): ToolBelt {
-    // TODO fix this
     // @ts-ignore
     const ctx: any = window.ctx;
     return new ToolBelt(ctx.history, ctx.keyboard);
@@ -144,8 +145,8 @@ export class SelectionOptions extends AttachedPaneer {
     this.append(this.strokeColor);
     this.append(this.fillColor);
 
-    // TODO handle this more elegantly
-    // TODO we should only do this once a frame max...
+    // TODO(P3) handle this more elegantly
+    // we should only do this once a frame max...
     project.on("changed", (e: any) => {
       if (e.flags && e.flags & (ChangeFlag.SELECTION)) {
         let strokeWidth: number | "CONFLICT" | undefined= undefined;

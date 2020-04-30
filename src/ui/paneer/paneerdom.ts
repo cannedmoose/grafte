@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { div } from '../utils/dom';
 
 const PANEER_ID_ATTRIB = "data-paneer-id";
-// TODO(P3) maybe this shouldn't be global...
 let NodeMap: Map<string, PaneerDOM> = new Map();
 
 function elementToPaneer(element: Element): PaneerDOM | undefined {
@@ -28,7 +27,6 @@ function elementToPaneer(element: Element): PaneerDOM | undefined {
 export class PaneerDOM {
   _type = "DOM";
 
-  // TODO(P1) move into a sub class.
   // This is only needed for certain elements
   label = "DOM";
 
@@ -68,7 +66,6 @@ export class PaneerDOM {
     }
   }
 
-  // TODO figure out lifecycle, when to remove from nodemap
   remove(child: PaneerDOM) {
     try {
       this.element.removeChild(child.element);
@@ -188,7 +185,6 @@ export class PaneerDOM {
   }
 }
 
-// TODO remove isAny should have better typing....
-export function isAny(el: PaneerDOM): el is PaneerDOM {
+function isAny(el: PaneerDOM): el is PaneerDOM {
   return true;
 }

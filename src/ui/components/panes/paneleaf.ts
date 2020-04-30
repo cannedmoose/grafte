@@ -51,7 +51,7 @@ export class PaneLeaf extends PPaneer implements FlexSized {
       </div>
     </div>
     `
-    // TODO should remove these on detach...
+    // TODO(P2) should remove these on detach...
     // also actually reimplemnt dragondrop
     el.addEventListener("mouseenter", () => {
       //const boss = this.ancestor(isDragCoordinator);

@@ -51,7 +51,6 @@ export class Slider extends PaneerDOM {
         step="${this.step}"
         ${{ width: "6em", minWidth: "4em" }}
         ${el => {
-          console.log("SLIDER CALLBACK");
           this.slider = el as HTMLInputElement;
         }}/>
       <input

@@ -48,12 +48,8 @@ export function WrappedPaneer(strings: TemplateStringsArray, ...params: PaneerRe
       }
     });
 
-  console.log(template);
-
   let container = document.createElement("div") as HTMLElement;
   container.innerHTML = template;
-
-  console.log(callbacks);
 
   // NOW TRAVERSE CONTAINER FROM BOTTOM UP CALLING CALLBACKS
   // THAT WAY WHEN A REF IS EVALUATED WE KNOW IT'S SUBTREES HAVE ALREADY BEEN
@@ -68,7 +64,6 @@ export function WrappedPaneer(strings: TemplateStringsArray, ...params: PaneerRe
 
     /* DO ANY REF REPLACEMENT */
     const refs = [...node.attributes].filter(attrib => /^(data-ref\d+)$/.test(attrib.name));
-    console.log("matched", refs)
     refs.forEach(ref => {
       const param = callbacks.get(ref.name);
       node.removeAttribute(ref.name);
@@ -105,7 +100,6 @@ export function WrappedPaneer(strings: TemplateStringsArray, ...params: PaneerRe
 export function PaneerAppend(parent: HTMLElement): (strings: TemplateStringsArray, ...params: PaneerRef[]) => HTMLElement {
   return function (strings: TemplateStringsArray, ...params: RefCallback[]) {
     const el = WrappedPaneer(strings, ...params);
-    console.log("APPEND LENGTH", el.childElementCount)
     while (el.firstElementChild) {
       parent.append(el.firstElementChild);
     }
@@ -347,7 +341,7 @@ function elementToPaneer(element: Element): PPaneer | undefined {
   }
   const node = NodeMap.get(id);
   if (!node) {
-    //throw "No node for id " + id;
+    throw "No node for id " + id;
     return undefined;
   }
   return node;
@@ -356,6 +350,7 @@ function elementToPaneer(element: Element): PPaneer | undefined {
 export function attach(paneer: PPaneer, el: HTMLElement) {
   if (paneer.element == el) {
     el.setAttribute(PANEER_ID_ATTRIB, paneer.id);
+    NodeMap.set(paneer.id, paneer);
     return;
   }
 
@@ -375,6 +370,8 @@ export function attach(paneer: PPaneer, el: HTMLElement) {
     oldEl.removeAttribute(PANEER_ID_ATTRIB);
     if (paneer.detached) paneer.detached(oldEl);
   }
+
+  NodeMap.set(paneer.id, paneer);
 
   paneer.element = el;
   el.setAttribute(PANEER_ID_ATTRIB, paneer.id);

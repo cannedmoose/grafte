@@ -82,7 +82,9 @@ window.onload = function () {
   } else {*/
 
   PaneerAppend(queryOrThrow("#menus"))/*html*/`
-  <div ${el => attach(new Pane("H"), el)}>
+  <div ${el => {
+    attach(new Pane("H"), el);
+  }}>
     <div ${el => attach(new PaneNode("V", "15%"), el)}>
       <div ${el => attach(new PaneLeaf("15%"), el)}>
         ${new Preview(paper.project, viewport)}
@@ -98,7 +100,6 @@ window.onload = function () {
         ${viewport}
       </div>
       <div ${el => attach(new PaneLeaf("2fr"), el)}>
-        ${new DOMConsole()}
         ${new Editor(keyboard, history)}
       </div>
     </div>

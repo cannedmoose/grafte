@@ -66,11 +66,11 @@ function isFlexSized(el: any): el is FlexSized & AttachedPaneer {
 }
 
 function isFixSized(el: any): el is FixedSized & AttachedPaneer {
-  return el && !!el.fixsized && isAttached(el);
+  return el && !!el.fixedsized;
 }
 
 function isSized(el: any): el is (FlexSized | FixedSized) & AttachedPaneer {
-  return isFlexSized(el) || isFixSized(el);
+  return isFixSized(el) || (isFlexSized(el));
 }
 
 // Root node
@@ -105,6 +105,7 @@ export class Pane extends PPaneer implements Directed {
       });
 
     // TODO if we have children they should all be flexsizable...
+    // make sure they are..
 
     // Add Handles
     if (this.addHandles) {
@@ -170,7 +171,7 @@ export class Pane extends PPaneer implements Directed {
   }
 
   resize() {
-    // Set up tracks for children
+        // Set up tracks for children
     const children = this.children(isSized);
     const tracks = children
       .map((child, index) => {
@@ -261,9 +262,11 @@ export class PaneLeaf extends PPaneer implements FlexSized {
     PaneerAppend(el)/*html*/`
     <div ${{
       width: "100%",
-      display: "flex", flexDirection: "row",
+      height: "1.5em",
+      display: "flex",
+      flexDirection: "row",
       justifyContent: "space-between",
-      backgroundColor: "#333333",
+      backgroundColor: "#333333"
     }}>
       <div
         ${el => { this.tabLabels = new AttachedPaneer(el) }}
@@ -293,6 +296,8 @@ export class PaneLeaf extends PPaneer implements FlexSized {
       this.style = { border: "2px groove #999999" };
       // Let next element reset drop target.
     });
+
+    this.currentTab = this.tabs.find(() => true);
   }
 
   get currentTab(): NewTab | undefined {
@@ -374,13 +379,19 @@ export class PaneLeaf extends PPaneer implements FlexSized {
             });
           }
         }
-        ></div>
+        >${tab.label}</div>
       `);
     })
   }
 
   updateSelection() {
     this.updateLabels();
+  }
+
+  resize() {
+    if (this.currentTab?.resize) {
+      this.currentTab.resize();
+    }
   }
 }
 

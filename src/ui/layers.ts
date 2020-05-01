@@ -4,7 +4,7 @@ import { ButtonGrid } from "./components/buttongrid";
 import { Tab } from "./components/panes/pane";
 import { Viewport } from "./viewport";
 import { ChangeFlag } from "../changeflags";
-import { AttachedPaneer, Paneer, PaneerAppend } from "./paneer/newPaneer";
+import { AttachedPaneer, Pan, AppendPan } from "./paneer/newPaneer";
 
 const depthColors = ["pink", "Aquamarine", "Chartreuse", "yellowgreen", "Aquamarine", "red", "green", "blue"];
 export class LayerControls extends AttachedPaneer implements Tab {
@@ -18,7 +18,7 @@ export class LayerControls extends AttachedPaneer implements Tab {
   refreshing: boolean;
 
   constructor(viewport: Viewport) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
 
     this.refreshing = false;
 
@@ -32,7 +32,7 @@ export class LayerControls extends AttachedPaneer implements Tab {
     this.buttons.add({ alt: "Move Forward", icon: "icons/forward.svg", onClick: () => { this.moveForward() } });
     this.buttons.add({ alt: "Move Back", icon: "icons/back.svg", onClick: () => { this.moveBack() } });
 
-    this.layers = new AttachedPaneer(Paneer/*html*/`<div></div>`);
+    this.layers = new AttachedPaneer(Pan/*html*/`<div></div>`);
 
     this.style.height = "100%";
 
@@ -160,7 +160,7 @@ class Label extends AttachedPaneer {
   clicker: HTMLElement;
 
   constructor(layers: LayerControls, item: paper.Item, depth: number) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
     this.layers = layers;
     this.item = item;
     this.depth = depth;
@@ -180,7 +180,7 @@ class Label extends AttachedPaneer {
       }
     });
 
-    PaneerAppend(this.element)/*html*/`
+    AppendPan(this.element)/*html*/`
     <div ${el => this.container = el} ${{
         display: "flex",
         flexDirection: "row",

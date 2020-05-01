@@ -10,7 +10,7 @@ import { Save, Load } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
 import { Pane, PaneNode } from "./ui/components/panes/pane";
 import { Deserializer } from "./ui/paneer/deserializer";
-import { attach, PaneerAppend } from "./ui/paneer/newPaneer";
+import { attach, AppendPan } from "./ui/paneer/newPaneer";
 import { PaneLeaf } from "./ui/components/panes/paneleaf";
 import { DragOverlay } from "./ui/components/panes/dragoverlay";
 
@@ -83,7 +83,7 @@ window.onload = function () {
     dragBoss.rest.append(res);
   } else {*/
 
-  PaneerAppend(queryOrThrow("#menus"))/*html*/`
+  AppendPan(queryOrThrow("#menus"))/*html*/`
   <div ${attach(new DragOverlay())}>
     <div ${attach(new Pane("H"))}>
       <div ${attach(new PaneNode("V", "15%"))}>

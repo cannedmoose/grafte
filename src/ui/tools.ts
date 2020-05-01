@@ -11,7 +11,7 @@ import { ButtonGrid } from "./components/buttongrid";
 import { Slider } from "./components/slider";
 import { ColorPicker } from "./components/colorpicker";
 import { ChangeFlag } from "../changeflags";
-import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { AttachedPaneer, Pan } from "./paneer/newPaneer";
 import { Tab } from "./components/panes/pane";
 
 export class ToolBelt extends AttachedPaneer implements Tab {
@@ -19,7 +19,7 @@ export class ToolBelt extends AttachedPaneer implements Tab {
   label = "Tools";
   grid: ButtonGrid;
   constructor(history: GrafteHistory, keyboard: Keyboard) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
     this.grid = new ButtonGrid({ aspectRatio: 1, width: "5vmin" });
     this.append(this.grid);
 
@@ -65,7 +65,7 @@ export class ToolBelt extends AttachedPaneer implements Tab {
 
 export class ToolOptions extends AttachedPaneer {
   constructor(history: GrafteHistory) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
 
     this.style.margin = "0em .5em";
 
@@ -104,7 +104,7 @@ export class SelectionOptions extends AttachedPaneer {
   fillColor: ColorPicker;
 
   constructor(history: GrafteHistory, project: paper.Project) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
 
     this.style.margin = "0em .5em";
     this.strokeWidth = new Slider({

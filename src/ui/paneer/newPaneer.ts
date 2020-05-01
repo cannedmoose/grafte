@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 const DEBUG = true;
 
 const PANEER_ID_ATTRIB = "data-paneer-id";
-let NodeMap: Map<string, PPaneer> = new Map();
+let NodeMap: Map<string, Paneer> = new Map();
 
-function elementToPaneer(element: Element): PPaneer | undefined {
+function elementToPaneer(element: Element): Paneer | undefined {
   const id = element.getAttribute(PANEER_ID_ATTRIB);
   if (!id) {
     //throw "No id for element " + element;
@@ -19,7 +19,7 @@ function elementToPaneer(element: Element): PPaneer | undefined {
 }
 
 
-export function attach(paneer: PPaneer): (el: HTMLElement) => void {
+export function attach(paneer: Paneer): (el: HTMLElement) => void {
   return el => paneer.attach(el);
 }
 
@@ -47,7 +47,7 @@ function isElement(el: any): el is Element {
 }
 
 // TODO(P1) cleanup, attach helper 
-export function WrappedPaneer(strings: TemplateStringsArray, ...params: PaneerRef[]): HTMLElement {
+function WrappedPaneer(strings: TemplateStringsArray, ...params: PaneerRef[]): HTMLElement {
   // Note this should maybe be randomized
   const REF = "data-ref"
 
@@ -126,7 +126,7 @@ export function WrappedPaneer(strings: TemplateStringsArray, ...params: PaneerRe
   return container;
 }
 
-export function PaneerAppend(parent: HTMLElement): (strings: TemplateStringsArray, ...params: PaneerRef[]) => HTMLElement {
+export function AppendPan(parent: HTMLElement): (strings: TemplateStringsArray, ...params: PaneerRef[]) => HTMLElement {
   return function (strings: TemplateStringsArray, ...params: RefCallback[]) {
     const el = WrappedPaneer(strings, ...params);
     while (el.firstElementChild) {
@@ -136,7 +136,7 @@ export function PaneerAppend(parent: HTMLElement): (strings: TemplateStringsArra
   }
 }
 
-export function Paneer(strings: TemplateStringsArray, ...params: PaneerRef[]): HTMLElement {
+export function Pan(strings: TemplateStringsArray, ...params: PaneerRef[]): HTMLElement {
   const el = WrappedPaneer(strings, ...params);
   const child = el.firstElementChild;
   if (!child) {
@@ -149,7 +149,7 @@ export function Paneer(strings: TemplateStringsArray, ...params: PaneerRef[]): H
 /****** NEW PANEER OBJECT FUNCTIONS */
 
 // A class that can be linked to the dom
-export interface PPaneer {
+export interface Paneer {
   paneer: true,
   id: string,
   element?: HTMLElement,
@@ -158,7 +158,7 @@ export interface PPaneer {
   detached?(oldElement: HTMLElement): void
 }
 
-export class PPaneer {
+export class Paneer {
   paneer: true = true;
   id: string;
   element?: HTMLElement;
@@ -243,12 +243,13 @@ export class PPaneer {
 
   remove(destruct: boolean = false) {
     // TODO(P1) figure out proper lifecycle for nodemap removal
+    // should be removing descendents here as well
     if(destruct) NodeMap.delete(this.id);
     if (!isAttached(this)) return;
     this.element.remove();
   }
 
-  next<T extends PPaneer>(filter: (el: PPaneer) => el is T): T | undefined {
+  next<T extends Paneer>(filter: (el: Paneer) => el is T): T | undefined {
     if (!this.element) return;
     let el = this.element.nextElementSibling;
     if (el) {
@@ -257,7 +258,7 @@ export class PPaneer {
     }
   }
 
-  previous<T extends PPaneer>(filter: (el: PPaneer) => el is T): T | undefined {
+  previous<T extends Paneer>(filter: (el: Paneer) => el is T): T | undefined {
     if (!this.element) return;
     let el = this.element.previousElementSibling;
     if (el) {
@@ -266,7 +267,7 @@ export class PPaneer {
     }
   }
 
-  *nextSiblings<T extends PPaneer>(filter: (el: PPaneer) => el is T): Generator<T, undefined, undefined> {
+  *nextSiblings<T extends Paneer>(filter: (el: Paneer) => el is T): Generator<T, undefined, undefined> {
     if (!this.element) return;
     let el = this.element.nextElementSibling;
     while (el) {
@@ -277,7 +278,7 @@ export class PPaneer {
     return;
   }
 
-  *previousSiblings<T extends PPaneer>(filter: (el: PPaneer) => el is T): Generator<T, undefined, undefined> {
+  *previousSiblings<T extends Paneer>(filter: (el: Paneer) => el is T): Generator<T, undefined, undefined> {
     if (!this.element) return;
     let el = this.element.previousElementSibling;
     while (el) {
@@ -288,18 +289,18 @@ export class PPaneer {
     return;
   }
 
-  Ancestor<T extends PPaneer>(filter: (el: PPaneer) => el is T): T {
+  Ancestor<T extends Paneer>(filter: (el: Paneer) => el is T): T {
     const ancestor = this.ancestor(filter);
     if (!ancestor) throw "BAD ANCESTOR QUERY";
     return ancestor;
   }
 
 
-  ancestor<T extends PPaneer>(filter: (el: PPaneer) => el is T): T | undefined {
+  ancestor<T extends Paneer>(filter: (el: Paneer) => el is T): T | undefined {
     return this.ancestors(filter).next().value;
   }
 
-  *ancestors<T extends PPaneer>(filter: (el: PPaneer) => el is T): Generator<T, undefined, undefined> {
+  *ancestors<T extends Paneer>(filter: (el: Paneer) => el is T): Generator<T, undefined, undefined> {
     if (!this.element) {
       return;
     }
@@ -315,30 +316,30 @@ export class PPaneer {
     return undefined;
   }
 
-  Child<T extends PPaneer>(filter: (el: PPaneer) => el is T): T {
+  Child<T extends Paneer>(filter: (el: Paneer) => el is T): T {
     return this.Descendent(filter, 1);
   }
 
-  child<T extends PPaneer>(filter: (el: PPaneer) => el is T): T | undefined {
+  child<T extends Paneer>(filter: (el: Paneer) => el is T): T | undefined {
     return this.descendent(filter, 1);
   }
 
-  children<T extends PPaneer>(filter: (el: PPaneer) => el is T): T[] {
+  children<T extends Paneer>(filter: (el: Paneer) => el is T): T[] {
     return [...this.descendents(filter, 1)];
   }
 
-  Descendent<T extends PPaneer>(filter: (el: PPaneer) => el is T, maxDepth: number = Infinity): T {
+  Descendent<T extends Paneer>(filter: (el: Paneer) => el is T, maxDepth: number = Infinity): T {
     const descendent = this.descendent(filter, maxDepth);
     if (!descendent) throw "BAD DESCENDENT QUERY";
     return descendent;
   }
 
-  descendent<T extends PPaneer>(filter: (el: PPaneer) => el is T, maxDepth: number = Infinity): T | undefined {
+  descendent<T extends Paneer>(filter: (el: Paneer) => el is T, maxDepth: number = Infinity): T | undefined {
     return this.descendents(filter, maxDepth).next().value;
   }
 
   // Breadth first descendent traversal
-  *descendents<T extends PPaneer>(filter: (el: PPaneer) => el is T, maxDepth: number = Infinity): Generator<T, undefined, undefined> {
+  *descendents<T extends Paneer>(filter: (el: Paneer) => el is T, maxDepth: number = Infinity): Generator<T, undefined, undefined> {
     if (!this.element) {
       return;
     }
@@ -362,11 +363,11 @@ export class PPaneer {
   }
 }
 
-export interface AttachedPaneer extends PPaneer {
+export interface AttachedPaneer extends Paneer {
   element: HTMLElement;
 }
 
-export class AttachedPaneer extends PPaneer {
+export class AttachedPaneer extends Paneer {
   element: HTMLElement;
 
   constructor(el: HTMLElement) {
@@ -375,10 +376,10 @@ export class AttachedPaneer extends PPaneer {
   }
 }
 
-export function isPaneer(el: any): el is PPaneer {
-  return el && (el as PPaneer).paneer;
+export function isPaneer(el: any): el is Paneer {
+  return el && (el as Paneer).paneer;
 }
 
 export function isAttached(el: any): el is AttachedPaneer {
-  return isPaneer(el) && !!(el as PPaneer).element;
+  return isPaneer(el) && !!(el as Paneer).element;
 }

@@ -1,7 +1,7 @@
 import * as paper from "paper";
-import { PPaneer, Paneer, isPaneer, isAttached, AttachedPaneer } from "../../paneer/newPaneer";
+import { Paneer, Pan, isPaneer, isAttached, AttachedPaneer } from "../../paneer/newPaneer";
 
-export interface Tab extends PPaneer {
+export interface Tab extends Paneer {
   tab: true;
 
   label: string;
@@ -12,7 +12,7 @@ export function isTab(el: any): el is Tab {
   return el && (el as Tab).tab;
 }
 
-interface Directed extends PPaneer {
+interface Directed extends Paneer {
   directed: true;
   direction: "H" | "V";
   flexSizeChildren(): void;
@@ -24,14 +24,14 @@ function isDirected(e: any): e is Directed {
   return e && (e as Directed).directed;
 }
 
-export interface FlexSized extends PPaneer {
+export interface FlexSized extends Paneer {
   flexsized: true;
 
   size: string;
   resize?(): void;
 }
 
-interface FixedSized extends PPaneer {
+interface FixedSized extends Paneer {
   fixedsized: true;
   size: string;
 }
@@ -48,7 +48,7 @@ function isSized(el: any): el is (FlexSized | FixedSized) & AttachedPaneer {
   return isFixSized(el) || (isFlexSized(el));
 }
 
-export interface TabContainer extends PPaneer {
+export interface TabContainer extends Paneer {
   tabcontainer: true;
   currentTab: Tab | undefined;
 
@@ -63,7 +63,7 @@ export function isTabContainer(el: any): el is TabContainer {
 /**
  * Root node for panes.
  */
-export class Pane extends PPaneer implements Directed {
+export class Pane extends Paneer implements Directed {
   directed: true = true;
   direction: "V" | "H";
   addHandles: boolean;
@@ -95,7 +95,7 @@ export class Pane extends PPaneer implements Directed {
     this.resize();
   }
 
-  insert(child: FlexSized, after: PPaneer) {
+  insert(child: FlexSized, after: Paneer) {
     // Make sure everything is attached
     if (!isAttached(this) || !isAttached(child) || !isAttached(after)) return;
 
@@ -223,7 +223,7 @@ class PaneHandle extends AttachedPaneer implements FixedSized {
   size = "4px";
 
   constructor() {
-    super(Paneer/*html*/`<div ${{ height: "100%", overflow: "hidden" }}></div>`);
+    super(Pan/*html*/`<div ${{ height: "100%", overflow: "hidden" }}></div>`);
     this.dragState = { state: "null" };
 
     this.mousedragging = this.mousedragging.bind(this);

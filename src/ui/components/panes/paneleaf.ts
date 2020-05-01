@@ -1,8 +1,8 @@
-import { PPaneer, AttachedPaneer, PaneerAppend, isAttached, Paneer } from "../../paneer/newPaneer";
+import { Paneer, AttachedPaneer, AppendPan, isAttached, Pan } from "../../paneer/newPaneer";
 import { FlexSized, Tab, isTab, TabContainer, isTabContainer } from "./pane";
 import { isOverlay } from "./dragoverlay";
 
-export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
+export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
   flexsized: true = true;
   tabcontainer: true = true;
 
@@ -36,7 +36,7 @@ export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
       flexDirection: "column"
     };
 
-    PaneerAppend(this.element)/*html*/`
+    AppendPan(this.element)/*html*/`
     <div ${{
         width: "100%",
         height: "1.5em",
@@ -132,7 +132,7 @@ export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
       const selectStyles = current == tab ?
         { backgroundColor: "white", borderBottom: "none" } :
         { backgroundColor: "#999999", borderBottom: "1px solid black" };
-      this.tabLabels.append(Paneer/*html*/`
+      this.tabLabels.append(Pan/*html*/`
         <div ${{
           padding: "2px",
           width: "min-content",
@@ -206,9 +206,9 @@ class DraggedTab extends AttachedPaneer {
   tab: Tab;
 
   constructor(tab: Tab, initalEvent: MouseEvent) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
 
-    PaneerAppend(this.element)/*html*/`
+    AppendPan(this.element)/*html*/`
     <div ${{
         position: "absolute",
         padding: "2px",
@@ -264,7 +264,7 @@ class DraggedTab extends AttachedPaneer {
     if(isTabContainer(drop)) {
       drop.addTab(this.tab);
     }
-    
+
     this.remove(true);
   }
 }

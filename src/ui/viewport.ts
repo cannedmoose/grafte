@@ -1,6 +1,6 @@
 import * as paper from "paper";
 import { canvas } from "./utils/dom";
-import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { AttachedPaneer, Pan } from "./paneer/newPaneer";
 import { Tab } from "./components/panes/pane";
 
 export class Viewport extends AttachedPaneer implements Tab {
@@ -20,7 +20,7 @@ export class Viewport extends AttachedPaneer implements Tab {
 
 
   constructor() {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
     this.element.style.overflow = "hidden";
     this.mainCanvas = canvas({});
     this.backgroundCanvas = canvas({});

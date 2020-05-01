@@ -4,7 +4,7 @@ import { Editor, DOMConsole } from "./editor";
 import { LayerControls } from "./layers";
 import { Preview } from "./preview";
 import { Save, Load } from "./saveload";
-import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { AttachedPaneer, Pan } from "./paneer/newPaneer";
 import { isTabContainer, Tab } from "./components/panes/pane";
 
 export class NewPane extends AttachedPaneer {
@@ -14,7 +14,7 @@ export class NewPane extends AttachedPaneer {
   selector: HTMLSelectElement;
 
   constructor() {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
 
     this.selector = select({},
       ["toolbelt", "editor", "domconsole", "layers", "preview", "save", "load", "viewport"].map(s =>

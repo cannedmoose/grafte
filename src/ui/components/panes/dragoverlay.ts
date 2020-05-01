@@ -1,12 +1,12 @@
-import { PPaneer, Paneer, AttachedPaneer, isAttached } from "../../paneer/newPaneer";
+import { Paneer, Pan, AttachedPaneer, isAttached } from "../../paneer/newPaneer";
 
 type Intent = "tabdrop";
 
-export interface Overlay extends PPaneer {
+export interface Overlay extends Paneer {
   overlay: true;
 
-  top: PPaneer;
-  bottom: PPaneer;
+  top: Paneer;
+  bottom: Paneer;
 
   registerIntent(intent: Intent, paneer: AttachedPaneer): void;
   getIntent(intent: Intent): AttachedPaneer | undefined;
@@ -16,7 +16,7 @@ export function isOverlay(el: any): el is Overlay {
   return el && (el as Overlay).overlay;
 }
 
-export class DragOverlay extends PPaneer implements Overlay {
+export class DragOverlay extends Paneer implements Overlay {
   overlay: true = true;
 
   top: AttachedPaneer;
@@ -28,9 +28,9 @@ export class DragOverlay extends PPaneer implements Overlay {
     super();
 
     this.bottom = new AttachedPaneer(
-      Paneer/*html*/`<div ${{ position: "absolute", width: "100%", height: "100%" }}></div>`);
+      Pan/*html*/`<div ${{ position: "absolute", width: "100%", height: "100%" }}></div>`);
     this.top = new AttachedPaneer(
-      Paneer/*html*/`<div ${{ position: "absolute", width: "100%", height: "100%", pointerEvents: "none" }}></div>`);
+      Pan/*html*/`<div ${{ position: "absolute", width: "100%", height: "100%", pointerEvents: "none" }}></div>`);
   }
 
   attached() {

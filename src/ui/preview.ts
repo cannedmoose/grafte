@@ -2,7 +2,7 @@ import * as paper from "paper";
 import { canvas } from "./utils/dom";
 import { Viewport } from "./viewport";
 import { Tab } from "./components/panes/pane";
-import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { AttachedPaneer, Pan } from "./paneer/newPaneer";
 
 export class Preview extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -14,7 +14,7 @@ export class Preview extends AttachedPaneer implements Tab {
 
 
   constructor(project: paper.Project, viewport: Viewport) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
     this.canvas = canvas({});
     this.element.append(this.canvas);
     this.element.style.position = "absolute";

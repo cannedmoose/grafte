@@ -1,4 +1,4 @@
-import { PaneerAppend, AttachedPaneer, Paneer } from "../paneer/newPaneer";
+import { AppendPan, AttachedPaneer, Pan } from "../paneer/newPaneer";
 
 interface Options {
   aspectRatio: number;
@@ -17,8 +17,8 @@ export interface ButtonOptions {
 class Button extends AttachedPaneer {
   button: HTMLElement;
   constructor(b: ButtonOptions) {
-    super(Paneer/*html*/`<div></div>`);
-    PaneerAppend(this.element)/*html*/`
+    super(Pan/*html*/`<div></div>`);
+    AppendPan(this.element)/*html*/`
     <button
       alt="${b.alt}"
       ${el => { this.button = el }}
@@ -38,7 +38,7 @@ export class ButtonGrid extends AttachedPaneer implements Options {
   width: string;
 
   constructor(options: Options) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
     this.aspectRatio = options.aspectRatio;
     this.width = options.width;
 

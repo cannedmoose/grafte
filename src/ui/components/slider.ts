@@ -1,4 +1,4 @@
-import { PaneerAppend, AttachedPaneer, Paneer } from "../paneer/newPaneer";
+import { AppendPan, AttachedPaneer, Pan } from "../paneer/newPaneer";
 
 export interface SliderOptions {
   min?: number;
@@ -24,7 +24,7 @@ export class Slider extends AttachedPaneer {
   number: HTMLInputElement;
 
   constructor(options: SliderOptions) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
 
     this.style = {
       display: "flex",
@@ -37,7 +37,7 @@ export class Slider extends AttachedPaneer {
     this.max = options.max === undefined ? this.min + 1 : options.max;
     this.step = options.step === undefined ? (this.max - this.min) / 100 : options.step;
 
-    PaneerAppend(this.element)/*html*/`
+    AppendPan(this.element)/*html*/`
     <div>
       ${options.label || ""}
     </div>

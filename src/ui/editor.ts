@@ -11,7 +11,7 @@ import { textArea } from "./utils/dom";
 import { Tab } from "./components/panes/pane";
 import { Keyboard } from "./keyboard";
 import { GrafteHistory } from "../tools/history";
-import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { AttachedPaneer, Pan } from "./paneer/newPaneer";
 
 export class Editor extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -34,7 +34,7 @@ export class Editor extends AttachedPaneer implements Tab {
   };
 
   constructor(keyboard: Keyboard, history: GrafteHistory) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
     this.editor = CodeMirror(this.element, this.config);
     this.style.fontSize = "2em";
     this.style.height = "100%";

@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { PaneerAppend, AttachedPaneer, Paneer } from "../paneer/newPaneer";
+import { AppendPan, AttachedPaneer, Pan } from "../paneer/newPaneer";
 
 export interface Palete {
   colors: paper.Color[];
@@ -27,7 +27,7 @@ export class ColorPicker extends AttachedPaneer {
   _value: paper.Color;
 
   constructor(options: ColorPickerOptions) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
 
     this._value = options.value === undefined ? paper.Color.random() : options.value.clone();
     this.onChange = options.onChange;
@@ -42,7 +42,7 @@ export class ColorPicker extends AttachedPaneer {
       marginBottom: ".5em"
     };
 
-    PaneerAppend(this.element)/*html*/`
+    AppendPan(this.element)/*html*/`
     <div ${{ height: "min-conent" }}>
       ${options.label || ""}
     </div>

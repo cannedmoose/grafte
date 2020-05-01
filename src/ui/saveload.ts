@@ -1,6 +1,6 @@
 import * as paper from "paper";
 import { button, text, select, option, queryOrThrow, checkbox, div } from "./utils/dom";
-import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { AttachedPaneer, Pan } from "./paneer/newPaneer";
 import { Tab } from "./components/panes/pane";
 
 export class Save extends AttachedPaneer implements Tab {
@@ -9,7 +9,7 @@ export class Save extends AttachedPaneer implements Tab {
 
   page: paper.View;
   constructor(page: paper.View) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
 
     this.page = page;
 
@@ -119,7 +119,7 @@ export class Load extends AttachedPaneer implements Tab {
   label = "Load";
   page: paper.View;
   constructor(page: paper.View) {
-    super(Paneer/*html*/`<div></div>`);
+    super(Pan/*html*/`<div></div>`);
     this.fileUpload = this.fileUpload.bind(this);
 
     this.element.appendChild(div({}, [checkbox({ id: "loadclear", checked: "true" }, {}), text("Clear on load")]));

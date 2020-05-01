@@ -1,9 +1,9 @@
 import * as paper from "paper";
 import { canvas } from "./utils/dom";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
-import { NewTab } from "./components/panes/pane";
+import { Tab } from "./components/panes/pane";
 
-export class Viewport extends AttachedPaneer implements NewTab {
+export class Viewport extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Canvas";
   element: HTMLDivElement;

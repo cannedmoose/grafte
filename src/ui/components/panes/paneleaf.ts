@@ -1,5 +1,5 @@
 import { PPaneer, AttachedPaneer, PaneerAppend, isAttached, Paneer } from "../../paneer/newPaneer";
-import { FlexSized, NewTab, isTab } from "./pane";
+import { FlexSized, Tab, isTab } from "./pane";
 
 export class PaneLeaf extends PPaneer implements FlexSized {
   flexsized: true = true;
@@ -9,7 +9,7 @@ export class PaneLeaf extends PPaneer implements FlexSized {
   tabLabels: AttachedPaneer;
   content: AttachedPaneer;
 
-  tabs: NewTab[];
+  tabs: Tab[];
   selectedIndex: number;
 
   constructor(size: string) {
@@ -69,11 +69,11 @@ export class PaneLeaf extends PPaneer implements FlexSized {
     this.currentTab = this.tabs.find(() => true);
   }
 
-  get currentTab(): NewTab | undefined {
+  get currentTab(): Tab | undefined {
     return this.content.child(isTab);
   }
 
-  set currentTab(tab: NewTab | undefined) {
+  set currentTab(tab: Tab | undefined) {
     if (this.currentTab) {
       this.currentTab.remove();
     }
@@ -97,7 +97,7 @@ export class PaneLeaf extends PPaneer implements FlexSized {
     }
   }
 
-  addTab(tab: NewTab) {
+  addTab(tab: Tab) {
     if(!isAttached(tab) || !isAttached(this)) return;
 
     this.tabs.push(tab);
@@ -105,7 +105,7 @@ export class PaneLeaf extends PPaneer implements FlexSized {
     this.updateLabels();
   }
 
-  removeTab(tab: NewTab) {
+  removeTab(tab: Tab) {
     if(!isAttached(tab) || !isAttached(this)) return;
 
     const tabsLength = this.tabs.length;

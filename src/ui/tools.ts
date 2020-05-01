@@ -12,9 +12,9 @@ import { Slider } from "./components/slider";
 import { ColorPicker } from "./components/colorpicker";
 import { ChangeFlag } from "../changeflags";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
-import { NewTab } from "./components/panes/pane";
+import { Tab } from "./components/panes/pane";
 
-export class ToolBelt extends AttachedPaneer implements NewTab {
+export class ToolBelt extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Tools";
   grid: ButtonGrid;

@@ -1,9 +1,9 @@
 import * as paper from "paper";
 import { button, text, select, option, queryOrThrow, checkbox, div } from "./utils/dom";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
-import { NewTab } from "./components/panes/pane";
+import { Tab } from "./components/panes/pane";
 
-export class Save extends AttachedPaneer implements NewTab {
+export class Save extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Save";
 
@@ -114,7 +114,7 @@ function downloadBlob(blob: any, filename: string) {
 }
 
 
-export class Load extends AttachedPaneer implements NewTab {
+export class Load extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Load";
   page: paper.View;

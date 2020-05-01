@@ -1,14 +1,14 @@
 import * as paper from "paper";
 import { PPaneer, Paneer, style, isPaneer, isAttached, AttachedPaneer } from "../../paneer/newPaneer";
 
-export interface NewTab extends PPaneer {
+export interface Tab extends PPaneer {
   tab: true;
 
   label: string;
   resize?(): void;
 }
 
-export function isTab(el: any): el is NewTab {
+export function isTab(el: any): el is Tab {
   return el && el.tab;
 }
 

@@ -8,12 +8,12 @@ import "codemirror/addon/hint/javascript-hint.js";
 import "codemirror/theme/neat.css";
 import "codemirror/mode/javascript/javascript.js";
 import { textArea } from "./utils/dom";
-import { NewTab } from "./components/panes/pane";
+import { Tab } from "./components/panes/pane";
 import { Keyboard } from "./keyboard";
 import { GrafteHistory } from "../tools/history";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
 
-export class Editor extends AttachedPaneer implements NewTab {
+export class Editor extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Code";
 
@@ -80,7 +80,7 @@ export class Editor extends AttachedPaneer implements NewTab {
 }
 
 
-export class DOMConsole extends AttachedPaneer implements NewTab {
+export class DOMConsole extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Console";
 

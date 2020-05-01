@@ -1,19 +1,18 @@
 import * as paper from "paper";
 import { words } from "./utils/words";
-import { PaneerDOM } from "./paneer/paneerdom";
 import { ButtonGrid } from "./components/buttongrid";
-import { NewTab } from "./components/panes/pane";
+import { Tab } from "./components/panes/pane";
 import { Viewport } from "./viewport";
 import { ChangeFlag } from "../changeflags";
-import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { AttachedPaneer, Paneer, PaneerAppend } from "./paneer/newPaneer";
 
 const depthColors = ["Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
-export class LayerControls extends AttachedPaneer implements NewTab {
+export class LayerControls extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Layers";
 
   buttons: ButtonGrid;
-  layers: PaneerDOM;
+  layers: AttachedPaneer;
 
   labels: Map<number, Label>;
   refreshing: boolean;
@@ -33,7 +32,7 @@ export class LayerControls extends AttachedPaneer implements NewTab {
     this.buttons.add({ alt: "Move Forward", icon: "icons/forward.svg", onClick: () => { this.moveForward() } });
     this.buttons.add({ alt: "Move Back", icon: "icons/back.svg", onClick: () => { this.moveBack() } });
 
-    this.layers = new PaneerDOM();
+    this.layers = new AttachedPaneer(Paneer/*html*/`<div></div>`);
 
     this.style.height = "100%";
 
@@ -113,7 +112,7 @@ export class LayerControls extends AttachedPaneer implements NewTab {
       }
       label.depth = depth;
 
-      label.resize();
+      label.refresh();
       this.layers.append(label);
       if (item.children && label.open) {
         item.children.forEach(child => {
@@ -131,16 +130,10 @@ export class LayerControls extends AttachedPaneer implements NewTab {
 
     toRemove.forEach(key => {
       const label = this.labels.get(key);
-      if (label) {
-        this.layers.remove(label);
-        this.labels.delete(key);
-      }
+      label?.remove();
     });
 
     this.refreshing = false;
-  }
-
-  resize() {
   }
 
   serialize() {
@@ -155,56 +148,30 @@ export class LayerControls extends AttachedPaneer implements NewTab {
   }
 }
 
-// TODO(P1) convert to PPaneer
-class Label extends PaneerDOM {
+class Label extends AttachedPaneer {
   layers: LayerControls;
   item: paper.Item;
   depth: number;
-  spacing: PaneerDOM;
-  main: PaneerDOM;
-  container: PaneerDOM;
   controls: ButtonGrid;
-  clicker: PaneerDOM;
   open: boolean;
+  spacing: HTMLElement;
+  container: HTMLElement;
+  label: HTMLElement;
+  clicker: HTMLElement;
 
   constructor(layers: LayerControls, item: paper.Item, depth: number) {
-    super();
+    super(Paneer/*html*/`<div></div>`);
     this.layers = layers;
     this.item = item;
     this.depth = depth;
+    this.open = true;
 
-    this.style.display = "flex";
-    this.style.flexDirection = "row";
-    this.style.width = "100%";
-
-    this.container = new PaneerDOM();
-    this.container.style.width = "100%";
-    this.container.style.display = "flex";
-    this.container.style.justifyContent = "space-between"
-    this.container.style.flexDirection = "row";
-    this.container.style.padding = ".2em";
-
-    this.spacing = new PaneerDOM();
-    this.main = new PaneerDOM();
-    this.main.style.cursor = "default";
-    this.main.style.width = "100%";
-    this.main.style.paddingLeft = ".2em";
-    this.main.style.userSelect = "none";
-    this.main.element.addEventListener("click", (event: MouseEvent) => {
-      if (item.className == "Layer") {
-        const layer = item as paper.Layer;
-        layer.activate();
-      } else {
-        if (item.selected && event.shiftKey) {
-          item.selected = false;
-        } else {
-          if (!event.shiftKey) {
-            item.project.deselectAll();
-          }
-          item.selected = true;
-        }
-      }
-    })
+    this.style = {
+      display: "flex",
+      flexDirection: "row",
+      width: "100%",
+      height: "1.9em",
+    }
 
     this.controls = new ButtonGrid({ aspectRatio: 1, width: "1.4em" });
     this.controls.add({
@@ -213,42 +180,66 @@ class Label extends PaneerDOM {
       }
     });
 
-    this.open = true;
-    this.clicker = new PaneerDOM();
-    this.clicker.element.addEventListener("click", () => {
-      this.open = !this.open;
-      this.layers.requestRefresh();
-    });
-    this.clicker.style.flex = "0";
-    this.clicker.style.userSelect = "none";
-    this.container.append(this.clicker);
+    PaneerAppend(this.element)/*html*/`
+    <div ${el => this.container = el} ${{
+        display: "flex",
+        flexDirection: "row",
+        width: "100%",
+        justifyContent: "space-between",
+        padding: ".4em",
+        borderBottom: "1px dashed black"
+      }}>
+        <div ${el => this.spacing = el}></div>
+        <div 
+            ${{ userSelect: "none", flex: "0" }} 
+            ${ el => {
+              this.clicker = el;
+              el.addEventListener("click", () => {
+        this.open = !this.open;
+        this.layers.requestRefresh();
+      })}}></div>
+        <div 
+          ${{ cursor: "default", width: "100%", paddingLeft: "2em", userSelect: "none" }} 
+          ${el => {
+            this.label = el;
+        el.addEventListener("click", (event: MouseEvent) => {
+          if (item.className == "Layer") {
+            const layer = item as paper.Layer;
+            layer.activate();
+          } else {
+            if (item.selected && event.shiftKey) {
+              item.selected = false;
+            } else {
+              if (!event.shiftKey) {
+                item.project.deselectAll();
+              }
+              item.selected = true;
+            }
+          }
+        })
+      }}></div>
+      ${this.controls}
 
-    this.container.append(this.main);
-    this.container.element.append(this.controls.element);
-
-    this.append(this.spacing);
-    this.append(this.container);
-
-    this.resize();
+    </div>
+    `
+    this.refresh();
   }
 
-  resize() {
+  refresh() {
     this.spacing.style.width = `${this.depth * 8}px`;
     this.container.style.backgroundColor = depthColors[this.depth % depthColors.length];
     if (!this.item.name) {
       this.item.name = this.item.className.slice(0, 1) + words[Math.floor(Math.random() * words.length)]
     }
-    this.main.element.textContent = this.item.name;
-    this.main.style.fontWeight = (this.item.id == this.item.project.activeLayer.id)
-      || (this.item.className != "Layer" && this.item.selected)
+    this.label.textContent = this.item.name;
+    this.label.style.fontWeight = (this.item.id == this.item.project.activeLayer.id)
+    || (this.item.className != "Layer" && this.item.selected)
       ? "bold" : "normal";
 
     if (this.item.children) {
-      this.clicker.element.textContent = this.open ? "◒" : "◑";
+      this.clicker.textContent = this.open ? "◒" : "◑";
     } else {
-      this.clicker.element.textContent = "";
+      this.clicker.textContent = "";
     }
-
-    super.resize();
   }
 }

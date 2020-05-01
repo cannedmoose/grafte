@@ -69,7 +69,6 @@ export class Pane extends PPaneer implements Directed {
   addHandles: boolean;
 
   constructor(direction: "V" | "H", addHandles: boolean = true) {
-    // TODO(P1) add an overlay for drag/drop and menus.
     super();
     this.direction = direction;
     this.addHandles = addHandles;

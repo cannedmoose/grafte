@@ -12,7 +12,8 @@ export interface ButtonOptions {
   onClick: () => void
 }
 
-// TODO(P2) Total rewrite
+// TODO(P1) Total rewrite
+// this is for tools and redo leaf buttons (split/close/new tab, new tab should be a modaly thing)
 class Button extends AttachedPaneer {
   button: HTMLElement;
   constructor(b: ButtonOptions) {

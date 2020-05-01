@@ -46,7 +46,7 @@ function isElement(el: any): el is Element {
   return el && !!(el as Element).tagName;
 }
 
-// TODO(P2) cleanup, attach helper 
+// TODO(P1) cleanup, attach helper 
 export function WrappedPaneer(strings: TemplateStringsArray, ...params: PaneerRef[]): HTMLElement {
   // Note this should maybe be randomized
   const REF = "data-ref"
@@ -242,7 +242,7 @@ export class PPaneer {
   }
 
   remove(destruct: boolean = false) {
-    // TODO(P2) figure out proper lifecycle for nodemap removal
+    // TODO(P1) figure out proper lifecycle for nodemap removal
     if(destruct) NodeMap.delete(this.id);
     if (!isAttached(this)) return;
     this.element.remove();

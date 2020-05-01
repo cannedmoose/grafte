@@ -1,8 +1,9 @@
 import { PPaneer, AttachedPaneer, PaneerAppend, isAttached, Paneer } from "../../paneer/newPaneer";
-import { FlexSized, Tab, isTab } from "./pane";
+import { FlexSized, Tab, isTab, TabContainer } from "./pane";
 
-export class PaneLeaf extends PPaneer implements FlexSized {
+export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
   flexsized: true = true;
+  tabcontainer: true = true;
 
   size: string;
 

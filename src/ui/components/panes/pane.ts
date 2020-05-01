@@ -47,6 +47,19 @@ function isFixSized(el: any): el is FixedSized & AttachedPaneer {
 function isSized(el: any): el is (FlexSized | FixedSized) & AttachedPaneer {
   return isFixSized(el) || (isFlexSized(el));
 }
+
+export interface TabContainer extends PPaneer {
+  tabcontainer: true;
+  currentTab: Tab | undefined;
+
+  addTab(tab : Tab): void;
+  removeTab(tab : Tab): void;
+}
+
+export function isTabContainer(el: any) : el is TabContainer {
+  return el && (el as TabContainer).tabcontainer;
+}
+
 /**
  * Root node for panes.
  */

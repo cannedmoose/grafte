@@ -5,6 +5,7 @@ import { LayerControls } from "./layers";
 import { Preview } from "./preview";
 import { Save, Load } from "./saveload";
 import { AttachedPaneer, Paneer } from "./paneer/newPaneer";
+import { isTabContainer, Tab } from "./components/panes/pane";
 
 export class NewPane extends AttachedPaneer {
   tab: true = true;
@@ -26,7 +27,7 @@ export class NewPane extends AttachedPaneer {
   }
 
   create() {
-    let pane: any | null;
+    let pane: Tab | null;
 
     //@ts-ignore
     const ctx: any = window.ctx;
@@ -59,16 +60,12 @@ export class NewPane extends AttachedPaneer {
       default:
         pane = null;
     }
-
-    /*if (pane) {
+    
+    if (pane) {
       const container = this.Ancestor(isTabContainer);
-      container.addTab(new LeafTab(pane));
-      container.tabContent = pane;
-      [...container.descendents(isTab)]
-        .filter(tab => tab.pane == this)
-        .forEach(tab => container.removeTab(tab));
-      container.resize();
-    }*/
-
+      container.addTab(pane);
+      container.removeTab(this);
+      container.currentTab = pane;
+    }
   }
 }

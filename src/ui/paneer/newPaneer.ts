@@ -241,8 +241,9 @@ export class PPaneer {
     }
   }
 
-  remove() {
+  remove(destruct: boolean = false) {
     // TODO(P2) figure out proper lifecycle for nodemap removal
+    if(destruct) NodeMap.delete(this.id);
     if (!isAttached(this)) return;
     this.element.remove();
   }

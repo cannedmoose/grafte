@@ -61,7 +61,7 @@ export class Slider extends AttachedPaneer {
           width: "4.5em",
           border: "none",
           borderRadius: ".3em",
-          backgroundColor: "#AAAAAA",
+          backgroundColor: "Aquamarine",
           paddingLeft: ".5em",
           marginLeft: ".5em"
         }}

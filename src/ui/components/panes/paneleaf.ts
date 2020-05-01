@@ -1,5 +1,5 @@
 import { PPaneer, AttachedPaneer, PaneerAppend, isAttached, Paneer } from "../../paneer/newPaneer";
-import { FlexSized, Tab, isTab, TabContainer } from "./pane";
+import { FlexSized, Tab, isTab, TabContainer, isTabContainer } from "./pane";
 import { isOverlay } from "./dragoverlay";
 
 export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
@@ -43,7 +43,9 @@ export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
-        backgroundColor: "#333333"
+        // TODO(P2) make colors adjustable via css vars
+        // (loadable via file)
+        backgroundColor: "pink"
       }}>
       <div
         ${el => { this.tabLabels = new AttachedPaneer(el) }}
@@ -59,20 +61,14 @@ export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
       </div>
     </div>
     `
-    // TODO(P2) should remove these on detach...
-    // also actually reimplemnt dragondrop
-    this.element.addEventListener("mouseenter", () => {
-      //const boss = this.ancestor(isDragCoordinator);
-      //if (boss && boss.dragPreview.descendent(isAny)) {
-      this.style = { border: "4px solid #0099ff" };
-      //boss.dropTarget = this;
-      //}
+
+    this.element.addEventListener("mouseenter", (e) => {
+      this.onMouseEnter(e);
     });
 
-    this.element.addEventListener("mouseleave", () => {
+    /*this.element.addEventListener("mouseleave", () => {
       this.style = { border: "2px groove #999999" };
-      // Let next element reset drop target.
-    });
+    });*/
 
     this.currentTab = this.tabs.find(() => true);
   }
@@ -159,7 +155,7 @@ export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
               window.addEventListener("mousemove", this.onTabMouseMove);
               window.addEventListener("mouseup", this.onTabMouseUp);
             }
-            )
+          )
         }
         }
         >${tab.label}</div>
@@ -167,12 +163,19 @@ export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
     })
   }
 
+  updateSelection() {
+    // TODO(P3) actually update labels instead of recreating...
+    this.updateLabels();
+  }
+
   onTabMouseMove(e: MouseEvent) {
-    this.Ancestor(isOverlay).top.append(Paneer/*html*/`<div>TEST</div>`);
+    if (this.clickedTab) {
+      this.Ancestor(isOverlay).top.append(new DraggedTab(this.clickedTab, e));
+      this.removeTab(this.clickedTab);
+      this.clickedTab = undefined;
+    }
     window.removeEventListener("mousemove", this.onTabMouseMove);
     window.removeEventListener("mouseup", this.onTabMouseUp);
-    this.clickedTab = undefined;
-    // Break off tab, it belongs to the drag overlay now...
 
   }
 
@@ -183,9 +186,9 @@ export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
     window.removeEventListener("mouseup", this.onTabMouseUp);
   }
 
-  updateSelection() {
-    // TODO(P3) actually update labels instead of recreating...
-    this.updateLabels();
+  onMouseEnter(e: MouseEvent) {
+    if (!isAttached(this)) return;
+    this.Ancestor(isOverlay).registerIntent("tabdrop", this);
   }
 
   resize() {
@@ -196,24 +199,72 @@ export class PaneLeaf extends PPaneer implements FlexSized, TabContainer {
 }
 
 class DraggedTab extends AttachedPaneer {
+
+  highlight: HTMLElement;
+  dragging: HTMLElement;
+
   tab: Tab;
-  constructor(tab: Tab) {
+
+  constructor(tab: Tab, initalEvent: MouseEvent) {
     super(Paneer/*html*/`<div></div>`);
+
+    PaneerAppend(this.element)/*html*/`
+    <div ${{
+        position: "absolute",
+        padding: "2px",
+        width: "min-content",
+        cursor: "select",
+        userSelect: "none",
+        backgroundColor: "white",
+        border: '2px solid #0099ff',
+        fontSize: "1.5em"
+      }} ${el => this.dragging = el}>${tab.label}</div>
+    <div ${{position: "absolute"}} ${el => this.highlight = el}></div>
+    `
     this.style = {
-      padding: "2px",
-      width: "min-content",
-      borderLeft: "1px solid #333333",
-      borderRight: "1px solid #333333",
-      borderTop: "1px solid #333333",
-      borderTopRightRadius: "2px",
-      borderTopLeftRadius: "2px",
-      cursor: "select",
-      userSelect: "none",
-      backgroundColor: "white", borderBottom: "1px solid black"
+      position: "absolute",
+      width: "100%",
+      height: "100%"
     };
 
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+
+
+    this.onMouseMove(initalEvent);
+    window.addEventListener("mousemove", this.onMouseMove);
+    window.addEventListener("mouseup", this.onMouseUp);
 
     this.tab = tab;
   }
 
+  onMouseMove(event: MouseEvent) {
+    const domRect = this.dragging.getBoundingClientRect();
+    this.dragging.style.top = `${event.clientY - domRect.height / 2}px`;
+    this.dragging.style.left = `${event.clientX - domRect.width / 2}px`;
+
+    const drop = this.ancestor(isOverlay)?.getIntent("tabdrop");
+
+    if (drop) {
+      const dropRect = drop.element.getBoundingClientRect()
+      this.highlight.style.top = dropRect.top + "px";
+      this.highlight.style.left = dropRect.left + "px";
+      this.highlight.style.width = dropRect.width + "px";
+      this.highlight.style.height = dropRect.height + "px";
+
+      this.highlight.style.border = "solid 6px #0099ff";
+    }
+  }
+
+  onMouseUp(event: MouseEvent) {
+    window.removeEventListener("mousemove", this.onMouseMove);
+    window.removeEventListener("mouseup", this.onMouseUp);
+
+    const drop = this.ancestor(isOverlay)?.getIntent("tabdrop");
+    if(isTabContainer(drop)) {
+      drop.addTab(this.tab);
+    }
+    
+    this.remove(true);
+  }
 }

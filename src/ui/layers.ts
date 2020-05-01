@@ -6,7 +6,7 @@ import { Viewport } from "./viewport";
 import { ChangeFlag } from "../changeflags";
 import { AttachedPaneer, Paneer, PaneerAppend } from "./paneer/newPaneer";
 
-const depthColors = ["Chartreuse", "yellowgreen", "Aquamarine", "cyan", "red", "green", "blue", "pink"];
+const depthColors = ["pink", "Aquamarine", "Chartreuse", "yellowgreen", "Aquamarine", "red", "green", "blue"];
 export class LayerControls extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Layers";
@@ -130,7 +130,7 @@ export class LayerControls extends AttachedPaneer implements Tab {
 
     toRemove.forEach(key => {
       const label = this.labels.get(key);
-      label?.remove();
+      label?.remove(true);
     });
 
     this.refreshing = false;

@@ -1,10 +1,15 @@
 import { PPaneer, Paneer, AttachedPaneer, isAttached } from "../../paneer/newPaneer";
 
+type Intent = "tabdrop";
+
 export interface Overlay extends PPaneer {
   overlay: true;
 
   top: PPaneer;
   bottom: PPaneer;
+
+  registerIntent(intent: Intent, paneer: AttachedPaneer): void;
+  getIntent(intent: Intent): AttachedPaneer | undefined;
 }
 
 export function isOverlay(el: any): el is Overlay {
@@ -16,6 +21,8 @@ export class DragOverlay extends PPaneer implements Overlay {
 
   top: AttachedPaneer;
   bottom: AttachedPaneer;
+
+  tabDropZone?: AttachedPaneer;
 
   constructor() {
     super();
@@ -35,6 +42,14 @@ export class DragOverlay extends PPaneer implements Overlay {
 
     children.forEach(
       child => this.bottom.append(child));
+  }
+
+  registerIntent(intent: Intent, paneer: AttachedPaneer) {
+    this.tabDropZone = paneer;
+  }
+
+  getIntent(intern: Intent) {
+    return this.tabDropZone;
   }
 }
   

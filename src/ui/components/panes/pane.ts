@@ -130,9 +130,9 @@ export class Pane extends PPaneer implements Directed {
       const prev = child.previous(isFixSized);
 
       if (next) {
-        next.remove();
+        next.remove(true);
       } else if (prev) {
-        prev.remove();
+        prev.remove(true);
       }
     }
 

@@ -75,7 +75,7 @@ export class ColorPicker extends AttachedPaneer {
         minWidth: "6em",
         border: "none",
         borderRadius: ".3em",
-        backgroundColor: "#AAAAAA",
+        backgroundColor: "Aquamarine",
         paddingLeft: ".5em",
         marginLeft: ".5em"
       }}

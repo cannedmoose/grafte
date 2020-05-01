@@ -191,7 +191,7 @@ class Label extends AttachedPaneer {
       }}>
         <div ${el => this.spacing = el}></div>
         <div 
-            ${{ userSelect: "none", flex: "0" }} 
+            ${{ userSelect: "none", flex: "0", borderLeft: "1px solid black" }} 
             ${ el => {
               this.clicker = el;
               el.addEventListener("click", () => {

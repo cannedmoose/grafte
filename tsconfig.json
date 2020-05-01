@@ -9,6 +9,7 @@
       "strictNullChecks": true,
       "sourceMap": true,
       "rootDir": "src",
-      "outDir": "build"   
+      "outDir": "build",
+      "experimentalDecorators": true
   }
 }

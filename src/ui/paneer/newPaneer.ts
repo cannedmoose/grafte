@@ -1,5 +1,28 @@
 import { v4 as uuidv4 } from 'uuid';
 
+const DEBUG = true;
+
+const PANEER_ID_ATTRIB = "data-paneer-id";
+let NodeMap: Map<string, PPaneer> = new Map();
+
+function elementToPaneer(element: Element): PPaneer | undefined {
+  const id = element.getAttribute(PANEER_ID_ATTRIB);
+  if (!id) {
+    //throw "No id for element " + element;
+    return undefined;
+  }
+  const node = NodeMap.get(id);
+  if (!node) {
+    throw "No node for id " + id;
+  }
+  return node;
+}
+
+
+export function attach(paneer: PPaneer): (el: HTMLElement) => void {
+  return el => paneer.attach(el);
+}
+
 type PaneerRef =
   RefCallback
   | string
@@ -9,12 +32,18 @@ type RefCallback =
   ((t: HTMLElement) => void) // Callback function taking a html element
   | Partial<CSSStyleDeclaration> // A style decleration
   | Element // An element to include in the document
-  | AttachedPaneer; // An element to include in the document
+  | AttachedPaneer; // An element to include in the document;
 
-// TODO(P1) All of these is functions should cast to the type to prevent spelling mistakes...
+// TODO(P1) the difference between attached/non attached:
+//  attached don't take children
+//  non attached do (can be created then attached)
+//  this could be avoided by taking children on creation...
+//  can't think of a nice way to do the syntax in that case at the mo
+
+
 function isElement(el: any): el is Element {
   // NOTE hackey, assume if we have a tagName it's an element.
-  return (el && !!el.tagName);
+  return el && !!(el as Element).tagName;
 }
 
 // TODO(P2) cleanup, attach helper 
@@ -116,20 +145,6 @@ export function Paneer(strings: TemplateStringsArray, ...params: PaneerRef[]): H
   return child as HTMLElement;
 }
 
-export function style(element: HTMLElement | PPaneer, style: Partial<CSSStyleDeclaration>) {
-  const el = isPaneer(element) ? element.element : element;
-  if (!el) return;
-
-  for (let key in style) {
-    const s = style[key];
-    if (s) {
-      el.style[key] = s;
-    } else {
-      el.style[key] = "";
-    }
-  }
-}
-
 
 /****** NEW PANEER OBJECT FUNCTIONS */
 
@@ -139,8 +154,8 @@ export interface PPaneer {
   id: string,
   element?: HTMLElement,
 
-  attached?(element: HTMLElement): void,
-  detached?(element: HTMLElement): void
+  attached?(): void,
+  detached?(oldElement: HTMLElement): void
 }
 
 export class PPaneer {
@@ -169,6 +184,42 @@ export class PPaneer {
     }
   }
 
+  attach(el: HTMLElement) {
+    if (this.element == el) {
+      el.setAttribute(PANEER_ID_ATTRIB, this.id);
+      NodeMap.set(this.id, this);
+      return;
+    }
+  
+    const oldId = el.getAttribute(PANEER_ID_ATTRIB);
+    // Has attribute and is linked in NodeMap
+    // Detach it.
+    if (oldId && NodeMap.has(oldId)) {
+      const oldPan = NodeMap.get(oldId);
+      if (oldPan?.detached)
+        oldPan?.detached(el);
+      NodeMap.delete(oldId);
+    }
+  
+    // if paneer already has an element
+    if (this.element) {
+      const oldEl = this.element;
+      this.element = undefined;
+      oldEl.removeAttribute(PANEER_ID_ATTRIB);
+      if (this.detached) this.detached(oldEl);
+    }
+  
+    NodeMap.set(this.id, this);
+  
+    this.element = el;
+    el.setAttribute(PANEER_ID_ATTRIB, this.id);
+    // TODO(P3) set up better debugging
+    if (DEBUG) el.setAttribute("data-DEBUGTYPE", this.constructor.name);
+    if (this.attached) {
+      this.attached();
+    }
+  }
+
   append(child: AttachedPaneer | HTMLElement) {
     if (!isAttached(this)) return;
     if (isAttached(child)) {
@@ -191,9 +242,8 @@ export class PPaneer {
   }
 
   remove() {
+    // TODO(P2) figure out proper lifecycle for nodemap removal
     if (!isAttached(this)) return;
-    // TODO(P1) figure out a proper lifecycle
-    // should remove from nodemap at some point so we dont have dangling references.
     this.element.remove();
   }
 
@@ -320,65 +370,14 @@ export class AttachedPaneer extends PPaneer {
 
   constructor(el: HTMLElement) {
     super();
-    attach(this, el);
+    this.attach(el);
   }
 }
 
 export function isPaneer(el: any): el is PPaneer {
-  return el && el.paneer;
+  return el && (el as PPaneer).paneer;
 }
 
 export function isAttached(el: any): el is AttachedPaneer {
-  return isPaneer(el) && !!el.element;
-}
-
-const PANEER_ID_ATTRIB = "data-paneer-id";
-let NodeMap: Map<string, PPaneer> = new Map();
-
-function elementToPaneer(element: Element): PPaneer | undefined {
-  const id = element.getAttribute(PANEER_ID_ATTRIB);
-  if (!id) {
-    //throw "No id for element " + element;
-    return undefined;
-  }
-  const node = NodeMap.get(id);
-  if (!node) {
-    throw "No node for id " + id;
-    return undefined;
-  }
-  return node;
-}
-
-// TODO(P1) this should be a method of paneer
-export function attach(paneer: PPaneer, el: HTMLElement) {
-  if (paneer.element == el) {
-    el.setAttribute(PANEER_ID_ATTRIB, paneer.id);
-    NodeMap.set(paneer.id, paneer);
-    return;
-  }
-
-  const oldId = el.getAttribute(PANEER_ID_ATTRIB);
-  // Has attribute and is linked in NodeMap
-  // Detach it.
-  if (oldId && NodeMap.has(oldId)) {
-    const oldPan = NodeMap.get(oldId);
-    if (oldPan?.detached)
-      oldPan?.detached(el);
-  }
-
-  // if paneer already has an element
-  if (paneer.element) {
-    const oldEl = paneer.element;
-    paneer.element = undefined;
-    oldEl.removeAttribute(PANEER_ID_ATTRIB);
-    if (paneer.detached) paneer.detached(oldEl);
-  }
-
-  NodeMap.set(paneer.id, paneer);
-
-  paneer.element = el;
-  el.setAttribute(PANEER_ID_ATTRIB, paneer.id);
-  if (paneer.attached) {
-    paneer.attached(el);
-  }
+  return isPaneer(el) && !!(el as PPaneer).element;
 }

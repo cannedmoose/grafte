@@ -1,7 +1,7 @@
 import * as paper from "paper";
 import { LayerControls } from "./ui/layers";
 import { queryOrThrow } from "./ui/utils/dom";
-import {  ToolBelt } from "./ui/tools";
+import { ToolBelt } from "./ui/tools";
 import { Editor, DOMConsole } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
 import { Preview } from "./ui/preview";
@@ -12,6 +12,7 @@ import { Pane, PaneNode } from "./ui/components/panes/pane";
 import { Deserializer } from "./ui/paneer/deserializer";
 import { attach, PaneerAppend } from "./ui/paneer/newPaneer";
 import { PaneLeaf } from "./ui/components/panes/paneleaf";
+import { DragOverlay } from "./ui/components/panes/dragoverlay";
 
 /**
  * Important concepts:
@@ -59,7 +60,7 @@ window.onload = function () {
   }
   // @ts-ignore
   window.ctx = ctx;
-  
+
   const des = new Deserializer();
   //des.register("pane", Pane.deserialize);
   //des.register("node", PaneNode.deserialize);
@@ -83,34 +84,34 @@ window.onload = function () {
   } else {*/
 
   PaneerAppend(queryOrThrow("#menus"))/*html*/`
-  <div ${el => {
-    attach(new Pane("H"), el);
-  }}>
-    <div ${el => attach(new PaneNode("V", "15%"), el)}>
-      <div ${el => attach(new PaneLeaf("15%"), el)}>
-        ${new Preview(paper.project, viewport)}
+  <div ${attach(new DragOverlay())}>
+    <div ${attach(new Pane("H"))}>
+      <div ${attach(new PaneNode("V", "15%"))}>
+        <div ${attach(new PaneLeaf("15%"))}>
+          ${new Preview(paper.project, viewport)}
+        </div>
+        <div ${attach(new PaneLeaf("auto"))}>
+          ${new ToolBelt(history, keyboard)}
+        </div>
+        <div ${attach(new PaneLeaf("auto"))}>
+        </div>
       </div>
-      <div ${el => attach(new PaneLeaf("auto"), el)}>
-        ${new ToolBelt(history, keyboard)}
+      <div ${attach(new PaneNode("V", "auto"))}>
+        <div ${attach(new PaneLeaf("5fr"))}>
+          ${viewport}
+        </div>
+        <div ${attach(new PaneLeaf("2fr"))}>
+          ${new Editor(keyboard, history)}
+        </div>
       </div>
-      <div ${el => attach(new PaneLeaf("auto"), el)}>
-      </div>
-    </div>
-    <div ${el => attach(new PaneNode("V", "auto"), el)}>
-      <div ${el => attach(new PaneLeaf("5fr"), el)}>
-        ${viewport}
-      </div>
-      <div ${el => attach(new PaneLeaf("2fr"), el)}>
-        ${new Editor(keyboard, history)}
-      </div>
-    </div>
-    <div ${el => attach(new PaneNode("V", "10%"), el)}>
-      <div ${el => attach(new PaneLeaf("2fr"), el)}>
-        ${new LayerControls(viewport)}
-      </div>
-      <div ${el => attach(new PaneLeaf("1fr"), el)}>
-        ${new Save(viewport.page)}
-        ${new Load(viewport.page)}
+      <div ${attach(new PaneNode("V", "10%"))}>
+        <div ${attach(new PaneLeaf("2fr"))}>
+          ${new LayerControls(viewport)}
+        </div>
+        <div ${attach(new PaneLeaf("1fr"))}>
+          ${new Save(viewport.page)}
+          ${new Load(viewport.page)}
+        </div>
       </div>
     </div>
   </div>

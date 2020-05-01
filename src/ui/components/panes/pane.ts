@@ -1,5 +1,5 @@
 import * as paper from "paper";
-import { PPaneer, Paneer, style, isPaneer, isAttached, AttachedPaneer } from "../../paneer/newPaneer";
+import { PPaneer, Paneer, isPaneer, isAttached, AttachedPaneer } from "../../paneer/newPaneer";
 
 export interface Tab extends PPaneer {
   tab: true;
@@ -9,7 +9,7 @@ export interface Tab extends PPaneer {
 }
 
 export function isTab(el: any): el is Tab {
-  return el && el.tab;
+  return el && (el as Tab).tab;
 }
 
 interface Directed extends PPaneer {
@@ -21,7 +21,7 @@ interface Directed extends PPaneer {
 }
 
 function isDirected(e: any): e is Directed {
-  return e && e.directed;
+  return e && (e as Directed).directed;
 }
 
 export interface FlexSized extends PPaneer {
@@ -37,11 +37,11 @@ interface FixedSized extends PPaneer {
 }
 
 function isFlexSized(el: any): el is FlexSized & AttachedPaneer {
-  return el && !!el.flexsized && isAttached(el);
+  return el && (el as FlexSized).flexsized && isAttached(el);
 }
 
 function isFixSized(el: any): el is FixedSized & AttachedPaneer {
-  return el && !!el.fixedsized;
+  return el && (el as FixedSized).fixedsized && isAttached(el);
 }
 
 function isSized(el: any): el is (FlexSized | FixedSized) & AttachedPaneer {
@@ -52,11 +52,11 @@ export interface TabContainer extends PPaneer {
   tabcontainer: true;
   currentTab: Tab | undefined;
 
-  addTab(tab : Tab): void;
-  removeTab(tab : Tab): void;
+  addTab(tab: Tab): void;
+  removeTab(tab: Tab): void;
 }
 
-export function isTabContainer(el: any) : el is TabContainer {
+export function isTabContainer(el: any): el is TabContainer {
   return el && (el as TabContainer).tabcontainer;
 }
 
@@ -75,16 +75,15 @@ export class Pane extends PPaneer implements Directed {
     this.addHandles = addHandles;
   }
 
-  attached(el: HTMLElement) {
+  attached() {
     // TODO(P3) handle non-sized children nicely
     // Set Styles
-    style(el,
-      {
-        display: "grid",
-        height: "100%",
-        width: "100%",
-        overflow: "hidden"
-      });
+    this.style = {
+      display: "grid",
+      height: "100%",
+      width: "100%",
+      overflow: "hidden"
+    };
 
     // Add handles to children.
     if (this.addHandles) {
@@ -150,7 +149,7 @@ export class Pane extends PPaneer implements Directed {
   }
 
   resize() {
-        // Set up tracks for children
+    // Set up tracks for children
     const children = this.children(isSized);
     const tracks = children
       .map((child, index) => {
@@ -219,7 +218,7 @@ type DragState = { state: "null" } | { state: "dragging", startPoint: paper.Poin
  * A Handle for dragging a pane.
  */
 class PaneHandle extends AttachedPaneer implements FixedSized {
-  fixedsized:true = true;
+  fixedsized: true = true;
   mouseover: boolean;
   dragState: DragState;
   size = "4px";
@@ -311,38 +310,6 @@ class PaneHandle extends AttachedPaneer implements FixedSized {
     window.removeEventListener("mouseup", this.mouseup);
   }
 }
-
-/*export class DragBoss extends PaneerDOM implements DragCoordinator {
-  dragPreview: PaneerDOM;
-  rest: PaneerDOM;
-
-  dropTarget?: PaneerDOM;
-
-  constructor() {
-    super();
-
-    this.dragPreview = new PaneerDOM();
-    this.rest = new PaneerDOM();
-
-    this.rest = new PaneerDOM();
-    this.rest.style = {
-      width: "100%",
-      height: "100%",
-      position: "absolute"
-    }
-    this.append(this.rest);
-
-    this.dragPreview.style = {
-      position: "absolute",
-      width: "100%",
-      height: "100%",
-      pointerEvents: "none"
-    }
-
-    this.append(this.dragPreview);
-  }
-}*/
-
 
 /*export class LeafTab extends PaneerDOM implements Tab {
   pane: PaneerDOM;

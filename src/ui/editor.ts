@@ -48,7 +48,7 @@ export class Editor extends AttachedPaneer implements Tab {
     });
 
     this.editor.setSize("100%","100%");
-    this.editor.refresh();
+    window.requestAnimationFrame(() => this.editor.refresh());
   }
 
   resize() {

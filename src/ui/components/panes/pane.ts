@@ -17,11 +17,12 @@ interface Directed extends Paneer {
   directed: true;
   direction: "H" | "V";
   flexSizeChildren(): void;
+  removeChild(child: FlexSized | FixedSized): void;
 
   resize(): void;
 }
 
-function isDirected(e: any): e is Directed {
+export function isDirected(e: any): e is Directed {
   return e && (e as Directed).directed;
 }
 
@@ -87,8 +88,10 @@ export class Pane extends Paneer implements Directed {
 
     // Add handles to children.
     if (this.addHandles) {
-      this.children(isFlexSized).forEach(child => {
-        child.insertAdjacant(new PaneHandle());
+      this.children(isFlexSized).forEach((child, index, arr) => {
+        if (index < arr.length - 1) {
+          child.insertAdjacant(new PaneHandle());
+        }
       });
     }
 
@@ -123,7 +126,7 @@ export class Pane extends Paneer implements Directed {
 
   removeChild(child: FlexSized | FixedSized) {
     if (!isAttached(child)) return;
-    if (child.Ancestor(isPaneer).id === this.id) return;
+    if (child.Ancestor(isPaneer).id !== this.id) return;
 
     if (this.addHandles) {
       const next = child.next(isFixSized);
@@ -137,7 +140,17 @@ export class Pane extends Paneer implements Directed {
     }
 
     child.remove();
-    this.resize();
+
+    if (this.children(isSized).length == 0 && isSized(this)) {
+      const directedAncestor =  this.ancestor(isDirected);
+      directedAncestor?.flexSizeChildren();
+      directedAncestor?.removeChild(this);
+      this.remove(true);
+      // TODO(P3) handle case where there's no children at all...
+      // should just add a leaf.
+    } else {
+      this.resize();
+    }
   }
 
   flexSizeChildren() {

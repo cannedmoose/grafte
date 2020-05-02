@@ -1,7 +1,8 @@
 import { Paneer, AttachedPaneer, isAttached } from "../../paneer/paneer";
-import { FlexSized, Tab, isTab, TabContainer, isTabContainer } from "./pane";
+import { FlexSized, Tab, isTab, TabContainer, isTabContainer, isDirected } from "./pane";
 import { isOverlay } from "./dragoverlay";
 import { AppendPan, Pan } from "../../paneer/template";
+import { ToolTip } from "../tooltip";
 
 export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
   flexsized: true = true;
@@ -23,6 +24,7 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
 
     this.onTabMouseMove = this.onTabMouseMove.bind(this);
     this.onTabMouseUp = this.onTabMouseUp.bind(this);
+    this.closeTab = this.closeTab.bind(this);
   }
 
   attached() {
@@ -41,6 +43,8 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
       Pan/*html*/`<div ${{ display: "flex", flexDirection: "row", maxHeight: "1.5em", overflow: "hidden" }}></div>`);
     this.content = new AttachedPaneer(
       Pan/*html*/`<div ${{ position: "absolute", top: "0", bottom: "0", left: "0", right: "0", overflow: "hidden" }}></div>`);
+
+    
     AppendPan(this.element)/*html*/`
     <div ${{
         width: "100%",
@@ -53,7 +57,9 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
         backgroundColor: "pink"
       }}>
       ${this.tabLabels}
-      <div></div>
+      <div>
+        ${new ToolTip({icon: "icons/cross.svg", alt: "Close", size:"1.5em", onClick: this.closeTab})}
+      </div>
     </div>
     
     <div ${{ flex: "1", width: "100%" }}>
@@ -66,10 +72,6 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
     this.element.addEventListener("mouseenter", (e) => {
       this.onMouseEnter(e);
     });
-
-    /*this.element.addEventListener("mouseleave", () => {
-      this.style = { border: "2px groove #999999" };
-    });*/
 
     this.currentTab = this.tabs.find(() => true);
   }
@@ -190,6 +192,19 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
   onMouseEnter(e: MouseEvent) {
     if (!isAttached(this)) return;
     this.Ancestor(isOverlay).registerIntent("tabdrop", this);
+  }
+
+  closeTab() {
+    const tab = this.currentTab;
+    if (tab) {
+      this.removeTab(tab);
+      tab.remove(true);
+    } if (!this.currentTab) {
+      const parent = this.Ancestor(isDirected);
+      parent.flexSizeChildren();
+      parent.removeChild(this);
+      this.remove(true);
+    }
   }
 
   resize() {

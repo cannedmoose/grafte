@@ -18,6 +18,7 @@ interface Directed extends Paneer {
   direction: "H" | "V";
   flexSizeChildren(): void;
   removeChild(child: FlexSized | FixedSized): void;
+  insert(child: (FlexSized | FixedSized) & AttachedPaneer, after: (FlexSized | FixedSized) & AttachedPaneer): void;
 
   resize(): void;
 }
@@ -46,7 +47,7 @@ function isFixSized(el: any): el is FixedSized & AttachedPaneer {
   return el && (el as FixedSized).fixedsized && isAttached(el);
 }
 
-function isSized(el: any): el is (FlexSized | FixedSized) & AttachedPaneer {
+export function isSized(el: any): el is (FlexSized | FixedSized) & AttachedPaneer {
   return isFixSized(el) || (isFlexSized(el));
 }
 
@@ -99,12 +100,12 @@ export class Pane extends Paneer implements Directed {
     this.resize();
   }
 
-  insert(child: FlexSized, after: Paneer) {
-    // Make sure everything is attached
-    if (!isAttached(this) || !isAttached(child) || !isAttached(after)) return;
+  insert(child: (FlexSized | FixedSized) & AttachedPaneer, after: (FlexSized | FixedSized) & AttachedPaneer) {
+    // Make sure we are attached
+    if (!isAttached(this)) return;
 
     // Make sure insertion point is one of our children
-    if (after.Ancestor(isPaneer).id === this.id) return;
+    if (after.Ancestor(isDirected).id !== this.id) return;
 
     after.insertAdjacant(child);
     if (this.addHandles) {
@@ -118,13 +119,13 @@ export class Pane extends Paneer implements Directed {
     // Can only append sized children
     if (!isSized(child)) return;
 
-    if (this.addHandles && isFlexSized(child)) {
+    if (this.addHandles && isFlexSized(child) && this.children(isSized).length > 0) {
       super.append(new PaneHandle());
     }
     super.append(child);
   }
 
-  removeChild(child: FlexSized | FixedSized) {
+  removeChild(child: (FlexSized | FixedSized) & AttachedPaneer) {
     if (!isAttached(child)) return;
     if (child.Ancestor(isPaneer).id !== this.id) return;
 

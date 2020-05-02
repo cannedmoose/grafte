@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { PaneLeaf } from '../components/panes/paneleaf';
 
 const DEBUG = true;
 const PANEER_ID_ATTRIB = "data-paneer-id";
@@ -52,11 +53,11 @@ export class Paneer {
     }
   }
 
-  attach(el: HTMLElement) {
+  attach<T extends this>(el: HTMLElement): AttachedPaneer & T{
     if (this.element == el) {
       el.setAttribute(PANEER_ID_ATTRIB, this.id);
       NodeMap.set(this.id, this);
-      return;
+      return this as AttachedPaneer & T;
     }
   
     const oldId = el.getAttribute(PANEER_ID_ATTRIB);
@@ -86,6 +87,8 @@ export class Paneer {
     if (this.attached) {
       this.attached();
     }
+
+    return this as AttachedPaneer & T;
   }
 
   append(child: AttachedPaneer | HTMLElement) {
@@ -99,6 +102,7 @@ export class Paneer {
 
   insertAdjacant(sibling: AttachedPaneer, position: InsertPosition = "afterend") {
     if (!isAttached(this)) return;
+    
     this.element.insertAdjacentElement(position, sibling.element);
   }
 

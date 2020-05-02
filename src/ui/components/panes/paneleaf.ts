@@ -1,5 +1,5 @@
 import { Paneer, AttachedPaneer, isAttached } from "../../paneer/paneer";
-import { FlexSized, Tab, isTab, TabContainer, isTabContainer, isDirected } from "./pane";
+import { FlexSized, Tab, isTab, TabContainer, isTabContainer, isDirected, Pane, PaneNode, isSized } from "./pane";
 import { isOverlay } from "./dragoverlay";
 import { AppendPan, Pan } from "../../paneer/template";
 import { ToolTip } from "../tooltip";
@@ -25,6 +25,8 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
     this.onTabMouseMove = this.onTabMouseMove.bind(this);
     this.onTabMouseUp = this.onTabMouseUp.bind(this);
     this.closeTab = this.closeTab.bind(this);
+    this.vsplit = this.vsplit.bind(this);
+    this.hsplit = this.hsplit.bind(this);
   }
 
   attached() {
@@ -57,13 +59,15 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
         backgroundColor: "pink"
       }}>
       ${this.tabLabels}
-      <div>
+      <div ${{display: "flex", flexDirection: "row"}}>
+        ${new ToolTip({icon: "icons/vsplit.svg", alt: "VSplit", size:"1.5em", onClick: this.vsplit})}
+        ${new ToolTip({icon: "icons/hsplit.svg", alt: "HSplit", size:"1.5em", onClick: this.hsplit})}
         ${new ToolTip({icon: "icons/cross.svg", alt: "Close", size:"1.5em", onClick: this.closeTab})}
       </div>
     </div>
     
     <div ${{ flex: "1", width: "100%" }}>
-      <div ${{ position: "relative", width: "100%", height: "100%" }}>
+      <div ${{ position: "relative", width: "100%", height: "100%", backgroundColor: "pink" }}>
         ${this.content}
       </div>
     </div>
@@ -94,6 +98,7 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
       }
 
       this.content.append(tab);
+      tab.style.backgroundColor = "white";
       if (tab.resize) tab.resize();
     }
 
@@ -204,6 +209,35 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
       parent.flexSizeChildren();
       parent.removeChild(this);
       this.remove(true);
+    }
+  }
+
+  vsplit() {
+    this.split("V");
+  }
+
+  hsplit() {
+    this.split("H");
+  }
+
+  split(direction: "H" | "V") {
+    if(!isSized(this)) return;
+    const parent = this.Ancestor(isDirected);
+    if (parent.direction == direction) {
+      const newPane = new PaneLeaf(`auto`)
+        .attach(Pan/*html*/`<div></div>`);
+      parent.insert(newPane, this);
+    } else {
+      const newPane = new PaneNode(direction, this.size)
+        .attach(Pan/*html*/`<div></div>`);
+      parent.insert(newPane, this);
+      parent.removeChild(this);
+      this.size = "1fr";
+      newPane.append(this);
+      newPane.append(new PaneLeaf("1fr")
+        .attach(Pan/*html*/`<div></div>`));
+
+      parent.resize();
     }
   }
 

@@ -1,6 +1,7 @@
-import { Paneer, AttachedPaneer, AppendPan, isAttached, Pan } from "../../paneer/newPaneer";
+import { Paneer, AttachedPaneer, isAttached } from "../../paneer/paneer";
 import { FlexSized, Tab, isTab, TabContainer, isTabContainer } from "./pane";
 import { isOverlay } from "./dragoverlay";
+import { AppendPan, Pan } from "../../paneer/template";
 
 export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
   flexsized: true = true;
@@ -36,6 +37,10 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
       flexDirection: "column"
     };
 
+    this.tabLabels = new AttachedPaneer(
+      Pan/*html*/`<div ${{ display: "flex", flexDirection: "row", maxHeight: "1.5em", overflow: "hidden" }}></div>`);
+    this.content = new AttachedPaneer(
+      Pan/*html*/`<div ${{ position: "absolute", top: "0", bottom: "0", left: "0", right: "0", overflow: "hidden" }}></div>`);
     AppendPan(this.element)/*html*/`
     <div ${{
         width: "100%",
@@ -47,17 +52,13 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
         // (loadable via file)
         backgroundColor: "pink"
       }}>
-      <div
-        ${el => { this.tabLabels = new AttachedPaneer(el) }}
-        ${{ display: "flex", flexDirection: "row", maxHeight: "1.5em", overflow: "hidden" }}></div>
+      ${this.tabLabels}
       <div></div>
     </div>
     
     <div ${{ flex: "1", width: "100%" }}>
       <div ${{ position: "relative", width: "100%", height: "100%" }}>
-        <div 
-          ${el => { this.content = new AttachedPaneer(el) }}
-          ${{ position: "absolute", top: "0", bottom: "0", left: "0", right: "0", overflow: "hidden" }}></div>
+        ${this.content}
       </div>
     </div>
     `
@@ -219,7 +220,7 @@ class DraggedTab extends AttachedPaneer {
         border: '2px solid #0099ff',
         fontSize: "1.5em"
       }} ${el => this.dragging = el}>${tab.label}</div>
-    <div ${{position: "absolute"}} ${el => this.highlight = el}></div>
+    <div ${{ position: "absolute" }} ${el => this.highlight = el}></div>
     `
     this.style = {
       position: "absolute",
@@ -261,7 +262,7 @@ class DraggedTab extends AttachedPaneer {
     window.removeEventListener("mouseup", this.onMouseUp);
 
     const drop = this.ancestor(isOverlay)?.getIntent("tabdrop");
-    if(isTabContainer(drop)) {
+    if (isTabContainer(drop)) {
       drop.addTab(this.tab);
     }
 

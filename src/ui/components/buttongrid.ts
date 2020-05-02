@@ -1,4 +1,5 @@
-import { AppendPan, AttachedPaneer, Pan } from "../paneer/newPaneer";
+import { AttachedPaneer } from "../paneer/paneer";
+import { Pan, AppendPan } from "../paneer/template";
 
 interface Options {
   aspectRatio: number;

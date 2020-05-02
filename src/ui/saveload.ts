@@ -1,7 +1,8 @@
 import * as paper from "paper";
 import { button, text, select, option, queryOrThrow, checkbox, div } from "./utils/dom";
-import { AttachedPaneer, Pan } from "./paneer/newPaneer";
+import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
+import { Pan } from "./paneer/template";
 
 export class Save extends AttachedPaneer implements Tab {
   tab: true = true;

@@ -10,9 +10,9 @@ import { Save, Load } from "./ui/saveload";
 import { Keyboard } from "./ui/keyboard";
 import { Pane, PaneNode } from "./ui/components/panes/pane";
 import { Deserializer } from "./ui/paneer/deserializer";
-import { attach, AppendPan } from "./ui/paneer/newPaneer";
 import { PaneLeaf } from "./ui/components/panes/paneleaf";
 import { DragOverlay } from "./ui/components/panes/dragoverlay";
+import { AppendPan, attach } from "./ui/paneer/template";
 
 /**
  * Important concepts:
@@ -79,8 +79,6 @@ window.onload = function () {
     console.log(serialized);
     JSON.parse(serialized);
     const res = des.deserialize(JSON.parse(serialized));
-
-    dragBoss.rest.append(res);
   } else {*/
 
   AppendPan(queryOrThrow("#menus"))/*html*/`

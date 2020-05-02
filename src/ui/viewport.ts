@@ -1,7 +1,8 @@
 import * as paper from "paper";
 import { canvas } from "./utils/dom";
-import { AttachedPaneer, Pan } from "./paneer/newPaneer";
+import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
+import { Pan } from "./paneer/template";
 
 export class Viewport extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -25,15 +26,17 @@ export class Viewport extends AttachedPaneer implements Tab {
     this.mainCanvas = canvas({});
     this.backgroundCanvas = canvas({});
 
-    this.element.appendChild(this.backgroundCanvas);
-    this.element.appendChild(this.mainCanvas);
+    this.append(this.backgroundCanvas);
+    this.append(this.mainCanvas);
 
-    this.element.style.pointerEvents = "all";
-    this.element.style.position = "absolute";
-    this.element.style.top = "0px";
-    this.element.style.left = "0px";
-    this.element.style.bottom = "0px";
-    this.element.style.right = "0px";
+    this.style = {
+      pointerEvents: "all",
+      position: "absolute",
+      top: "0px",
+      bottom: "0px",
+      left: "0px",
+      right: "0px"
+    }
 
     this.mainCanvas.style.position = "absolute";
     this.mainCanvas.style.top = "0px";

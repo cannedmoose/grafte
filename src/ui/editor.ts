@@ -11,7 +11,8 @@ import { textArea } from "./utils/dom";
 import { Tab } from "./components/panes/pane";
 import { Keyboard } from "./keyboard";
 import { GrafteHistory } from "../tools/history";
-import { AttachedPaneer, Pan } from "./paneer/newPaneer";
+import { AttachedPaneer } from "./paneer/paneer";
+import { Pan } from "./paneer/template";
 
 export class Editor extends AttachedPaneer implements Tab {
   tab: true = true;

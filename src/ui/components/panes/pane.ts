@@ -1,5 +1,6 @@
 import * as paper from "paper";
-import { Paneer, Pan, isPaneer, isAttached, AttachedPaneer } from "../../paneer/newPaneer";
+import { Paneer, isPaneer, isAttached, AttachedPaneer } from "../../paneer/paneer";
+import { Pan } from "../../paneer/template";
 
 export interface Tab extends Paneer {
   tab: true;

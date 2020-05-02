@@ -4,7 +4,8 @@ import { ButtonGrid } from "./components/buttongrid";
 import { Tab } from "./components/panes/pane";
 import { Viewport } from "./viewport";
 import { ChangeFlag } from "../changeflags";
-import { AttachedPaneer, Pan, AppendPan } from "./paneer/newPaneer";
+import { AttachedPaneer } from "./paneer/paneer";
+import { Pan, AppendPan } from "./paneer/template";
 
 const depthColors = ["pink", "Aquamarine", "Chartreuse", "yellowgreen", "Aquamarine", "red", "green", "blue"];
 export class LayerControls extends AttachedPaneer implements Tab {

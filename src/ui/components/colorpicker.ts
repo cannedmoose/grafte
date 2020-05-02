@@ -1,5 +1,6 @@
 import * as paper from "paper";
-import { AppendPan, AttachedPaneer, Pan } from "../paneer/newPaneer";
+import { AttachedPaneer } from "../paneer/paneer";
+import { Pan, AppendPan } from "../paneer/template";
 
 export interface Palete {
   colors: paper.Color[];

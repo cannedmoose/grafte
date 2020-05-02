@@ -4,8 +4,9 @@ import { Editor, DOMConsole } from "./editor";
 import { LayerControls } from "./layers";
 import { Preview } from "./preview";
 import { Save, Load } from "./saveload";
-import { AttachedPaneer, Pan } from "./paneer/newPaneer";
+import { AttachedPaneer } from "./paneer/paneer";
 import { isTabContainer, Tab } from "./components/panes/pane";
+import { Pan } from "./paneer/template";
 
 export class NewPane extends AttachedPaneer {
   tab: true = true;

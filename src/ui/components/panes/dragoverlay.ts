@@ -1,4 +1,5 @@
-import { Paneer, Pan, AttachedPaneer, isAttached } from "../../paneer/newPaneer";
+import { Paneer, AttachedPaneer, isAttached } from "../../paneer/paneer";
+import { Pan } from "../../paneer/template";
 
 type Intent = "tabdrop";
 

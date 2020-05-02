@@ -11,8 +11,9 @@ import { ButtonGrid } from "./components/buttongrid";
 import { Slider } from "./components/slider";
 import { ColorPicker } from "./components/colorpicker";
 import { ChangeFlag } from "../changeflags";
-import { AttachedPaneer, Pan } from "./paneer/newPaneer";
+import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
+import { Pan } from "./paneer/template";
 
 export class ToolBelt extends AttachedPaneer implements Tab {
   tab: true = true;

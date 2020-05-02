@@ -7,31 +7,32 @@ import { pencilTool } from "../tools/pencil";
 import { elipseTool } from "../tools/elipse";
 import { rectangleTool } from "../tools/rectangle";
 import { Keyboard } from "./keyboard";
-import { ButtonGrid } from "./components/buttongrid";
 import { Slider } from "./components/slider";
 import { ColorPicker } from "./components/colorpicker";
 import { ChangeFlag } from "../changeflags";
-import { AttachedPaneer } from "./paneer/paneer";
+import { AttachedPaneer, isPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
+import { ToolTip } from "./components/tooltip";
 
 export class ToolBelt extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Tools";
-  grid: ButtonGrid;
+  grid: AttachedPaneer;
   constructor(history: GrafteHistory, keyboard: Keyboard) {
     super(Pan/*html*/`<div></div>`);
-    this.grid = new ButtonGrid({ aspectRatio: 1, width: "5vmin" });
+    this.grid = new AttachedPaneer(Pan/*html*/`<div></div>`);
+    this.grid.style = {display: "flex", flexDirection: "row", flexWrap: "wrap"};
     this.append(this.grid);
 
     // TODO(P3) work out how to center grid in available space.
     // consider this during grid resize
-    this.grid.add(this.toolOptions(selectTool(history, keyboard), "Select", "icons/select.png"));
-    this.grid.add(this.toolOptions(pointTool(history, keyboard), "Point", "icons/point.png"));
-    this.grid.add(this.toolOptions(penTool(history, keyboard), "Pen", "icons/pen.png"));
-    this.grid.add(this.toolOptions(pencilTool(history, keyboard), "Pencil", "icons/pencil.png"));
-    this.grid.add(this.toolOptions(elipseTool(history, keyboard), "Elipse", "icons/elipse.png"));
-    this.grid.add(this.toolOptions(rectangleTool(history, keyboard), "Rectangle", "icons/rectangle.png"));
+    this.grid.append(this.toolOptions(selectTool(history, keyboard), "Select", "icons/select.png"));
+    this.grid.append(this.toolOptions(pointTool(history, keyboard), "Point", "icons/point.png"));
+    this.grid.append(this.toolOptions(penTool(history, keyboard), "Pen", "icons/pen.png"));
+    this.grid.append(this.toolOptions(pencilTool(history, keyboard), "Pencil", "icons/pencil.png"));
+    this.grid.append(this.toolOptions(elipseTool(history, keyboard), "Elipse", "icons/elipse.png"));
+    this.grid.append(this.toolOptions(rectangleTool(history, keyboard), "Rectangle", "icons/rectangle.png"));
 
     this.append(new ToolOptions(history));
     this.append(new SelectionOptions(history, paper.project));
@@ -41,10 +42,17 @@ export class ToolBelt extends AttachedPaneer implements Tab {
 
   }
 
-  toolOptions(tool: paper.Tool, alt: string, icon: string) {
-    return {
-      icon, alt, onClick: () => tool.activate()
-    };
+  toolOptions(tool: paper.Tool, alt: string, icon: string): ToolTip {
+    return new ToolTip({
+      size: "3em", icon, alt, onClick: () => {
+        tool.activate();
+        this.grid.children(isPaneer).forEach(pan => {
+          //TODO(P3) do an actual check for tooltip children
+          // maybe do a toolgroup which acts similar to the previous buttongrid.
+          (pan as ToolTip).refresh();
+        })
+      }, isSelected: () => tool === paper.tool
+    });
   }
 
   refresh() {

@@ -1,6 +1,7 @@
 import * as paper from "paper";
 import { Paneer, isPaneer, isAttached, AttachedPaneer } from "../../paneer/paneer";
 import { Pan } from "../../paneer/template";
+import { Serializer } from "../../paneer/deserializer";
 
 export interface Tab extends Paneer {
   tab: true;
@@ -16,9 +17,10 @@ export function isTab(el: any): el is Tab {
 interface Directed extends Paneer {
   directed: true;
   direction: "H" | "V";
+  // TODO(P3) is this needed?
   flexSizeChildren(): void;
   removeChild(child: FlexSized | FixedSized): void;
-  insert(child: (FlexSized | FixedSized) & AttachedPaneer, after: (FlexSized | FixedSized) & AttachedPaneer): void;
+  insert(child: Sized, after: Sized): void;
 
   resize(): void;
 }
@@ -47,9 +49,11 @@ function isFixSized(el: any): el is FixedSized & AttachedPaneer {
   return el && (el as FixedSized).fixedsized && isAttached(el);
 }
 
-export function isSized(el: any): el is (FlexSized | FixedSized) & AttachedPaneer {
+export function isSized(el: any): el is Sized {
   return isFixSized(el) || (isFlexSized(el));
 }
+
+type Sized = (FlexSized | FixedSized) & AttachedPaneer;
 
 export interface TabContainer extends Paneer {
   tabcontainer: true;
@@ -100,7 +104,7 @@ export class Pane extends Paneer implements Directed {
     this.resize();
   }
 
-  insert(child: (FlexSized | FixedSized) & AttachedPaneer, after: (FlexSized | FixedSized) & AttachedPaneer) {
+  insert(child: Sized, after: Sized) {
     // Make sure we are attached
     if (!isAttached(this)) return;
 
@@ -123,9 +127,10 @@ export class Pane extends Paneer implements Directed {
       super.append(new PaneHandle());
     }
     super.append(child);
+    this.resize();
   }
 
-  removeChild(child: (FlexSized | FixedSized) & AttachedPaneer) {
+  removeChild(child: Sized) {
     if (!isAttached(child)) return;
     if (child.Ancestor(isPaneer).id !== this.id) return;
 
@@ -324,3 +329,55 @@ class PaneHandle extends AttachedPaneer implements FixedSized {
     window.removeEventListener("mouseup", this.mouseup);
   }
 }
+
+
+Serializer.register(
+  Pane,
+  (raw: any) => {
+    if (!raw || !raw.direction) throw `INVALID RAW FOR PANE`;
+    const result = new Pane(raw.direction);
+    result.attach(Pan/*html*/`<div></div>`);
+
+    const sizedChildren: Sized[] = raw.children
+      .map((child: any) => Serializer.deserialize(child))
+      .filter((el: any) => isSized(el));
+    
+    sizedChildren.forEach((child: Sized) => result.append(child));
+    return result;
+  },
+  (raw: Pane) => {
+    raw.flexSizeChildren();
+    return {
+      direction: raw.direction,
+      children: raw.children(isSized)
+        .filter(Serializer.canSerialize)
+        .map(Serializer.serialize)
+    }
+  }
+);
+
+Serializer.register(
+  PaneNode,
+  (raw: any) => {
+    if (!raw || !raw.direction || !raw.size) throw `INVALID RAW FOR PANENode`;
+    const result = new PaneNode(raw.direction, raw.size);
+    result.attach(Pan/*html*/`<div></div>`);
+
+    const sizedChildren: Sized[] = raw.children
+      .map((child: any) => Serializer.deserialize(child))
+      .filter((el: any) => isSized(el));
+    
+    sizedChildren.forEach((child: Sized) => result.append(child));
+    return result;
+  },
+  (raw: PaneNode) => {
+    raw.flexSizeChildren();
+    return {
+      direction: raw.direction,
+      size: raw.size,
+      children: raw.children(isSized)
+        .filter(Serializer.canSerialize)
+        .map(Serializer.serialize)
+    }
+  }
+);

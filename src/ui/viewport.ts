@@ -3,6 +3,7 @@ import { canvas } from "./utils/dom";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
+import { Serializer } from "./paneer/deserializer";
 
 export class Viewport extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -192,17 +193,17 @@ export class Viewport extends AttachedPaneer implements Tab {
     let newCenter = this.view.center.add(oldMouse.subtract(newMouse));
     this.view.center = newCenter;
   }
+}
 
-  serialize() {
-    return {
-      type: "viewport"
-    };
-  }
 
-  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Viewport {
-    // @ts-ignore
+Serializer.register(
+  Viewport,
+  (raw: any) => {
+    //@ts-ignore
     const ctx: any = window.ctx;
     return ctx.viewport;
+  },
+  (raw: Viewport) => {
+    return {};
   }
-
-}
+);

@@ -2,17 +2,19 @@ import * as paper from "paper";
 import { LayerControls } from "./ui/layers";
 import { queryOrThrow } from "./ui/utils/dom";
 import { ToolBelt } from "./ui/tools";
-import { Editor, DOMConsole } from "./ui/editor";
+import { Editor } from "./ui/editor";
 import { GrafteHistory } from "./tools/history";
 import { Preview } from "./ui/preview";
 import { Viewport } from "./ui/viewport";
-import { Save, Load } from "./ui/saveload";
+import { Load } from "./ui/load";
 import { Keyboard } from "./ui/keyboard";
 import { Pane, PaneNode } from "./ui/components/panes/pane";
-import { Deserializer } from "./ui/paneer/deserializer";
 import { PaneLeaf } from "./ui/components/panes/paneleaf";
 import { DragOverlay } from "./ui/components/panes/dragoverlay";
-import { AppendPan, attach } from "./ui/paneer/template";
+import { AppendPan, attach, Pan } from "./ui/paneer/template";
+import { elementToPaneer, AttachedPaneer, Paneer, isAttached } from "./ui/paneer/paneer";
+import { Save } from "./ui/save";
+import { Serializer } from "./ui/paneer/deserializer";
 
 /**
  * Important concepts:
@@ -56,68 +58,64 @@ window.onload = function () {
   });
 
   const ctx = {
-    keyboard, viewport, history
+    keyboard, viewport, history, elementToPaneer
   }
   // @ts-ignore
   window.ctx = ctx;
 
-  const des = new Deserializer();
-  //des.register("pane", Pane.deserialize);
-  //des.register("node", PaneNode.deserialize);
-  //des.register("leaf", PaneLeaf.deserialize);
-  des.register("editor", Editor.deserialize);
-  des.register("domconsole", DOMConsole.deserialize);
-  des.register("layers", LayerControls.deserialize);
-  des.register("preview", Preview.deserialize);
-  des.register("viewport", Viewport.deserialize);
-  des.register("save", Save.deserialize);
-  des.register("load", Load.deserialize);
-  des.register("toolbelt", ToolBelt.deserialize);
-
-  /*const serialized = window.localStorage.getItem("panes");
+  const serialized = window.localStorage.getItem("spanes");
+  let root: Paneer | undefined;
   if (serialized) {
-    console.log(serialized);
-    JSON.parse(serialized);
-    const res = des.deserialize(JSON.parse(serialized));
-  } else {*/
+    root = Serializer.deserialize<AttachedPaneer>(JSON.parse(serialized));
+  }
 
-  AppendPan(queryOrThrow("#menus"))/*html*/`
-  <div ${attach(new DragOverlay())}>
-    <div ${attach(new Pane("H"))}>
-      <div ${attach(new PaneNode("V", "15%"))}>
-        <div ${attach(new PaneLeaf("15%"))}>
-          ${new Preview(paper.project, viewport)}
+  if (!root) {
+    root = new DragOverlay();
+    Pan/*html*/`
+    <div ${attach(root)}>
+      <div ${attach(new Pane("H"))}>
+        <div ${attach(new PaneNode("V", "15%"))}>
+          <div ${attach(new PaneLeaf("15%"))}>
+            ${new Preview(paper.project, viewport)}
+          </div>
+          <div ${attach(new PaneLeaf("auto"))}>
+            ${new ToolBelt(history, keyboard)}
+          </div>
+          <div ${attach(new PaneLeaf("auto"))}>
+          </div>
         </div>
-        <div ${attach(new PaneLeaf("auto"))}>
-          ${new ToolBelt(history, keyboard)}
+        <div ${attach(new PaneNode("V", "auto"))}>
+          <div ${attach(new PaneLeaf("5fr"))}>
+            ${viewport}
+          </div>
+          <div ${attach(new PaneLeaf("2fr"))}>
+            ${new Editor(keyboard, history)}
+          </div>
         </div>
-        <div ${attach(new PaneLeaf("auto"))}>
-        </div>
-      </div>
-      <div ${attach(new PaneNode("V", "auto"))}>
-        <div ${attach(new PaneLeaf("5fr"))}>
-          ${viewport}
-        </div>
-        <div ${attach(new PaneLeaf("2fr"))}>
-          ${new Editor(keyboard, history)}
-        </div>
-      </div>
-      <div ${attach(new PaneNode("V", "10%"))}>
-        <div ${attach(new PaneLeaf("2fr"))}>
-          ${new LayerControls(viewport)}
-        </div>
-        <div ${attach(new PaneLeaf("1fr"))}>
-          ${new Save(viewport.page)}
-          ${new Load(viewport.page)}
+        <div ${attach(new PaneNode("V", "10%"))}>
+          <div ${attach(new PaneLeaf("2fr"))}>
+            ${new LayerControls(viewport)}
+          </div>
+          <div ${attach(new PaneLeaf("1fr"))}>
+            ${new Save(viewport.page)}
+            ${new Load(viewport.page)}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  `
+    `
+  }
+
+  if (isAttached(root)) {
+    queryOrThrow("#menus").append(root.element);
+  } else {
+    throw "NO ROOT ELEMENT";
+  }
 
   window.addEventListener("beforeunload", (e: Event) => {
-    //window.localStorage
-    //  .setItem("panes",JSON.stringify(dragBoss.rest.Descendent(isSerializable).serialize()));
+    if (isAttached(root)) {
+      window.localStorage.setItem("spanes", JSON.stringify(Serializer.serialize(root)));
+    }
 
     window.localStorage.setItem("project", paper.project.exportJSON());
   });

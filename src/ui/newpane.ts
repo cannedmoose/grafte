@@ -1,12 +1,14 @@
 import { text, option, select, button } from "./utils/dom";
 import { ToolBelt } from "./tools";
-import { Editor, DOMConsole } from "./editor";
+import { Editor } from "./editor";
 import { LayerControls } from "./layers";
 import { Preview } from "./preview";
-import { Save, Load } from "./saveload";
+import { Load } from "./load";
 import { AttachedPaneer } from "./paneer/paneer";
 import { isTabContainer, Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
+import { Save } from "./save";
+import { DOMConsole } from "./domconsole";
 
 export class NewPane extends AttachedPaneer {
   tab: true = true;

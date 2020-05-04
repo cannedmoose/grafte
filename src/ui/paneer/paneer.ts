@@ -5,7 +5,7 @@ const DEBUG = true;
 const PANEER_ID_ATTRIB = "data-paneer-id";
 let NodeMap: Map<string, Paneer> = new Map();
 
-function elementToPaneer(element: Element): Paneer | undefined {
+export function elementToPaneer(element: Element): Paneer | undefined {
   const id = element.getAttribute(PANEER_ID_ATTRIB);
   if (!id) {
     //throw "No id for element " + element;

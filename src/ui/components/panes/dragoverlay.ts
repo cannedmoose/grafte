@@ -1,5 +1,6 @@
 import { Paneer, AttachedPaneer, isAttached } from "../../paneer/paneer";
 import { Pan } from "../../paneer/template";
+import { Serializer } from "../../paneer/deserializer";
 
 type Intent = "tabdrop";
 
@@ -54,3 +55,31 @@ export class DragOverlay extends Paneer implements Overlay {
   }
 }
   
+
+Serializer.register(
+  DragOverlay,
+  (raw: any) => {
+    if (!raw) throw `INVALID RAW FOR DRAGOVERLAY`;
+    const result = new DragOverlay();
+    result.attach(Pan/*html*/`<div></div>`);
+
+    raw.top
+      .map((child: any) => Serializer.deserialize(child))
+      .filter(isAttached)
+      .forEach((t:AttachedPaneer) => result.top.append(t));
+    
+    raw.bottom
+      .map((child: any) => Serializer.deserialize(child))
+      .filter(isAttached)
+      .forEach((t:AttachedPaneer) => result.bottom.append(t));
+
+    return result;
+  },
+  (raw: DragOverlay) => {
+    return {
+      top: raw.top.children(isAttached).filter(Serializer.canSerialize).map(Serializer.serialize),
+      bottom: raw.bottom.children(isAttached).filter(Serializer.canSerialize).map(Serializer.serialize)
+      // TODO(P3) save current tab?
+    }
+  }
+);

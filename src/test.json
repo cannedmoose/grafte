@@ -1,0 +1,147 @@
+{
+  "serialized": true,
+  "className": "DragOverlay",
+  "data": {
+    "top": [],
+    "bottom": [
+      {
+        "serialized": true,
+        "className": "Pane",
+        "data": {
+          "direction": "H",
+          "children": [
+            {
+              "serialized": true,
+              "className": "PaneNode",
+              "data": {
+                "direction": "V",
+                "size": "15%",
+                "children": [
+                  {
+                    "serialized": true,
+                    "className": "PaneLeaf",
+                    "data": {
+                      "size": "15%",
+                      "tabs": [
+                        {
+                          "serialized": true,
+                          "className": "Preview",
+                          "data": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "serialized": true,
+                    "className": "PaneLeaf",
+                    "data": {
+                      "size": "auto",
+                      "tabs": [
+                        {
+                          "serialized": true,
+                          "className": "ToolBelt",
+                          "data": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "serialized": true,
+                    "className": "PaneLeaf",
+                    "data": {
+                      "size": "auto",
+                      "tabs": []
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "serialized": true,
+              "className": "PaneNode",
+              "data": {
+                "direction": "V",
+                "size": "auto",
+                "children": [
+                  {
+                    "serialized": true,
+                    "className": "PaneLeaf",
+                    "data": {
+                      "size": "5fr",
+                      "tabs": [
+                        {
+                          "serialized": true,
+                          "className": "Viewport",
+                          "data": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "serialized": true,
+                    "className": "PaneLeaf",
+                    "data": {
+                      "size": "2fr",
+                      "tabs": [
+                        {
+                          "serialized": true,
+                          "className": "Editor",
+                          "data": {
+                            "value": ""
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "serialized": true,
+              "className": "PaneNode",
+              "data": {
+                "direction": "V",
+                "size": "10%",
+                "children": [
+                  {
+                    "serialized": true,
+                    "className": "PaneLeaf",
+                    "data": {
+                      "size": "2fr",
+                      "tabs": [
+                        {
+                          "serialized": true,
+                          "className": "LayerControls",
+                          "data": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "serialized": true,
+                    "className": "PaneLeaf",
+                    "data": {
+                      "size": "1fr",
+                      "tabs": [
+                        {
+                          "serialized": true,
+                          "className": "Save",
+                          "data": {}
+                        },
+                        {
+                          "serialized": true,
+                          "className": "Load",
+                          "data": {}
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

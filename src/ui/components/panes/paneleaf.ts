@@ -3,6 +3,8 @@ import { FlexSized, Tab, isTab, TabContainer, isTabContainer, isDirected, Pane, 
 import { isOverlay } from "./dragoverlay";
 import { AppendPan, Pan } from "../../paneer/template";
 import { ToolTip } from "../tooltip";
+import { Serializer } from "../../paneer/deserializer";
+import { NewPane } from "../../newpane";
 
 export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
   flexsized: true = true;
@@ -14,7 +16,6 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
   content: AttachedPaneer;
 
   tabs: Tab[];
-  selectedIndex: number;
 
   clickedTab?: Tab;
 
@@ -27,6 +28,7 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
     this.closeTab = this.closeTab.bind(this);
     this.vsplit = this.vsplit.bind(this);
     this.hsplit = this.hsplit.bind(this);
+    this.newTab = this.newTab.bind(this);
   }
 
   attached() {
@@ -46,7 +48,7 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
     this.content = new AttachedPaneer(
       Pan/*html*/`<div ${{ position: "absolute", top: "0", bottom: "0", left: "0", right: "0", overflow: "hidden" }}></div>`);
 
-    
+
     AppendPan(this.element)/*html*/`
     <div ${{
         width: "100%",
@@ -59,10 +61,11 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
         backgroundColor: "pink"
       }}>
       ${this.tabLabels}
-      <div ${{display: "flex", flexDirection: "row"}}>
-        ${new ToolTip({icon: "icons/vsplit.svg", alt: "VSplit", size:"1.5em", onClick: this.vsplit})}
-        ${new ToolTip({icon: "icons/hsplit.svg", alt: "HSplit", size:"1.5em", onClick: this.hsplit})}
-        ${new ToolTip({icon: "icons/cross.svg", alt: "Close", size:"1.5em", onClick: this.closeTab})}
+      <div ${{ display: "flex", flexDirection: "row" }}>
+        ${new ToolTip({ icon: "icons/plus.svg", alt: "New Tab", size: "1.5em", onClick: this.newTab })}
+        ${new ToolTip({ icon: "icons/vsplit.svg", alt: "VSplit", size: "1.5em", onClick: this.vsplit })}
+        ${new ToolTip({ icon: "icons/hsplit.svg", alt: "HSplit", size: "1.5em", onClick: this.hsplit })}
+        ${new ToolTip({ icon: "icons/cross.svg", alt: "Close", size: "1.5em", onClick: this.closeTab })}
       </div>
     </div>
     
@@ -221,7 +224,7 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
   }
 
   split(direction: "H" | "V") {
-    if(!isSized(this)) return;
+    if (!isSized(this)) return;
     const parent = this.Ancestor(isDirected);
     if (parent.direction == direction) {
       const newPane = new PaneLeaf(`auto`)
@@ -239,6 +242,12 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
 
       parent.resize();
     }
+  }
+
+  newTab() {
+    const newTabTab = new NewPane();
+    this.addTab(newTabTab);
+    this.currentTab = newTabTab;
   }
 
   resize() {
@@ -318,3 +327,27 @@ class DraggedTab extends AttachedPaneer {
     this.remove(true);
   }
 }
+
+Serializer.register(
+  PaneLeaf,
+  (raw: any) => {
+    if (!raw || !raw.size) throw `INVALID RAW FOR PANELEAF`;
+    const result = new PaneLeaf(raw.size);
+    result.attach(Pan/*html*/`<div></div>`);
+    raw.tabs.forEach(
+      (rawTab: any) => {
+        result.addTab(Serializer.deserialize(rawTab));
+      }
+    );
+    return result;
+  },
+  (raw: PaneLeaf) => {
+    return {
+      size: raw.size,
+      tabs: raw.tabs
+        .filter(Serializer.canSerialize)
+        .map(Serializer.serialize)
+      // TODO(P3) save current tab?
+    }
+  }
+);

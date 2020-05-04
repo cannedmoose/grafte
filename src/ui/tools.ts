@@ -14,6 +14,7 @@ import { AttachedPaneer, isPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
 import { ToolTip } from "./components/tooltip";
+import { Serializer } from "./paneer/deserializer";
 
 export class ToolBelt extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -54,23 +55,20 @@ export class ToolBelt extends AttachedPaneer implements Tab {
       }, isSelected: () => tool === paper.tool
     });
   }
+}
 
-  refresh() {
-    //this.tools.forEach(tool => tool.refresh());
-  }
 
-  serialize() {
-    return {
-      type: "toolbelt"
-    };
-  }
-
-  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): ToolBelt {
-    // @ts-ignore
+Serializer.register(
+  ToolBelt,
+  (raw: any) => {
+    //@ts-ignore
     const ctx: any = window.ctx;
     return new ToolBelt(ctx.history, ctx.keyboard);
+  },
+  (raw: ToolBelt) => {
+    return {};
   }
-}
+);
 
 export class ToolOptions extends AttachedPaneer {
   constructor(history: GrafteHistory) {

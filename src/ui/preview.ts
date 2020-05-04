@@ -4,6 +4,7 @@ import { Viewport } from "./viewport";
 import { Tab } from "./components/panes/pane";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Pan } from "./paneer/template";
+import { Serializer } from "./paneer/deserializer";
 
 export class Preview extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -115,17 +116,17 @@ export class Preview extends AttachedPaneer implements Tab {
     }
     e.stop();
   }
-
-  serialize() {
-    return {
-      type: "preview"
-    };
-  }
-
-  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Preview {
-    // TODO(P3) Redo serialization
-    // @ts-ignore
-    const ctx: any = window.ctx;
-    return new Preview(paper.project, ctx.viewport);
-  }
 }
+
+Serializer.register(
+  Preview,
+  (raw: any) => {
+    //@ts-ignore
+    const ctx: any = window.ctx;
+    const node = new Preview(paper.project, ctx.viewport);
+    return node;
+  },
+  (raw: Preview) => {
+    return {};
+  }
+);

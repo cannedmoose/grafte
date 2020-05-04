@@ -6,6 +6,7 @@ import { ChangeFlag } from "../changeflags";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Pan, AppendPan } from "./paneer/template";
 import { ToolTip } from "./components/tooltip";
+import { Serializer } from "./paneer/deserializer";
 
 const depthColors = ["pink", "Aquamarine", "Chartreuse", "yellowgreen", "Aquamarine", "red", "green", "blue"];
 export class LayerControls extends AttachedPaneer implements Tab {
@@ -157,17 +158,6 @@ export class LayerControls extends AttachedPaneer implements Tab {
 
     this.refreshing = false;
   }
-
-  serialize() {
-    return {
-      type: "layers"
-    };
-  }
-
-  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): LayerControls {
-    //@ts-ignore
-    return new LayerControls(window.ctx.viewport);
-  }
 }
 
 class Label extends AttachedPaneer {
@@ -271,3 +261,16 @@ class Label extends AttachedPaneer {
     this.controls.refresh();
   }
 }
+
+Serializer.register(
+  LayerControls,
+  (raw: any) => {
+    //@ts-ignore
+    const ctx: any = window.ctx;
+    const node = new LayerControls(ctx.viewport);
+    return node;
+  },
+  (raw: LayerControls) => {
+    return {};
+  }
+);

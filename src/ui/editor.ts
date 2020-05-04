@@ -13,6 +13,7 @@ import { Keyboard } from "./keyboard";
 import { GrafteHistory } from "../tools/history";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Pan } from "./paneer/template";
+import { Serializer } from "./paneer/deserializer";
 
 export class Editor extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -63,61 +64,18 @@ export class Editor extends AttachedPaneer implements Tab {
       console.log(e.name, e.message);
     }
   }
+}
 
-  serialize() {
-    return {
-      type: "editor",
-      value: this.editor.getValue(),
-    };
-  }
-
-  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Editor {
+Serializer.register(
+  Editor,
+  (raw: any) => {
     //@ts-ignore
     const ctx: any = window.ctx;
     const node = new Editor(ctx.keyboard, ctx.history);
     node.editor.setValue(raw.value);
     return node;
+  },
+  (raw: Editor) => {
+    return {value: raw.editor.getValue()};
   }
-}
-
-
-export class DOMConsole extends AttachedPaneer implements Tab {
-  tab: true = true;
-  label = "Console";
-
-  constructor() {
-    super(textArea({readonly: "true"}));
-    const el = this.element as HTMLTextAreaElement; 
-    this.element.style.width = "100%";
-    this.element.style.height = "100%";
-    this.element.style.border = "none";
-    this.element.style.resize = "none";
-
-    // @ts-ignore
-    window.console = {
-      log:(...optionalParams: any[]) => {
-        el.value += ("> " + JSON.stringify(optionalParams) + "\n");
-        el.scrollTop = el.scrollHeight;
-      },
-      error:(...optionalParams: any[]) => {
-        el.value += ("> " + JSON.stringify(optionalParams) + "\n");
-        el.scrollTop = el.scrollHeight;
-      },
-      clear: () => { el.value = ""},
-      warn:(...optionalParams: any[]) => {
-        el.value += ("> " + JSON.stringify(optionalParams) + "\n");
-        el.scrollTop = el.scrollHeight;
-      },
-    }
-  }
-
-  serialize() {
-    return {
-      type: "domconsole"
-    };
-  }
-
-  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): DOMConsole {
-    return new DOMConsole();
-  }
-}
+);

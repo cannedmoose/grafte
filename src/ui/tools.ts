@@ -43,7 +43,7 @@ export class ToolBelt extends AttachedPaneer implements Tab {
     this.append(new ToolOptions(history));
     this.append(new SelectionOptions(history, paper.project));
 
-    // TODO(P2) figure out what we want to do with keyboard shortcuts...
+    // TODO(P3) figure out what we want to do with keyboard shortcuts...
     // I think we can let the tools refister them.
 
   }

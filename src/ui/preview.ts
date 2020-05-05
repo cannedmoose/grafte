@@ -29,7 +29,7 @@ export class Preview extends AttachedPaneer implements Tab {
     this.element.style.position = "absolute";
     this.project = project;
     this.view = new paper.CanvasView(project.content, this.canvas);
-    // TODO(P2) limit framerate...
+    // TODO(P3) limit framerate...
     //this.view.autoUpdate = false;
 
     this.view.drawSelection = false;

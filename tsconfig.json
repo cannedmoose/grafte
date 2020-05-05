@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-      "experimentalDecorators": true,
       "module": "es2015",
       "esModuleInterop": true,
       "resolveJsonModule": true,
@@ -11,6 +10,5 @@
       "sourceMap": true,
       "rootDir": "src",
       "outDir": "build",
-      "experimentalDecorators": true
   }
 }

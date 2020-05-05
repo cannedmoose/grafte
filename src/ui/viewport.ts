@@ -53,7 +53,6 @@ export class Viewport extends AttachedPaneer implements Tab {
       this.mainCanvas.focus();
     });
 
-    // TODO(P2) setup manually, needed for multi project support
     this.view = new paper.CanvasView(this.projectR.content, this.mainCanvas);
 
     this.projectR.content.view.on("changed", () => this.centerPage());

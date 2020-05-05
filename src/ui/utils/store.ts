@@ -1,6 +1,6 @@
 import * as paper from "paper";
 /*
-TODO(P1) Make multiple views more efficient 
+TODO(P3) Make multiple views more efficient 
 A few things:
 Page should only be drawn when explicitely asked to be
 EITHER THAT OR PAGE IS DRAWN AND THEN WE JUST USE RENDERED PAGE TO DRAW OTHER VIEWS
@@ -153,7 +153,7 @@ export class BackedResource<T, BT> implements Resource<T> {
   }
 }
 
-// TODO(P2) this is unsafe, type the JSON.
+// TODO(P3) this is unsafe, type the JSON.
 type JSONN = any;
 
 export class JSONResource extends BackedResource<JSONN, string> {
@@ -181,7 +181,7 @@ export class ProjectResource extends BackedResource<paper.Project, JSONN> {
       this._content.view.autoUpdate = false;
 
 
-      //TODO(P2) consider where to put project style setup.
+      //TODO(P3) consider where to put project style setup.
       this._content.currentStyle.strokeWidth = 1;
       this._content.currentStyle.strokeColor = new paper.Color("black");
       this._content.currentStyle.strokeCap = "round";

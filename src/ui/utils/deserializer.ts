@@ -58,5 +58,5 @@ class SerializeHelper {
 }
 
 
-// TODO(P2) describe serialized data structure for extra safety...
+// TODO(P3) describe serialized data structure for extra safety...
 export const Serializer = new SerializeHelper(); 

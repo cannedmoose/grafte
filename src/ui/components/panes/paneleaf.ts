@@ -56,7 +56,7 @@ export class PaneLeaf extends Paneer implements FlexSized, TabContainer {
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
-        // TODO(P2) make colors adjustable via css vars
+        // TODO(P3) make colors adjustable via css vars
         // (loadable via file)
         backgroundColor: "pink"
       }}>

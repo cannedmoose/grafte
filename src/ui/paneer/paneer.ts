@@ -240,7 +240,7 @@ export class Paneer {
   }
 }
 
-// TODO(P2) the difference between attached/non attached:
+// TODO(P4) the difference between attached/non attached:
 //  attached don't take children
 //  non attached do (can be created then attached)
 //  this could be avoided by taking children on creation...

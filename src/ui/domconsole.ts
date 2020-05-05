@@ -46,9 +46,13 @@ export class DOMConsole extends AttachedPaneer implements Tab, Console {
   }
 
   addLine(line: string) {
-    // TODO(P2) include time, max log size and collapse repeated 
+    // TODO(P4) include time, max log size and collapse repeated 
     this.el.value += "> " + line + "\n";
     this.el.scrollTop = this.el.scrollHeight;
+  }
+
+  clear() {
+    this.el.value = "------\n";
   }
 
   assert(condition?: boolean | undefined, message?: string | undefined, ...data: any[]): void;
@@ -86,11 +90,11 @@ export class DOMConsole extends AttachedPaneer implements Tab, Console {
   error(message?: any, ...optionalParams: any[]): void;
   error(message?: any, ...optionalParams: any[]): void;
   error(message?: any, ...optionalParams: any[]) {
-    // TODO(P2) highlight red.
+    // TODO(P4) highlight red.
     this.log(message, optionalParams);
   }
   exception(message?: string | undefined, ...optionalParams: any[]): void {
-    // TODO(P2) highlight red.
+    // TODO(P4) highlight red.
     this.error(message, optionalParams);
   }
   group(groupTitle?: string | undefined, ...optionalParams: any[]): void;

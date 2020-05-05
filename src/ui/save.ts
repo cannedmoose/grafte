@@ -11,7 +11,7 @@ export class Save extends AttachedPaneer implements Tab {
   label = "Save";
 
   project: Resource<paper.Project>;
-  // TODO(P1) save/load should use active project
+  // TODO(P1) save/load should use active project/ allow project select
   
   constructor(project: Resource<paper.Project>) {
     super(Pan/*html*/`<div></div>`);

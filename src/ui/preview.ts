@@ -1,38 +1,40 @@
 import * as paper from "paper";
 import { canvas } from "./utils/dom";
-import { Viewport } from "./viewport";
 import { Tab } from "./components/panes/pane";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Pan } from "./paneer/template";
-import { Serializer } from "./paneer/deserializer";
+import { Serializer } from "./utils/deserializer";
+import { Resource, Store } from "./utils/store";
 
 export class Preview extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Preview";
   canvas: HTMLCanvasElement;
   view: paper.CanvasView;
-  viewport: Viewport;
   resizing: boolean;
+  project: Resource<paper.Project>;
 
 
-  constructor(project: paper.Project, viewport: Viewport) {
+  constructor(project: Resource<paper.Project>) {
     super(Pan/*html*/`<div></div>`);
     this.canvas = canvas({});
     this.element.append(this.canvas);
+    this.style = {
+      position: "absolute",
+      top: "0",
+      bottom: "0",
+      left: "0",
+      right: "0"
+    }
     this.element.style.position = "absolute";
-    this.element.style.top = "0";
-    this.element.style.bottom = "0";
-    this.element.style.left = "0";
-    this.element.style.right = "0";
-    this.view = new paper.CanvasView(project, this.canvas);
+    this.project = project;
+    this.view = new paper.CanvasView(project.content, this.canvas);
+    // TODO(P2) limit framerate...
+    //this.view.autoUpdate = false;
 
     this.view.drawSelection = false;
-    this.viewport = viewport;
 
     this.view.on("updated", this.onViewUpdated.bind(this));
-    this.viewport.view.on("changed", this.resize.bind(this));
-    this.viewport.view.on("updated", () => { this.view.markDirty(); })
-
     this.view.on("mousedown", this.moveviewport.bind(this));
     this.view.on("mousedrag", this.moveviewport.bind(this));
     this.view.on("mouseup", this.moveviewport.bind(this));
@@ -42,8 +44,8 @@ export class Preview extends AttachedPaneer implements Tab {
     this.view.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
       ctx.save();
       ctx.lineWidth = 1;
-      let tl = matrix.transform(this.viewport.page.bounds.topLeft);
-      let br = matrix.transform(this.viewport.page.bounds.bottomRight);
+      let tl = matrix.transform(this.project.content.view.bounds.topLeft);
+      let br = matrix.transform(this.project.content.view.bounds.bottomRight);
 
       ctx.fillStyle = "#999999";
       let region = new Path2D();
@@ -55,10 +57,15 @@ export class Preview extends AttachedPaneer implements Tab {
 
       ctx.save();
 
-      tl = matrix.transform(this.viewport.project.view.bounds.topLeft);
-      br = matrix.transform(this.viewport.project.view.bounds.bottomRight);
       ctx.strokeStyle = "#009dec";
-      ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      for (let view of this.project.content.views) {
+        if (view === this.view || view === this.project.content.view) {
+          continue;
+        }
+        tl = matrix.transform(view.bounds.topLeft);
+        br = matrix.transform(view.bounds.bottomRight);
+        ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+      }
       ctx.restore();
     });
   }
@@ -76,10 +83,10 @@ export class Preview extends AttachedPaneer implements Tab {
     this.view.viewSize = new paper.Size(previewRect.width, previewRect.height);
 
     // Zoom out to show document
-    const minX = this.viewport.page.bounds.topLeft.x;
-    const minY = this.viewport.page.bounds.topLeft.y;
-    const maxX = this.viewport.page.bounds.bottomRight.x;
-    const maxY = this.viewport.page.bounds.bottomRight.y;
+    const minX = this.project.content.view.bounds.topLeft.x;
+    const minY = this.project.content.view.bounds.topLeft.y;
+    const maxX = this.project.content.view.bounds.bottomRight.x;
+    const maxY = this.project.content.view.bounds.bottomRight.y;
 
     // Always center on the document
     this.view.center = new paper.Point(
@@ -108,12 +115,13 @@ export class Preview extends AttachedPaneer implements Tab {
   }
 
   moveviewport(e: paper.MouseEvent) {
-    if (this.viewport.page.bounds.contains(e.point)) {
-      this.viewport.view.center = e.point;
-    } else {
-      // TODO(P2) find closest edge to stick to
-      this.viewport.view.center = e.point;
+    for (let view of this.project.content.views) {
+      if (view === this.view || view === this.project.content.view) {
+        continue;
+      }
+      view.center = e.point;
     }
+
     e.stop();
   }
 }
@@ -121,9 +129,7 @@ export class Preview extends AttachedPaneer implements Tab {
 Serializer.register(
   Preview,
   (raw: any) => {
-    //@ts-ignore
-    const ctx: any = window.ctx;
-    const node = new Preview(paper.project, ctx.viewport);
+    const node = new Preview(Store.getResource("project", "default"));
     return node;
   },
   (raw: Preview) => {

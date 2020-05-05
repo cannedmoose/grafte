@@ -3,7 +3,8 @@ import { canvas } from "./utils/dom";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
-import { Serializer } from "./paneer/deserializer";
+import { Serializer } from "./utils/deserializer";
+import { Resource, Store } from "./utils/store";
 
 export class Viewport extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -13,17 +14,18 @@ export class Viewport extends AttachedPaneer implements Tab {
   backgroundCanvas: HTMLCanvasElement;
 
   view: paper.View;
-
-  page: paper.CanvasView;
-  project: paper.Project;
   viewport: paper.View;
 
   resizing: boolean;
 
+  projectR: Resource<paper.Project>;
 
-  constructor() {
+
+  constructor(project: Resource<paper.Project>) {
     super(Pan/*html*/`<div></div>`);
     this.element.style.overflow = "hidden";
+    this.projectR = project;
+
     this.mainCanvas = canvas({});
     this.backgroundCanvas = canvas({});
 
@@ -52,18 +54,9 @@ export class Viewport extends AttachedPaneer implements Tab {
     });
 
     // TODO(P2) setup manually, needed for multi project support
-    paper.setup(this.mainCanvas);
-    this.project = paper.project;
-    this.view = paper.project.view;
+    this.view = new paper.CanvasView(this.projectR.content, this.mainCanvas);
 
-    const pageDom = canvas({
-      id: "canvaspage"
-    });
-    this.page = new paper.CanvasView(paper.project, pageDom);
-    this.page.viewSize = new paper.Size(600, 400);
-    this.page.drawSelection = false;
-    this.page.on("changed", () => this.centerPage());
-    this.page.element.style.imageRendering = "pixelated";
+    this.projectR.content.view.on("changed", () => this.centerPage());
 
     this.view.on("updated", this.onViewUpdated.bind(this));
     window.addEventListener("wheel", this.onScroll.bind(this));
@@ -71,13 +64,16 @@ export class Viewport extends AttachedPaneer implements Tab {
     window.onresize = () => this.resize();
 
     this.resizing = false;
+
+    this.resize();
+    this.centerPage();
   }
 
   onViewUpdated() {
     this.view.rawDraw((ctx: CanvasRenderingContext2D, matrix: paper.Matrix) => {
       ctx.save();
-      const tl = matrix.transform(this.page.bounds.topLeft);
-      const br = matrix.transform(this.page.bounds.bottomRight);
+      const tl = matrix.transform(this.projectR.content.view.bounds.topLeft);
+      const br = matrix.transform(this.projectR.content.view.bounds.bottomRight);
       ctx.fillStyle = "#99999999";
       let region = new Path2D();
       region.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
@@ -149,14 +145,14 @@ export class Viewport extends AttachedPaneer implements Tab {
   centerPage() {
     window.requestAnimationFrame(() => {
       if (this.view.bounds.width < this.view.bounds.height) {
-        this.view.zoom = this.view.bounds.height / (this.page.bounds.height * 1.1);
+        this.view.zoom = this.view.bounds.height / (this.projectR.content.view.bounds.height * 1.1);
       } else {
-        this.view.zoom = this.view.bounds.width / (this.page.bounds.width * 1.1);
+        this.view.zoom = this.view.bounds.width / (this.projectR.content.view.bounds.width * 1.1);
       }
 
       this.view.center = new paper.Point(
-        this.page.bounds.left + this.page.bounds.width / 2,
-        this.page.bounds.top + this.page.bounds.height / 2
+        this.projectR.content.view.bounds.left + this.projectR.content.view.bounds.width / 2,
+        this.projectR.content.view.bounds.top + this.projectR.content.view.bounds.height / 2
       );
     });
   }
@@ -169,11 +165,11 @@ export class Viewport extends AttachedPaneer implements Tab {
     e.preventDefault();
     let maxZoom, minZoom;
     if (this.view.bounds.width > this.view.bounds.height) {
-      maxZoom = this.view.viewSize.height / (this.page.viewSize.height * 2);
-      minZoom = this.view.viewSize.height / (this.page.viewSize.height * 0.2);
+      maxZoom = this.view.viewSize.height / (this.projectR.content.view.viewSize.height * 2);
+      minZoom = this.view.viewSize.height / (this.projectR.content.view.viewSize.height * 0.2);
     } else {
-      maxZoom = this.view.viewSize.width / (this.page.viewSize.width * 2);
-      minZoom = this.view.viewSize.width / (this.page.viewSize.width * 0.2);
+      maxZoom = this.view.viewSize.width / (this.projectR.content.view.viewSize.width * 2);
+      minZoom = this.view.viewSize.width / (this.projectR.content.view.viewSize.width * 0.2);
     }
 
     // TODO(P3) smoother zooming
@@ -199,9 +195,7 @@ export class Viewport extends AttachedPaneer implements Tab {
 Serializer.register(
   Viewport,
   (raw: any) => {
-    //@ts-ignore
-    const ctx: any = window.ctx;
-    return ctx.viewport;
+    return new Viewport(Store.getResource("project", "default"));
   },
   (raw: Viewport) => {
     return {};

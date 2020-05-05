@@ -14,12 +14,15 @@ import { AttachedPaneer, isPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
 import { ToolTip } from "./components/tooltip";
-import { Serializer } from "./paneer/deserializer";
+import { Serializer } from "./utils/deserializer";
 
 export class ToolBelt extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Tools";
   grid: AttachedPaneer;
+
+  // TODO(P1) should a project be passed or are we happy using the active one?
+
   constructor(history: GrafteHistory, keyboard: Keyboard) {
     super(Pan/*html*/`<div></div>`);
     this.grid = new AttachedPaneer(Pan/*html*/`<div></div>`);

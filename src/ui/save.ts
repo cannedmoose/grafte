@@ -3,17 +3,20 @@ import { button, text, select, option, queryOrThrow, checkbox, div } from "./uti
 import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
-import { Serializer } from "./paneer/deserializer";
+import { Serializer } from "./utils/deserializer";
+import { Resource, Store } from "./utils/store";
 
 export class Save extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Save";
 
-  page: paper.View;
-  constructor(page: paper.View) {
+  project: Resource<paper.Project>;
+  // TODO(P1) save/load should use active project
+  
+  constructor(project: Resource<paper.Project>) {
     super(Pan/*html*/`<div></div>`);
 
-    this.page = page;
+    this.project = project;
 
     this.element.appendChild(select({ id: "savemodeselector" }, [
       option({ value: "png", selected: "true" }, [text("png")]),
@@ -29,9 +32,9 @@ export class Save extends AttachedPaneer implements Tab {
     let blob;
     var typeSelector: HTMLSelectElement = queryOrThrow("#savemodeselector") as HTMLSelectElement;
 
-    function savePng() {
-      let png = this.page.element.toDataURL();
-      this.page.off("updated", savePng);
+    const savePng = () => {
+      let png = this.project.content.view.element.toDataURL();
+      this.project.content.view.off("updated", savePng);
       fetch(png)
         .then(response => response.blob())
         .then(blob => downloadBlob(blob, "image.png"));
@@ -39,11 +42,12 @@ export class Save extends AttachedPaneer implements Tab {
 
     switch (typeSelector.value) {
       case "png":
-        this.page.markDirty();
-        this.page.on("updated", savePng.bind(this));
+        this.project.content.view.markDirty();
+        this.project.content.view.on("updated", savePng);
+        this.project.content.view.update();
         break;
       case "svg":
-        let svg = paper.project.exportSVG({ asString: true, bounds: this.page.bounds }) as string;
+        let svg = this.project.content.exportSVG({ asString: true, bounds: this.project.content.view.bounds }) as string;
         blob = new Blob(
           [svg],
           { type: 'image/svg' }
@@ -52,28 +56,16 @@ export class Save extends AttachedPaneer implements Tab {
         break;
       case "json":
         blob = new Blob(
-          [paper.project.exportJSON({ asString: true })],
+          [this.project.content.exportJSON({ asString: true })],
           { type: 'text/json' }
         );
         downloadBlob(blob, "image.json");
         break;
       case "local":
-        const json = paper.project.exportJSON({ asString: true });
+        const json = this.project.content.exportJSON({ asString: true });
         window.localStorage.setItem("saved", json);
         break;
     }
-  }
-
-  serialize() {
-    return {
-      type: "save"
-    };
-  }
-
-  static deserialize(raw: any, deserializer: (raw: { type: string }) => any): Save {
-    // @ts-ignore
-    const ctx:any = window.ctx;
-    return new Save(ctx.viewport.page);
   }
 }
 
@@ -121,7 +113,7 @@ Serializer.register(
   (raw: any) => {
     //@ts-ignore
     const ctx: any = window.ctx;
-    return new Save(ctx.viewport.page);
+    return new Save(Store.getResource("project", "default"));
   },
   (raw: Save) => {
     return {};

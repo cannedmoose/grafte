@@ -1,7 +1,7 @@
 import * as paper from "paper";
 import { Paneer, isPaneer, isAttached, AttachedPaneer } from "../../paneer/paneer";
 import { Pan } from "../../paneer/template";
-import { Serializer } from "../../paneer/deserializer";
+import { Serializer } from "../../utils/deserializer";
 
 export interface Tab extends Paneer {
   tab: true;

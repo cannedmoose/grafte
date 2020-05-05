@@ -13,7 +13,7 @@ import { Keyboard } from "./keyboard";
 import { GrafteHistory } from "../tools/history";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Pan } from "./paneer/template";
-import { Serializer } from "./paneer/deserializer";
+import { Serializer } from "./utils/deserializer";
 
 export class Editor extends AttachedPaneer implements Tab {
   tab: true = true;

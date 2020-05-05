@@ -1,6 +1,6 @@
 import { Paneer, AttachedPaneer, isAttached } from "../../paneer/paneer";
 import { Pan } from "../../paneer/template";
-import { Serializer } from "../../paneer/deserializer";
+import { Serializer } from "../../utils/deserializer";
 
 type Intent = "tabdrop";
 

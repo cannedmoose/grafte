@@ -1,13 +1,16 @@
 import * as paper from "paper";
 import { Keyboard } from "../ui/keyboard";
+import { Resource } from "../ui/utils/store";
 
 export class GrafteHistory {
   history: string[];
-  project: paper.Project;
+  project: Resource<paper.Project>;
 
   present: number;
 
-  constructor(project: paper.Project) {
+
+
+  constructor(project: Resource<paper.Project>) {
     this.project = project;
 
     this.history = [];
@@ -18,7 +21,7 @@ export class GrafteHistory {
     // TODO(P3) store as diff, this is pushing up our memory limits
     // Sketcher did it, look into their impl
     this.history = [...this.history.slice(0, this.present + 1)];
-    this.history.push(this.project.exportJSON({ asString: true }));
+    this.history.push(this.project.content.exportJSON({ asString: true }));
     this.present = this.history.length - 1;
   }
 
@@ -27,9 +30,9 @@ export class GrafteHistory {
       return;
     }
     this.present = this.present - 1;
-    this.project.deselectAll();
-    this.project.clear();
-    this.project.importJSON(this.history[this.present]);
+    this.project.content.deselectAll();
+    this.project.content.clear();
+    this.project.content.importJSON(this.history[this.present]);
     this.reselect();
   }
 
@@ -38,14 +41,14 @@ export class GrafteHistory {
       return;
     }
     this.present = this.present + 1;
-    this.project.deselectAll();
-    this.project.clear();
-    this.project.importJSON(this.history[this.present]);
+    this.project.content.deselectAll();
+    this.project.content.clear();
+    this.project.content.importJSON(this.history[this.present]);
     this.reselect();
   }
 
   reselect() {
-    const selected = [...this.project.selectedItems];
+    const selected = [...this.project.content.selectedItems];
     selected
       .filter(item => item.className == "Layer")
       .forEach(item => (item.selected = false));

@@ -1,7 +1,7 @@
 import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
 import { textArea } from "./utils/dom";
-import { Serializer } from "./paneer/deserializer";
+import { Serializer } from "./utils/deserializer";
 
 export class DOMConsole extends AttachedPaneer implements Tab {
   tab: true = true;

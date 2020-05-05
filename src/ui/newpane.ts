@@ -9,6 +9,8 @@ import { isTabContainer, Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
 import { Save } from "./save";
 import { DOMConsole } from "./domconsole";
+import { Store } from "./utils/store";
+import { Viewport } from "./viewport";
 
 export class NewPane extends AttachedPaneer {
   tab: true = true;
@@ -46,19 +48,19 @@ export class NewPane extends AttachedPaneer {
         pane = new DOMConsole();
         break;
       case "layers":
-        pane = new LayerControls(ctx.viewport);
+        pane = new LayerControls(Store.getResource("project", "default"));
         break;
       case "preview":
-        pane = new Preview(ctx.viewport.project, ctx.viewport);
+        pane = new Preview(Store.getResource("project", "default"));
         break;
       case "save":
-        pane = new Save(ctx.viewport.page);
+        pane = new Save(Store.getResource("project", "default"));
         break;
       case "load":
-        pane = new Load(ctx.viewport.page);
+        pane = new Load(Store.getResource("project", "default"));
         break;
       case "viewport":
-        pane = ctx.viewport;
+        pane = new Viewport(Store.getResource("project", "default"));
         break;
       default:
         pane = null;

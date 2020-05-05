@@ -3,7 +3,7 @@ import { FlexSized, Tab, isTab, TabContainer, isTabContainer, isDirected, Pane, 
 import { isOverlay } from "./dragoverlay";
 import { AppendPan, Pan } from "../../paneer/template";
 import { ToolTip } from "../tooltip";
-import { Serializer } from "../../paneer/deserializer";
+import { Serializer } from "../../utils/deserializer";
 import { NewPane } from "../../newpane";
 
 export class PaneLeaf extends Paneer implements FlexSized, TabContainer {

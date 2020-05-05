@@ -1,12 +1,12 @@
 import * as paper from "paper";
 import { words } from "./utils/words";
 import { Tab } from "./components/panes/pane";
-import { Viewport } from "./viewport";
 import { ChangeFlag } from "../changeflags";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Pan, AppendPan } from "./paneer/template";
 import { ToolTip } from "./components/tooltip";
-import { Serializer } from "./paneer/deserializer";
+import { Serializer } from "./utils/deserializer";
+import { Resource, Store } from "./utils/store";
 
 const depthColors = ["pink", "Aquamarine", "Chartreuse", "yellowgreen", "Aquamarine", "red", "green", "blue"];
 export class LayerControls extends AttachedPaneer implements Tab {
@@ -19,7 +19,9 @@ export class LayerControls extends AttachedPaneer implements Tab {
   labels: Map<number, Label>;
   refreshing: boolean;
 
-  constructor(viewport: Viewport) {
+  project: Resource<paper.Project>;
+
+  constructor(project: Resource<paper.Project>) {
     super(Pan/*html*/`<div></div>`);
 
     this.refreshing = false;
@@ -68,7 +70,9 @@ export class LayerControls extends AttachedPaneer implements Tab {
 
     this.refreshLayers = this.refreshLayers.bind(this);
 
-    viewport.project.on("changed", (e: any) => {
+    this.project = project;
+
+    this.project.content.on("changed", (e: any) => {
       if (e.flags && e.flags & (ChangeFlag.CHILDREN | ChangeFlag.SELECTION)) {
         this.requestRefresh();
       }
@@ -83,14 +87,14 @@ export class LayerControls extends AttachedPaneer implements Tab {
   }
 
   moveForward() {
-    if (paper.project.selectedItems.length == 0) {
-      const active = paper.project.activeLayer;
-      const newIndex = Math.min(paper.project.activeLayer.index + 1, paper.project.layers.length);
-      paper.project.insertLayer(newIndex, paper.project.activeLayer);
+    if (this.project.content.selectedItems.length == 0) {
+      const active = this.project.content.activeLayer;
+      const newIndex = Math.min(this.project.content.activeLayer.index + 1, this.project.content.layers.length);
+      this.project.content.insertLayer(newIndex, this.project.content.activeLayer);
       active.activate();
       return;
     }
-    paper.project.selectedItems.forEach(item => {
+    this.project.content.selectedItems.forEach(item => {
       const index = item.parent.children.indexOf(item);
       if (index < item.parent.children.length - 1) {
         item.parent.insertChild(index + 1, item);
@@ -99,15 +103,15 @@ export class LayerControls extends AttachedPaneer implements Tab {
   }
 
   moveBack() {
-    if (paper.project.selectedItems.length == 0) {
-      const active = paper.project.activeLayer;
-      const newIndex = Math.max(paper.project.activeLayer.index - 1, 0);
-      paper.project.insertLayer(newIndex, paper.project.activeLayer);
+    if (this.project.content.selectedItems.length == 0) {
+      const active = this.project.content.activeLayer;
+      const newIndex = Math.max(this.project.content.activeLayer.index - 1, 0);
+      this.project.content.insertLayer(newIndex, this.project.content.activeLayer);
       active.activate();
       return;
     }
 
-    paper.project.selectedItems.forEach(item => {
+    this.project.content.selectedItems.forEach(item => {
       const index = item.parent.children.indexOf(item);
       if (index > 0) {
         item.parent.insertChild(index - 1, item);
@@ -117,7 +121,7 @@ export class LayerControls extends AttachedPaneer implements Tab {
 
   refreshLayers(d: number) {
     const seenIds: Set<number> = new Set();
-    const project = paper.project;
+    const project = this.project.content;
 
     const toVisit: { item: paper.Item, depth: number }[] =
       project.layers.map(item => { return { item, depth: 0 } });
@@ -265,9 +269,7 @@ class Label extends AttachedPaneer {
 Serializer.register(
   LayerControls,
   (raw: any) => {
-    //@ts-ignore
-    const ctx: any = window.ctx;
-    const node = new LayerControls(ctx.viewport);
+    const node = new LayerControls(Store.getResource("project", "default"));
     return node;
   },
   (raw: LayerControls) => {

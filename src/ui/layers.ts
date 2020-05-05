@@ -77,6 +77,8 @@ export class LayerControls extends AttachedPaneer implements Tab {
         this.requestRefresh();
       }
     });
+
+    this.requestRefresh();
   }
 
   requestRefresh() {

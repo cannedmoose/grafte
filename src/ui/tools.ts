@@ -22,6 +22,8 @@ export class ToolBelt extends AttachedPaneer implements Tab {
   grid: AttachedPaneer;
 
   // TODO(P1) should a project be passed or are we happy using the active one?
+  // PRETTY HAPPY TO USE THE ACTIVE ONE
+  // need some indication of which project is active though
 
   constructor(history: GrafteHistory, keyboard: Keyboard) {
     super(Pan/*html*/`<div></div>`);
@@ -83,14 +85,14 @@ export class ToolOptions extends AttachedPaneer {
       label: "Stroke Width",
       min: 0,
       max: 50,
-      value: 1,
+      value: paper.project.currentStyle.strokeWidth,
       step: .01,
       onChange: (value) => {
         paper.project.currentStyle.strokeWidth = value;
       }
     }));
     this.append(new ColorPicker({
-      value: paper.project.currentStyle.strokeColor || undefined,
+      value: paper.project.currentStyle.strokeColor || new paper.Color("black"),
       label: "Stroke",
       onChange: (val: paper.Color) => {
         paper.project.currentStyle.strokeColor = val;
@@ -98,7 +100,7 @@ export class ToolOptions extends AttachedPaneer {
     }));
 
     this.append(new ColorPicker({
-      value: paper.project.currentStyle.strokeColor || undefined,
+      value: paper.project.currentStyle.strokeColor || new paper.Color("black"),
       label: "Fill",
       onChange: (val: paper.Color) => {
         paper.project.currentStyle.fillColor = val;

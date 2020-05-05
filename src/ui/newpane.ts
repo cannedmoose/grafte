@@ -42,7 +42,7 @@ export class NewPane extends AttachedPaneer {
         pane = new ToolBelt(ctx.history, ctx.keyboard);
         break;
       case "editor":
-        pane = new Editor(ctx.keyboard, ctx.history);
+        pane = new Editor(Store.getResource("string", "code"), ctx.keyboard, ctx.history);
         break;
       case "domconsole":
         pane = new DOMConsole();

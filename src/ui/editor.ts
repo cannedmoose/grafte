@@ -7,20 +7,21 @@ import "codemirror/addon/hint/show-hint.css";
 import "codemirror/addon/hint/javascript-hint.js";
 import "codemirror/theme/neat.css";
 import "codemirror/mode/javascript/javascript.js";
-import { textArea } from "./utils/dom";
 import { Tab } from "./components/panes/pane";
 import { Keyboard } from "./keyboard";
 import { GrafteHistory } from "../tools/history";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Pan } from "./paneer/template";
 import { Serializer } from "./utils/deserializer";
+import { Resource, Store } from "./utils/store";
 
 export class Editor extends AttachedPaneer implements Tab {
   tab: true = true;
-  label = "Code";
+  label: string;
 
   public editor: CodeMirror.Editor;
   editorDiv: HTMLElement;
+  value: Resource<string>;
 
   config: CodeMirror.EditorConfiguration = {
     tabSize: 4,
@@ -35,8 +36,11 @@ export class Editor extends AttachedPaneer implements Tab {
     //inputStyle: "contenteditable"
   };
 
-  constructor(keyboard: Keyboard, history: GrafteHistory) {
+  constructor(value: Resource<string>, keyboard: Keyboard, history: GrafteHistory) {
     super(Pan/*html*/`<div></div>`);
+    this.label = value.key;
+    this.value = value;
+
     this.editor = CodeMirror(this.element, this.config);
     this.style.fontSize = "2em";
     this.style.height = "100%";
@@ -49,6 +53,11 @@ export class Editor extends AttachedPaneer implements Tab {
     });
 
     this.editor.setSize("100%","100%");
+    this.editor.setValue(value.content);
+    this.editor.on("change", () => {
+      this.value.content = this.editor.getValue();
+    });
+    // TODO add watcher for content change...
     window.requestAnimationFrame(() => this.editor.refresh());
   }
 
@@ -71,11 +80,10 @@ Serializer.register(
   (raw: any) => {
     //@ts-ignore
     const ctx: any = window.ctx;
-    const node = new Editor(ctx.keyboard, ctx.history);
-    node.editor.setValue(raw.value);
+    const node = new Editor(Store.getResource("string", raw.key || "code"), ctx.keyboard, ctx.history);
     return node;
   },
   (raw: Editor) => {
-    return {value: raw.editor.getValue()};
+    return {key: raw.value.key};
   }
 );

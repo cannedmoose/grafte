@@ -170,24 +170,23 @@ export class ProjectResource extends BackedResource<paper.Project, JSONN> {
     let size = this.backing.content.size;
     let project = this.backing.content.project;
 
-    if (!size) size = [1, 1];
+    if (!size) size = [600, 400];
     if (!project) project = {};
-
-    //TODO consider where to put project style setup.
-    /**
-     * paper.project.currentStyle.strokeWidth = 1;
-  paper.project.currentStyle.strokeColor = new paper.Color("black");
-  paper.project.currentStyle.strokeCap = "round";
-  paper.project.currentStyle.strokeJoin = "round";
-     */
 
     if (!this._content) {
       paper.activate();
       paper.install(window);
       this._content = new paper.Project(size);
-      this._content.view.viewSize = new paper.Size(600, 400);
       this._content.view.drawSelection = false;
       this._content.view.autoUpdate = false;
+
+
+      //TODO(P2) consider where to put project style setup.
+      this._content.currentStyle.strokeWidth = 1;
+      this._content.currentStyle.strokeColor = new paper.Color("black");
+      this._content.currentStyle.strokeCap = "round";
+      this._content.currentStyle.strokeJoin = "round";
+     
     }
 
     this._content.clear();
@@ -253,5 +252,14 @@ class ResourceStore {
     }
   }
 }
+
+// TODO(P1) list all resources of givent type
+
+// TODO(P1) allow inserting resource
+// want to have an "active project resource"
+// so that we can have things just using the active project and be aware when they change.
+
+// TODO(P1) allow views as a resource
+// want to encode size and center
 
 export const Store = new ResourceStore();

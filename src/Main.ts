@@ -25,7 +25,7 @@ import { Store } from "./ui/utils/store";
  */
 
 window.onload = function () {
-  // Set up main viewport
+  // TODO(P2) move all of this into an INIT file
 
   // Project setup.
   paper.settings.handleSize = 6;
@@ -85,7 +85,7 @@ window.onload = function () {
             ${new Viewport(defaultProject)}
           </div>
           <div ${attach(new PaneLeaf("2fr"))}>
-            ${new Editor(keyboard, history)}
+            ${new Editor(Store.getResource("string", "code"), keyboard, history)}
           </div>
         </div>
         <div ${attach(new PaneNode("V", "10%"))}>

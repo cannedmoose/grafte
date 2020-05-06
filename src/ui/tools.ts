@@ -27,6 +27,7 @@ export class ToolBelt extends AttachedPaneer implements Tab {
 
   constructor(history: GrafteHistory, keyboard: Keyboard) {
     super(Pan/*html*/`<div></div>`);
+    this.style = {height: "100%"};
     this.grid = new AttachedPaneer(Pan/*html*/`<div></div>`);
     this.grid.style = {display: "flex", flexDirection: "row", flexWrap: "wrap"};
     this.append(this.grid);

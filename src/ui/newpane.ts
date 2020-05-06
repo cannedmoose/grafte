@@ -54,10 +54,10 @@ export class NewPane extends AttachedPaneer {
         pane = new Preview(Store.getResource("project", "default"));
         break;
       case "save":
-        pane = new Save(Store.getResource("project", "default"));
+        pane = new Save();
         break;
       case "load":
-        pane = new Load(Store.getResource("project", "default"));
+        pane = new Load();
         break;
       case "viewport":
         pane = new Viewport(Store.getResource("project", "default"));

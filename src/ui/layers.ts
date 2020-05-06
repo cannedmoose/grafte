@@ -160,6 +160,7 @@ export class LayerControls extends AttachedPaneer implements Tab {
     toRemove.forEach(key => {
       const label = this.labels.get(key);
       label?.remove(true);
+      this.labels.delete(key);
     });
 
     this.refreshing = false;
@@ -271,10 +272,10 @@ class Label extends AttachedPaneer {
 Serializer.register(
   LayerControls,
   (raw: any) => {
-    const node = new LayerControls(Store.getResource("project", "default"));
+    const node = new LayerControls(Store.getResource("project", raw.key || "default"));
     return node;
   },
   (raw: LayerControls) => {
-    return {};
+    return {key: raw.project.key};
   }
 );

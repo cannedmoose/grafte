@@ -4,17 +4,16 @@ import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
 import { Serializer } from "./utils/deserializer";
-import { Resource, Store } from "./utils/store";
+import { Resource, Store, ActiveProject } from "./utils/store";
 
 export class Load extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Load";
-  project: Resource<paper.Project>;
 
-  constructor(project: Resource<paper.Project>) {
+  constructor() {
     super(Pan/*html*/`<div></div>`);
     this.fileUpload = this.fileUpload.bind(this);
-    this.project = project;
+    this.style = {height: "100%"};
 
     this.element.appendChild(div({}, [checkbox({ id: "loadclear", checked: "true" }, {}), text("Clear on load")]));
     this.element.appendChild(button({}, [text("load")], { click: () => this.load() }));
@@ -40,13 +39,13 @@ export class Load extends AttachedPaneer implements Tab {
       return;
     } else {
       if ((queryOrThrow("#loadclear") as HTMLInputElement).checked) {
-        this.project.content.clear();
+        ActiveProject.content.clear();
       }
       for (var i = 0; i < curFiles.length; i++) {
         const file = curFiles[i];
         if (file.type == "image/svg+xml") {
-          this.project.content.importSVG(URL.createObjectURL(file), (item: paper.Item) => {
-            this.project.content.view.viewSize = item.bounds.size.clone();
+          ActiveProject.content.importSVG(URL.createObjectURL(file), (item: paper.Item) => {
+            ActiveProject.content.view.viewSize = item.bounds.size.clone();
           });
         } else if (file.type == "image/png" || file.type == "image/jpeg") {
           let l = new paper.Raster(URL.createObjectURL(file));
@@ -58,18 +57,6 @@ export class Load extends AttachedPaneer implements Tab {
       }
     }
   }
-
-  loadlocal() {
-    const json = window.localStorage.getItem("saved");
-    if (json) {
-      if ((queryOrThrow("#loadclear") as HTMLInputElement).checked) {
-        this.project.content.clear();
-      }
-      this.project.content.importJSON(json);
-      this.project.content.deselectAll();
-    }
-  }
-
 }
 
 Serializer.register(
@@ -77,7 +64,7 @@ Serializer.register(
   (raw: any) => {
     //@ts-ignore
     const ctx: any = window.ctx;
-    return new Load(Store.getResource("project", "default"));
+    return new Load();
   },
   (raw: Load) => {
     return {};

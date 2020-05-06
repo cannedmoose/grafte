@@ -129,10 +129,10 @@ export class Preview extends AttachedPaneer implements Tab {
 Serializer.register(
   Preview,
   (raw: any) => {
-    const node = new Preview(Store.getResource("project", "default"));
+    const node = new Preview(Store.getResource("project", raw.key || "default"));
     return node;
   },
   (raw: Preview) => {
-    return {};
+    return {key: raw.project.key};
   }
 );

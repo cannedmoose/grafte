@@ -31,6 +31,8 @@ export class Editor extends AttachedPaneer implements Tab {
     extraKeys: {"Ctrl-Space": "autocomplete"},
     theme: "neat",
     viewportMargin: Infinity,
+    // TODO(P3) consider enabling this for small terminals...
+    //lineWrapping: true,
     
     // TODO(P3) maybe enable...
     //inputStyle: "contenteditable"
@@ -58,6 +60,14 @@ export class Editor extends AttachedPaneer implements Tab {
       this.value.content = this.editor.getValue();
     });
     // TODO add watcher for content change...
+
+    let charWidth = this.editor.defaultCharWidth(), basePadding = 4;
+    this.editor.on("renderLine", function(cm, line, elt) {
+      let off = (1 + CodeMirror.countColumn(line.text, null, (cm.getOption("tabSize")) || 1)) * charWidth;
+      elt.style.textIndent = "-" + off + "px";
+      elt.style.paddingLeft = (basePadding + off) + "px";
+    });
+
     window.requestAnimationFrame(() => this.editor.refresh());
   }
 

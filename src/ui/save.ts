@@ -2,68 +2,134 @@ import * as paper from "paper";
 import { button, text, select, option, queryOrThrow, checkbox, div } from "./utils/dom";
 import { AttachedPaneer } from "./paneer/paneer";
 import { Tab } from "./components/panes/pane";
-import { Pan } from "./paneer/template";
+import { Pan, AppendPan } from "./paneer/template";
 import { Serializer } from "./utils/deserializer";
-import { Resource, Store } from "./utils/store";
+import { Resource, Store, ActiveProject } from "./utils/store";
+
+export class Button extends AttachedPaneer {
+  constructor(label: string) {
+    super(Pan/*html*/`<button>${label}</button>`);
+
+    this.style = {
+      display: "block",
+      margin: ".5em"
+    }
+  }
+
+  get onclick(): ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null {
+    return this.element.onclick;
+  }
+
+  set onclick(fn: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null) {
+    this.element.onclick = fn;
+  }
+}
+
+// HMM maybe this shouldn't be an attached paneer...
+export class Selector<T> extends AttachedPaneer {
+  selected: T;
+  options: T[];
+  display: (v: T) => string;
+  selectEl: HTMLSelectElement;
+
+  constructor(label: string, options: T[], display: (v: T) => string) {
+    super(Pan/*html*/`<div></div>`);
+
+    this.style = {
+      display: "flex",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignContent: "center",
+      width: "100%",
+      marginBottom: ".5em",
+      maxWidth: "15em"
+    };
+
+    AppendPan(this.element)/*html*/`
+    <div ${{ height: "min-conent", margin: ".5em" }}>
+      ${label || ""}
+    </div>
+    <div ${{ flexGrow: "100" }}>
+    </div>
+    <div ${{display: "flex"}}>
+      <select ${el => this.selectEl = el as HTMLSelectElement}></select>
+    </div>`
+
+    this.options = options;
+    this.selected = options[0];
+    this.display = display;
+
+    this.refreshOptions();
+
+    this.selectEl.style.margin = ".5em";
+
+    this.selectEl.addEventListener("selectionchange", e => {
+      this.selected = this.options[Number(this.selectEl.value)];
+    })
+  }
+
+  refreshOptions() {
+    while(this.selectEl.firstElementChild) {
+      this.selectEl.firstElementChild.remove();
+    }
+    this.options.forEach((o, i) =>
+      this.selectEl.append(Pan/*html*/`<option value = "${i}" ${this.selected === o ? `selected="true"` : 0}>${this.display(o)}</option>`)
+    )
+  }
+}
+
+type ExportTypes = "PNG" | "SVG" | "JSON";
 
 export class Save extends AttachedPaneer implements Tab {
   tab: true = true;
   label = "Save";
 
-  project: Resource<paper.Project>;
-  // TODO(P1) save/load should use active project/ allow project select
-  
-  constructor(project: Resource<paper.Project>) {
+  selector: Selector<ExportTypes>;
+
+  constructor() {
     super(Pan/*html*/`<div></div>`);
 
-    this.project = project;
+    this.selector = new Selector("Format", ["PNG", "SVG", "JSON"], a => a);
 
-    this.element.appendChild(select({ id: "savemodeselector" }, [
-      option({ value: "png", selected: "true" }, [text("png")]),
-      option({ value: "svg" }, [text("svg")]),
-      option({ value: "json" }, [text("json")]),
-      option({ value: "local" }, [text("local")])
-    ]));
+    const saveButton = new Button("Export");
+    saveButton.onclick = () => this.save();
 
-    this.element.appendChild(button({}, [text("save")], { click: () => this.save() }));
+    this.append(this.selector);
+    this.append(saveButton);
+    this.style = {height: "100%"};
   }
 
   save() {
     let blob;
-    var typeSelector: HTMLSelectElement = queryOrThrow("#savemodeselector") as HTMLSelectElement;
 
     const savePng = () => {
-      let png = this.project.content.view.element.toDataURL();
-      this.project.content.view.off("updated", savePng);
+      let png = ActiveProject.content.view.element.toDataURL();
+      ActiveProject.content.view.off("updated", savePng);
       fetch(png)
         .then(response => response.blob())
         .then(blob => downloadBlob(blob, "image.png"));
     }
 
-    switch (typeSelector.value) {
-      case "png":
-        this.project.content.view.markDirty();
-        this.project.content.view.on("updated", savePng);
-        this.project.content.view.update();
+    switch (this.selector.selected) {
+      case "PNG":
+        ActiveProject.content.view.markDirty();
+        ActiveProject.content.view.on("updated", savePng);
+        ActiveProject.content.view.update();
         break;
-      case "svg":
-        let svg = this.project.content.exportSVG({ asString: true, bounds: this.project.content.view.bounds }) as string;
+      case "SVG":
+        let svg = ActiveProject.content.exportSVG({ asString: true, bounds: ActiveProject.content.view.bounds }) as string;
         blob = new Blob(
           [svg],
           { type: 'image/svg' }
         );
         downloadBlob(blob, "image.svg");
         break;
-      case "json":
+      case "JSON":
         blob = new Blob(
-          [this.project.content.exportJSON({ asString: true })],
+          [ActiveProject.content.exportJSON({ asString: true })],
           { type: 'text/json' }
         );
         downloadBlob(blob, "image.json");
-        break;
-      case "local":
-        const json = this.project.content.exportJSON({ asString: true });
-        window.localStorage.setItem("saved", json);
         break;
     }
   }
@@ -111,9 +177,7 @@ function downloadBlob(blob: any, filename: string) {
 Serializer.register(
   Save,
   (raw: any) => {
-    //@ts-ignore
-    const ctx: any = window.ctx;
-    return new Save(Store.getResource("project", "default"));
+    return new Save();
   },
   (raw: Save) => {
     return {};

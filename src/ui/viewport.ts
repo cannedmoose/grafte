@@ -5,6 +5,7 @@ import { Tab } from "./components/panes/pane";
 import { Pan } from "./paneer/template";
 import { Serializer } from "./utils/deserializer";
 import { Resource, Store } from "./utils/store";
+import { isOverlay } from "./components/panes/dragoverlay";
 
 export class Viewport extends AttachedPaneer implements Tab {
   tab: true = true;
@@ -25,6 +26,10 @@ export class Viewport extends AttachedPaneer implements Tab {
     super(Pan/*html*/`<div></div>`);
     this.element.style.overflow = "hidden";
     this.projectR = project;
+    this.onScroll =  this.onScroll.bind(this);
+    this.onViewUpdated = this.onViewUpdated.bind(this);
+    this.centerPage = this.centerPage.bind(this);
+    this.doResize = this.doResize.bind(this);
 
     this.mainCanvas = canvas({});
     this.backgroundCanvas = canvas({});
@@ -55,17 +60,21 @@ export class Viewport extends AttachedPaneer implements Tab {
 
     this.view = new paper.CanvasView(this.projectR.content, this.mainCanvas);
 
-    this.projectR.content.view.on("changed", () => this.centerPage());
-
-    this.view.on("updated", this.onViewUpdated.bind(this));
-    window.addEventListener("wheel", this.onScroll.bind(this));
-    // TODO(P3) is this needed, maybe should be on pane.
-    window.onresize = () => this.resize();
+    this.projectR.content.view.on("changed", this.centerPage);
+    this.view.on("updated", this.onViewUpdated);
+    window.addEventListener("wheel",this.onScroll);
 
     this.resizing = false;
 
     this.resize();
     this.centerPage();
+  }
+
+  detached() {
+    // On detach we remove our assiated view and clean up event listeners.
+    this.view.remove();
+    window.removeEventListener("wheeel", this.onScroll);
+    this.projectR.content.view.off("changed", this.centerPage);
   }
 
   onViewUpdated() {
@@ -85,7 +94,7 @@ export class Viewport extends AttachedPaneer implements Tab {
 
   resize() {
     if (!this.resizing) {
-      window.requestAnimationFrame(this.doResize.bind(this));
+      window.requestAnimationFrame(this.doResize);
       this.resizing = true;
     }
   }
@@ -110,40 +119,11 @@ export class Viewport extends AttachedPaneer implements Tab {
     this.resizing = false;
   }
 
-  makeBgPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
-    // TODO(P3) cache this, it's a memory leak...
-    // Should be better when we have background/tool layer back
-    // Create a pattern, offscreen
-    const patternCanvas = document.createElement("canvas");
-    const patternContext = patternCanvas.getContext("2d");
-
-    if (!patternContext) return null;
-
-    // Give the pattern a width and height of 10
-    patternCanvas.width = 10;
-    patternCanvas.height = 10;
-
-    // Give the pattern a background color and draw an arc
-    patternContext.fillStyle = "#aaa";
-    patternContext.fillRect(
-      0,
-      0,
-      patternCanvas.width / 2,
-      patternCanvas.height / 2
-    );
-    patternContext.fillRect(
-      patternCanvas.width / 2,
-      patternCanvas.height / 2,
-      patternCanvas.width,
-      patternCanvas.height
-    );
-
-    return ctx.createPattern(patternCanvas, "repeat");
-  }
-
   centerPage() {
     window.requestAnimationFrame(() => {
-      if (this.view.bounds.width < this.view.bounds.height) {
+      // TODO(P2) remove hack, shoudl be a check for size...
+      if (!this.ancestor(isOverlay)) return;
+      if (this.view.bounds.width > this.view.bounds.height) {
         this.view.zoom = this.view.bounds.height / (this.projectR.content.view.bounds.height * 1.1);
       } else {
         this.view.zoom = this.view.bounds.width / (this.projectR.content.view.bounds.width * 1.1);
@@ -188,15 +168,48 @@ export class Viewport extends AttachedPaneer implements Tab {
     let newCenter = this.view.center.add(oldMouse.subtract(newMouse));
     this.view.center = newCenter;
   }
+
+
+
+  makeBgPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
+    // TODO(P3) cache this, it's a memory leak...
+    // Should be better when we have background/tool layer back
+    // Create a pattern, offscreen
+    const patternCanvas = document.createElement("canvas");
+    const patternContext = patternCanvas.getContext("2d");
+
+    if (!patternContext) return null;
+
+    // Give the pattern a width and height of 10
+    patternCanvas.width = 10;
+    patternCanvas.height = 10;
+
+    // Give the pattern a background color and draw an arc
+    patternContext.fillStyle = "#aaa";
+    patternContext.fillRect(
+      0,
+      0,
+      patternCanvas.width / 2,
+      patternCanvas.height / 2
+    );
+    patternContext.fillRect(
+      patternCanvas.width / 2,
+      patternCanvas.height / 2,
+      patternCanvas.width,
+      patternCanvas.height
+    );
+
+    return ctx.createPattern(patternCanvas, "repeat");
+  }
 }
 
 
 Serializer.register(
   Viewport,
   (raw: any) => {
-    return new Viewport(Store.getResource("project", "default"));
+    return new Viewport(Store.getResource("project", raw.key || "default"));
   },
   (raw: Viewport) => {
-    return {};
+    return {key: raw.projectR.key};
   }
 );

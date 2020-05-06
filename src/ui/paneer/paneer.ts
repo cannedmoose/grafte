@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import { PaneLeaf } from '../components/panes/paneleaf';
 
 const DEBUG = true;
 const PANEER_ID_ATTRIB = "data-paneer-id";
@@ -121,6 +120,13 @@ export class Paneer {
         descendent.remove(true);
       }
       NodeMap.delete(this.id);
+      if (this.element) {
+        const oldEl = this.element;
+        this.element.remove();
+        this.element = undefined;
+        if (this.detached) this.detached(oldEl);
+        return;
+      }
     };
     if (!isAttached(this)) return;
     this.element.remove();

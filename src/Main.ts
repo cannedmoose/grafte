@@ -93,8 +93,8 @@ window.onload = function () {
             ${new LayerControls(defaultProject)}
           </div>
           <div ${attach(new PaneLeaf("1fr"))}>
-            ${new Save(defaultProject)}
-            ${new Load(defaultProject)}
+            ${new Save()}
+            ${new Load()}
           </div>
         </div>
       </div>

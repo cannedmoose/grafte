@@ -34,23 +34,37 @@ OR CACHE PATH ITEMS...
 
 export interface Resource<T> {
   key: string;
-
   content: T;
 
-  addCallback(callback: Callback<T>): void;
-  removeCallback(callback: Callback<T>): void;
+}
+
+export class Resource<T> {
+  key: string;
+  content: T;
+
+  callbacks: Callback<T>[];
+
+  constructor() {
+    this.callbacks = [];
+  }
+
+  addCallback(callback: Callback<T>): void {
+    this.callbacks.push(callback);
+  }
+  removeCallback(callback: Callback<T>): void {
+    this.callbacks = this.callbacks.filter(c => c !== callback);
+  }
 }
 
 export type Callback<T> = (resource: Resource<T>) => void;
 
-export class LocalStorageResource implements Resource<string> {
+export class LocalStorageResource extends Resource<string> {
   key: string;
   _content: string;
-  callbacks: Callback<string>[];
 
   constructor(key: string) {
+    super();
     this.key = key;
-    this.callbacks = [];
     this.loadContent();
   }
 
@@ -68,23 +82,15 @@ export class LocalStorageResource implements Resource<string> {
 
     this.callbacks.forEach(c => c(this));
   }
-
-  addCallback(callback: Callback<string>): void {
-    this.callbacks.push(callback);
-  }
-  removeCallback(callback: Callback<string>): void {
-    this.callbacks = this.callbacks.filter(c => c !== callback);
-  }
 }
 
-export class StringResource implements Resource<string> {
+export class StringResource extends Resource<string> {
   key: string;
   _content: string;
-  callbacks: Callback<string>[];
 
   constructor(key: string, initalContent: string) {
+    super();
     this.key = key;
-    this.callbacks = [];
     this._content = initalContent;
   }
 
@@ -96,28 +102,18 @@ export class StringResource implements Resource<string> {
     this._content = newContent;
     this.callbacks.forEach(c => c(this));
   }
-
-  addCallback(callback: Callback<string>): void {
-    this.callbacks.push(callback);
-  }
-  removeCallback(callback: Callback<string>): void {
-    this.callbacks = this.callbacks.filter(c => c !== callback);
-  }
 }
 
-export class BackedResource<T, BT> implements Resource<T> {
+export class BackedResource<T, BT> extends Resource<T> {
   key: string;
   _content: T;
   backing: Resource<BT>;
 
-  callbacks: Callback<T>[];
-
   constructor(backing: Resource<BT>) {
+    super();
     this.key = backing.key;
     this.backing = backing;
     this.backingChanged = this.backingChanged.bind(this);
-
-    this.callbacks = [];
 
     this.loadBacking();
     this.backing.addCallback(this.backingChanged);
@@ -125,6 +121,14 @@ export class BackedResource<T, BT> implements Resource<T> {
 
   loadBacking() { }
   setBacking() { }
+
+  changeBacking(backing: Resource<BT>) {
+    console.log("BACKING CHANGED");
+    this.backing.removeCallback(this.backingChanged);
+    this.backing = backing;
+    this.loadBacking();
+    this.backing.addCallback(this.backingChanged);
+  }
 
   backingChanged(backing: Resource<BT>) {
     this.loadBacking();
@@ -144,17 +148,21 @@ export class BackedResource<T, BT> implements Resource<T> {
 
     this.callbacks.forEach(c => c(this));
   }
-
-  addCallback(callback: Callback<T>): void {
-    this.callbacks.push(callback);
-  }
-  removeCallback(callback: Callback<T>): void {
-    this.callbacks = this.callbacks.filter(c => c !== callback);
-  }
 }
 
 // TODO(P3) this is unsafe, type the JSON.
 type JSONN = any;
+
+class ActiveProjectResource extends BackedResource<paper.Project, paper.Project> {
+  loadBacking() {
+    this._content = this.backing.content;
+  }
+  setBacking() {
+    this.backing.content = this._content;
+  }
+}
+
+export let ActiveProject: ProjectResource;
 
 export class JSONResource extends BackedResource<JSONN, string> {
   loadBacking() {
@@ -177,6 +185,13 @@ export class ProjectResource extends BackedResource<paper.Project, JSONN> {
       paper.activate();
       paper.install(window);
       this._content = new paper.Project(size);
+
+      if (!ActiveProject) {
+        ActiveProject = new ActiveProjectResource(this);
+        Store.putResource("project", "active", ActiveProject);
+      }
+      this._content.on("activate", () => ActiveProject.changeBacking(this));
+
       this._content.view.drawSelection = false;
       this._content.view.autoUpdate = false;
 
@@ -186,7 +201,6 @@ export class ProjectResource extends BackedResource<paper.Project, JSONN> {
       this._content.currentStyle.strokeColor = new paper.Color("black");
       this._content.currentStyle.strokeCap = "round";
       this._content.currentStyle.strokeJoin = "round";
-     
     }
 
     this._content.clear();
@@ -251,9 +265,21 @@ class ResourceStore {
         throw `Invalid resource type ${type}`;
     }
   }
+
+  getResources<T extends keyof ResourceTypes>(type: T): Resource<ResourceTypes[T]>[] {
+    const results: Resource<ResourceTypes[T]>[] = [];
+    for(let entry of this.resources.values()) {
+      entry.filter(f => f.type == type).forEach(r => results.push(r.resource));
+    }
+    return results;
+  }
+
+  putResource<T extends keyof ResourceTypes>(type: T, key: string, resource: Resource<ResourceTypes[T]>): void {
+    this.resources.set(key, [{type, resource}]);
+  }
 }
 
-// TODO(P1) list all resources of givent type
+// TODO(P1) list all resources of given type
 
 // TODO(P1) allow inserting resource
 // want to have an "active project resource"
@@ -261,5 +287,7 @@ class ResourceStore {
 
 // TODO(P1) allow views as a resource
 // want to encode size and center
+
+// TODO(P2) SymbolItem bounds aren't working properly, figure out why otherwise bounds performance hack doesn't work.
 
 export const Store = new ResourceStore();
